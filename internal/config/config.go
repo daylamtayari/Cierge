@@ -83,7 +83,7 @@ type AuthConfig struct {
 
 	// JWT configuration
 	JWTSecret          string   `json:"jwt_secret"`
-	JWTIssuer           string   `json:"jwt_issuer" default:"cierge"`
+	JWTIssuer          string   `json:"jwt_issuer" default:"cierge"`
 	AccessTokenExpiry  Duration `json:"access_token_expiry" default:"15m"`
 	RefreshTokenExpiry Duration `json:"refresh_token_expiry" default:"7d"`
 
@@ -111,8 +111,8 @@ const (
 )
 
 type CloudConfig struct {
-	Provider       CloudProvider   `json:"provider" default:"aws"`
-	ProviderConfig json.RawMessage `json:"config"`
+	Provider CloudProvider   `json:"provider" default:"aws"`
+	Config   json.RawMessage `json:"config"`
 }
 
 // Notification configuration
