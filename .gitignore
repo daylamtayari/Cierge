@@ -1,0 +1,8 @@
+bin/
+dist/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+*.log
