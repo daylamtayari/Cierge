@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"slices"
 	"strings"
 )
 
@@ -53,6 +54,10 @@ func (c *Config) Validate() error {
 		if c.Server.TLS.KeyFile == "" {
 			errs = append(errs, ValidationError{"server.tls.key_file", "path to key file is required when TLS is enabled"})
 		}
+	}
+	// Disallow wildcard '*' origin for CORS configuration
+	if len(c.Server.CORSOrigins) > 0 && slices.Contains(c.Server.CORSOrigins, "*") {
+		errs = append(errs, ValidationError{"server.cors_origins", "wildcard '*' not allowed as an allowed origin for CORS"})
 	}
 
 	// Database validation
