@@ -22,6 +22,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger) *gin.Engine {
 	router.Use(middleware.RequestID())
 	router.Use(middleware.Logger())
 	router.Use(middleware.CORS(cfg.Server.CORSOrigins))
+	router.Use(middleware.Secure(cfg.IsDevelopment()))
 
 	// Set trusted proxies to specified or nil, unless in dev
 	// mode where it will trust all proxies (gin default, INSECURE)
