@@ -17,18 +17,18 @@ const (
 )
 
 // Adds a logger to the context
-func WithLogger(ctx context.Context, logger zerolog.Logger) context.Context {
+func WithLogger(ctx context.Context, logger *zerolog.Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, logger)
 }
 
 // Returns the logger from the context
-func Logger(ctx context.Context) zerolog.Logger {
-	if logger, ok := ctx.Value(loggerKey).(zerolog.Logger); ok {
+func Logger(ctx context.Context) *zerolog.Logger {
+	if logger, ok := ctx.Value(loggerKey).(*zerolog.Logger); ok {
 		return logger
 	}
 	fallback := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	fallback.Error().Msg("logger not in context")
-	return fallback
+	return &fallback
 }
 
 // Adds a request ID to the context

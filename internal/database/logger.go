@@ -34,19 +34,16 @@ func (l *Logger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 	}
 }
 
-func (l *Logger) Info(ctx context.Context, msg string, args ...interface{}) {
-	logger := appctx.Logger(ctx)
-	logger.Info().Msgf(msg, args...)
+func (l *Logger) Info(ctx context.Context, msg string, args ...any) {
+	appctx.Logger(ctx).Info().Msgf(msg, args...)
 }
 
-func (l *Logger) Warn(ctx context.Context, msg string, args ...interface{}) {
-	logger := appctx.Logger(ctx)
-	logger.Warn().Msgf(msg, args...)
+func (l *Logger) Warn(ctx context.Context, msg string, args ...any) {
+	appctx.Logger(ctx).Warn().Msgf(msg, args...)
 }
 
-func (l *Logger) Error(ctx context.Context, msg string, args ...interface{}) {
-	logger := appctx.Logger(ctx)
-	logger.Error().Msgf(msg, args...)
+func (l *Logger) Error(ctx context.Context, msg string, args ...any) {
+	appctx.Logger(ctx).Error().Msgf(msg, args...)
 }
 
 func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
