@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -88,8 +87,8 @@ type AuthConfig struct {
 	RefreshTokenExpiry Duration `json:"refresh_token_expiry" default:"7d"`
 
 	// Rate limiting for local authentication - not used for OIDC
-	RateLimitRequests int `json:"rate_limit_requests" default:"3"`
-	RateLimitWindow   int `json:"rate_limit_window" default:"5m"`
+	RateLimitRequests int      `json:"rate_limit_requests" default:"3"`
+	RateLimitWindow   Duration `json:"rate_limit_window" default:"5m"`
 }
 
 type OIDCProvider struct {
@@ -111,8 +110,8 @@ const (
 )
 
 type CloudConfig struct {
-	Provider CloudProvider   `json:"provider" default:"aws"`
-	Config   json.RawMessage `json:"config"`
+	Provider CloudProvider  `json:"provider" default:"aws"`
+	Config   map[string]any `json:"config"`
 }
 
 // Notification configuration

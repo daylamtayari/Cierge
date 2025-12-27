@@ -2,9 +2,12 @@ package config
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-viper/mapstructure/v2"
+	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
 
@@ -59,8 +62,50 @@ func Load() (*Config, error) {
 func unmarshalConfig(cfg *Config) error {
 	if err := v.Unmarshal(cfg, func(dc *mapstructure.DecoderConfig) {
 		dc.TagName = "json"
+		dc.DecodeHook = mapstructure.ComposeDecodeHookFunc(
+			stringToZerologLevelHook(),
+			stringToDurationHook(),
+		)
 	}); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 	return nil
+}
+
+// Decode hook for zerolog.Level for log level value
+func stringToZerologLevelHook() mapstructure.DecodeHookFunc {
+	return func(f reflect.Type, t reflect.Type, data any) (any, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		if t != reflect.TypeFor[zerolog.Level]() {
+			return data, nil
+		}
+
+		str := data.(string)
+		level, err := zerolog.ParseLevel(str)
+		if err != nil {
+			return nil, fmt.Errorf("invalid log level %q: %w", str, err)
+		}
+		return level, nil
+	}
+}
+
+// Decode hook for the duration type
+func stringToDurationHook() mapstructure.DecodeHookFunc {
+	return func(f reflect.Type, t reflect.Type, data any) (any, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		if t != reflect.TypeFor[Duration]() {
+			return data, nil
+		}
+
+		str := data.(string)
+		duration, err := time.ParseDuration(str)
+		if err != nil {
+			return nil, fmt.Errorf("invalid duration %q: %w", str, err)
+		}
+		return Duration(duration), nil
+	}
 }
