@@ -37,7 +37,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, repos *repository.Repo
 		router.SetTrustedProxies(nil) //nolint:errcheck
 	}
 
-	router.GET("/health", handlers.Health())
+	router.GET("/health", handlers.Health(repos.DB(), repos.Timeout()))
 
 	return router
 }
