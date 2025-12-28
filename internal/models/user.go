@@ -12,8 +12,8 @@ type User struct {
 	PasswordHash *string   `gorm:"type:varchar(255)"`
 
 	// OIDC fields
-	OIDCProvider *string `gorm:"type:varchar(50);index:idx_users_oidc,where:oidc_provider IS NOT NULL"`
-	OIDCSubject  *string `gorm:"type:varchar(255);index:idx_users_oidc,where:oidc_provider IS NOT NULL"`
+	OIDCProvider *string `gorm:"column:oidc_provider;type:varchar(50);index:idx_users_oidc,where:oidc_provider IS NOT NULL"`
+	OIDCSubject  *string `gorm:"column:oidc_subject;type:varchar(255);index:idx_users_oidc,where:oidc_provider IS NOT NULL"`
 
 	// Relations
 	NotificationPreferences *UserNotificationPreferences `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`

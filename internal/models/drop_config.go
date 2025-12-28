@@ -15,7 +15,7 @@ type DropConfig struct {
 	DropTime       string     `gorm:"type:time;not null"` // "09:00:00"
 	Timezone       string     `gorm:"type:varchar(50);not null"`
 	Confidence     int16      `gorm:"type:smallint;not null;default:0"`
-	LastVerifiedAt *time.Time `gorm:"type:timestampz"`
+	LastVerifiedAt *time.Time `gorm:"type:timestamptz"`
 
 	CreatedBy     *uuid.UUID `gorm:"type:uuid"`
 	LastUpdatedBy *uuid.UUID `gorm:"type:uuid"`
