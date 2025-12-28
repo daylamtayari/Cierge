@@ -20,6 +20,7 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 			Str("request_id", requestID).
 			Str("method", c.Request.Method).
 			Str("path", c.Request.URL.Path).
+			Str("user_agent", c.Request.UserAgent()).
 			Logger()
 
 		logger.Debug().Msg("received request")
