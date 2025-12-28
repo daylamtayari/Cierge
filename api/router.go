@@ -18,11 +18,16 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, repos *repository.Repo
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Redirect gin's output to our logger
+	ginLogger := logger.With().Str("component", "gin").Logger()
+	gin.DefaultWriter = ginLogger
+	gin.DefaultErrorWriter = ginLogger
+
 	router := gin.New()
 
 	// Global middleware
 	router.Use(middleware.RequestID())
-	router.Use(middleware.Logger())
+	router.Use(middleware.Logger(logger))
 	router.Use(middleware.CORS(cfg.Server.CORSOrigins))
 	router.Use(middleware.Secure(cfg.IsDevelopment()))
 	router.Use(middleware.Recovery())

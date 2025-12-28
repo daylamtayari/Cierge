@@ -4,18 +4,18 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 
 	appctx "github.com/daylamtayari/cierge/internal/context"
 )
 
-func Logger() gin.HandlerFunc {
+func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
 		requestID := appctx.RequestID(c.Request.Context())
 
 		// Create request-scoped logger
-		baseLogger := appctx.Logger(c.Request.Context())
 		logger := baseLogger.With().
 			Str("request_id", requestID).
 			Str("method", c.Request.Method).
