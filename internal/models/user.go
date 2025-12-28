@@ -38,7 +38,7 @@ func (u *User) IsAccountLocked() bool {
 	if u.LockedUntil == nil {
 		return false
 	}
-	return time.Now().Before(*u.LockedUntil)
+	return time.Now().UTC().Before(*u.LockedUntil)
 }
 
 func (u *User) NeedsPasswordChange() bool {

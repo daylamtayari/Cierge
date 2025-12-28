@@ -30,7 +30,7 @@ func (t *PlatformToken) IsExpired() bool {
 	if t.ExpiresAt == nil {
 		return false
 	}
-	return time.Now().After(*t.ExpiresAt)
+	return time.Now().UTC().After(*t.ExpiresAt)
 }
 
 func (t *PlatformToken) ExpiresIn() time.Duration {
