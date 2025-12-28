@@ -12,6 +12,7 @@ import (
 	"github.com/daylamtayari/cierge/internal/config"
 	"github.com/daylamtayari/cierge/internal/database"
 	"github.com/daylamtayari/cierge/internal/logging"
+	"github.com/daylamtayari/cierge/internal/repository"
 	"github.com/rs/zerolog"
 )
 
@@ -41,7 +42,8 @@ func main() {
 		logger.Info().Msg("database migrations completed successfully")
 	}
 
-	router := api.NewRouter(cfg, logger)
+	repos := repository.New(db, cfg.Database.Timeout.Duration())
+	router := api.NewRouter(cfg, logger, repos)
 	server := &http.Server{
 		Addr:    cfg.Server.Address(),
 		Handler: router,

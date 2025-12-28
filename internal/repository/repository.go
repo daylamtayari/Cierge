@@ -20,6 +20,22 @@ type Repositories struct {
 	timeout time.Duration
 }
 
+func New(db *gorm.DB, timeout time.Duration) *Repositories {
+	return &Repositories{
+		User:         NewUserRepository(db, timeout),
+		Token:        NewTokenRepository(db, timeout),
+		Restaurant:   NewRestaurantRepository(db, timeout),
+		DropConfig:   NewDropConfigRepository(db, timeout),
+		Favourite:    NewFavouriteRepository(db, timeout),
+		Job:          NewJobRepository(db, timeout),
+		Reservation:  NewReservationRepository(db, timeout),
+		Notification: NewNotificationRepository(db, timeout),
+
+		db:      db,
+		timeout: timeout,
+	}
+}
+
 func (r *Repositories) DB() *gorm.DB {
 	return r.db
 }

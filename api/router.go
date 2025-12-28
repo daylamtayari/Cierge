@@ -7,9 +7,10 @@ import (
 	"github.com/daylamtayari/cierge/api/handlers"
 	"github.com/daylamtayari/cierge/api/middleware"
 	"github.com/daylamtayari/cierge/internal/config"
+	"github.com/daylamtayari/cierge/internal/repository"
 )
 
-func NewRouter(cfg *config.Config, logger zerolog.Logger) *gin.Engine {
+func NewRouter(cfg *config.Config, logger zerolog.Logger, repos *repository.Repositories) *gin.Engine {
 	// Set gin mode based on environment
 	if cfg.IsDevelopment() {
 		gin.SetMode(gin.DebugMode)
