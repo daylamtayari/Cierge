@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 
+	"github.com/daylamtayari/cierge/api/handlers"
 	"github.com/daylamtayari/cierge/api/middleware"
 	"github.com/daylamtayari/cierge/internal/config"
 )
@@ -30,10 +31,12 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger) *gin.Engine {
 	// NOTE: If you run cierge behind a proxy, you NEED to
 	// specify trusted proxies
 	if len(cfg.Server.TrustedProxies) > 0 {
-		router.SetTrustedProxies(cfg.Server.TrustedProxies)
+		router.SetTrustedProxies(cfg.Server.TrustedProxies) //nolint:errcheck
 	} else if !cfg.IsDevelopment() {
-		router.SetTrustedProxies(nil)
+		router.SetTrustedProxies(nil) //nolint:errcheck
 	}
+
+	router.GET("/health", handlers.Health())
 
 	return router
 }
