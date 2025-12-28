@@ -16,7 +16,8 @@ type Repositories struct {
 	Reservation  *ReservationRepository
 	Notification *NotificationRepository
 
-	db      *gorm.DB // For handlers that are not tied to any repository such as the health handler
+	// For handlers that are not tied to any repository such as the health handler
+	db      *gorm.DB
 	timeout time.Duration
 }
 
