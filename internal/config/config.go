@@ -52,13 +52,14 @@ func (s ServerConfig) Address() string {
 
 // Database configuration
 type DatabaseConfig struct {
-	Host        string `json:"host" default:"localhost"`
-	Port        int    `json:"port" default:"5432"`
-	User        string `json:"user" default:"cierge"`
-	Password    string `json:"password"`
-	Database    string `json:"database" default:"cierge"`
-	SSLMode     string `json:"ssl_mode" default:"disable"`
-	AutoMigrate bool   `json:"auto_migrate" default:"true"`
+	Host        string   `json:"host" default:"localhost"`
+	Port        int      `json:"port" default:"5432"`
+	User        string   `json:"user" default:"cierge"`
+	Password    string   `json:"password"`
+	Database    string   `json:"database" default:"cierge"`
+	SSLMode     string   `json:"ssl_mode" default:"disable"`
+	AutoMigrate bool     `json:"auto_migrate" default:"true"`
+	Timeout     Duration `json:"timeout" default:"30s"`
 }
 
 func (d DatabaseConfig) DSN() string {
