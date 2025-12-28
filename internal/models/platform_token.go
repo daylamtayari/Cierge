@@ -14,7 +14,7 @@ const (
 )
 
 type PlatformToken struct {
-	ID       uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
+	ID       uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	UserID   uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_platform_tokens_user_platform"`
 	Platform Platform  `gorm:"type:varchar(50);not null;uniqueIndex:idx_platform_tokens_user_platform"`
 

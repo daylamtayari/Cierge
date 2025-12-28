@@ -7,7 +7,7 @@ import (
 )
 
 type Restaurant struct {
-	ID                   uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
+	ID                   uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	Platform             Platform  `gorm:"type:varchar(50);not null;uniqueIndex:idx_restaurants_platform_id"`
 	PlatformRestaurantID string    `gorm:"type:varchar(255);not null;uniqueIndex:idx_restaurants_platform_id"`
 

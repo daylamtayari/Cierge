@@ -7,7 +7,7 @@ import (
 )
 
 type Favourite struct {
-	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	UserID       uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_favourites_user_restaurant;index:idx_favourites_user"`
 	RestaurantID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_favourites_user_restaurant;index:idx_favourites_restaurant"`
 

@@ -7,7 +7,7 @@ import (
 )
 
 type Reservation struct {
-	ID           uuid.UUID  `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
+	ID           uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	UserID       uuid.UUID  `gorm:"type:uuid;not null;index:idx_reservations_user;index:idx_reservations_user_at"`
 	JobID        *uuid.UUID `gorm:"type:uuid"`
 	RestaurantID uuid.UUID  `gorm:"type:uuid;not null;index:idx_reservations_restaurant"`
