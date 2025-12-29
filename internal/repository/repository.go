@@ -7,14 +7,14 @@ import (
 )
 
 type Repositories struct {
-	User         *UserRepository
-	Token        *TokenRepository
-	Restaurant   *RestaurantRepository
-	DropConfig   *DropConfigRepository
-	Favourite    *FavouriteRepository
-	Job          *JobRepository
-	Reservation  *ReservationRepository
-	Notification *NotificationRepository
+	User          *UserRepository
+	PlatformToken *PlatformTokenRepository
+	Restaurant    *RestaurantRepository
+	DropConfig    *DropConfigRepository
+	Favourite     *FavouriteRepository
+	Job           *JobRepository
+	Reservation   *ReservationRepository
+	Notification  *NotificationRepository
 
 	// For handlers that are not tied to any repository such as the health handler
 	db      *gorm.DB
@@ -23,14 +23,14 @@ type Repositories struct {
 
 func New(db *gorm.DB, timeout time.Duration) *Repositories {
 	return &Repositories{
-		User:         NewUserRepository(db, timeout),
-		Token:        NewTokenRepository(db, timeout),
-		Restaurant:   NewRestaurantRepository(db, timeout),
-		DropConfig:   NewDropConfigRepository(db, timeout),
-		Favourite:    NewFavouriteRepository(db, timeout),
-		Job:          NewJobRepository(db, timeout),
-		Reservation:  NewReservationRepository(db, timeout),
-		Notification: NewNotificationRepository(db, timeout),
+		User:          NewUserRepository(db, timeout),
+		PlatformToken: NewPlatformTokenRepository(db, timeout),
+		Restaurant:    NewRestaurantRepository(db, timeout),
+		DropConfig:    NewDropConfigRepository(db, timeout),
+		Favourite:     NewFavouriteRepository(db, timeout),
+		Job:           NewJobRepository(db, timeout),
+		Reservation:   NewReservationRepository(db, timeout),
+		Notification:  NewNotificationRepository(db, timeout),
 
 		db:      db,
 		timeout: timeout,
