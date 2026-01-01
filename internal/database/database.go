@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/daylamtayari/cierge/internal/config"
-	"github.com/daylamtayari/cierge/internal/models"
+	"github.com/daylamtayari/cierge/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -27,15 +27,15 @@ func AutoMigrate(db *gorm.DB) error {
 	}
 
 	if err := db.AutoMigrate(
-		&models.User{},
-		&models.UserNotificationPreferences{},
-		&models.PlatformToken{},
-		&models.Job{},
-		&models.Restaurant{},
-		&models.DropConfig{},
-		&models.Reservation{},
-		&models.Favourite{},
-		&models.Notification{},
+		&model.User{},
+		&model.UserNotificationPreferences{},
+		&model.PlatformToken{},
+		&model.Job{},
+		&model.Restaurant{},
+		&model.DropConfig{},
+		&model.Reservation{},
+		&model.Favourite{},
+		&model.Notification{},
 	); err != nil {
 		return fmt.Errorf("failed to automigrate: %w", err)
 	}

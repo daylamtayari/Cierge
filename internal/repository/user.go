@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/daylamtayari/cierge/internal/models"
+	"github.com/daylamtayari/cierge/internal/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -26,11 +26,11 @@ func NewUserRepository(db *gorm.DB, timeout time.Duration) *UserRepository {
 // -----------------
 
 // Gets a user with a given ID
-func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var user models.User
+	var user model.User
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
 	}
@@ -38,11 +38,11 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Use
 }
 
 // Gets a user with a given email
-func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var user models.User
+	var user model.User
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
@@ -50,11 +50,11 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 }
 
 // Gets a user with a given API key
-func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey string) (*models.User, error) {
+func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey string) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var user models.User
+	var user model.User
 	if err := r.db.WithContext(ctx).Where("api_key = ?", apiKey).First(&user).Error; err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 	defer cancel()
 
 	var count int64
-	err := r.db.WithContext(ctx).Model(&models.User{}).Where("email = ?", email).Count(&count).Error
+	err := r.db.WithContext(ctx).Model(&model.User{}).Where("email = ?", email).Count(&count).Error
 	return count > 0, err
 }
 
@@ -77,36 +77,36 @@ func (r *UserRepository) ExistsByApiKey(ctx context.Context, apiKey string) (boo
 	defer cancel()
 
 	var count int64
-	err := r.db.WithContext(ctx).Model(&models.User{}).Where("api_key = ?", apiKey).Count(&count).Error
+	err := r.db.WithContext(ctx).Model(&model.User{}).Where("api_key = ?", apiKey).Count(&count).Error
 	return count > 0, err
 }
 
 // List all users
-func (r *UserRepository) List(ctx context.Context) ([]*models.User, error) {
+func (r *UserRepository) List(ctx context.Context) ([]*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var users []*models.User
+	var users []*model.User
 	err := r.db.WithContext(ctx).Find(&users).Error
 	return users, err
 }
 
 // Get all admin users
-func (r *UserRepository) GetAdmins(ctx context.Context) ([]*models.User, error) {
+func (r *UserRepository) GetAdmins(ctx context.Context) ([]*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var users []*models.User
+	var users []*model.User
 	err := r.db.WithContext(ctx).Where("is_admin = true").Find(&users).Error
 	return users, err
 }
 
 // Get user notification preferences
-func (r *UserRepository) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (*models.UserNotificationPreferences, error) {
+func (r *UserRepository) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (*model.UserNotificationPreferences, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var notificationPreferences models.UserNotificationPreferences
+	var notificationPreferences model.UserNotificationPreferences
 	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&notificationPreferences).Error; err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (r *UserRepository) GetNotificationPreferences(ctx context.Context, userID 
 // -----------------
 
 // Create user
-func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -126,7 +126,7 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 }
 
 // Update user
-func (r *UserRepository) Update(ctx context.Context, user *models.User) error {
+func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -138,7 +138,7 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passw
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Model(&models.User{}).
+	return r.db.WithContext(ctx).Model(&model.User{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
 			"password_hash":       passwordHash,
@@ -151,7 +151,7 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Update("email", email).Error
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Update("email", email).Error
 }
 
 // Update an API key value
@@ -159,7 +159,7 @@ func (r *UserRepository) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey 
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Update("api_key", apiKey).Error
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Update("api_key", apiKey).Error
 }
 
 // Account lockout handling
@@ -176,14 +176,14 @@ func (r *UserRepository) RecordFailedLogin(ctx context.Context, id uuid.UUID, lo
 		updates["locked_until"] = lockUntil
 	}
 
-	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Updates(updates).Error
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Updates(updates).Error
 }
 
 func (r *UserRepository) RecordSuccessfulLogin(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Model(&models.User{}).
+	return r.db.WithContext(ctx).Model(&model.User{}).
 		Where("id = ?", id).
 		Updates(map[string]any{
 			"last_login_at":         time.Now().UTC(),
@@ -196,18 +196,18 @@ func (r *UserRepository) UpdateAdminStatus(ctx context.Context, id uuid.UUID, is
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Update("is_admin", isAdmin).Error
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Update("is_admin", isAdmin).Error
 }
 
 // User notification preferences
-func (r *UserRepository) CreateNotificationPreferences(ctx context.Context, prefs *models.UserNotificationPreferences) error {
+func (r *UserRepository) CreateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
 	return r.db.WithContext(ctx).Create(prefs).Error
 }
 
-func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, prefs *models.UserNotificationPreferences) error {
+func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -219,5 +219,5 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", id).Error
+	return r.db.WithContext(ctx).Delete(&model.User{}, "id = ?", id).Error
 }
