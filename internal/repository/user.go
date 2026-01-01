@@ -49,6 +49,18 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 	return &user, nil
 }
 
+// Gets a user with a given API key
+func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	var user models.User
+	if err := r.db.WithContext(ctx).Where("api_key = ?", apiKey).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 // Checks if a user exists with a given email
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
@@ -56,6 +68,16 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 
 	var count int64
 	err := r.db.WithContext(ctx).Model(&models.User{}).Where("email = ?", email).Count(&count).Error
+	return count > 0, err
+}
+
+// Checks if a user exists with a given API key
+func (r *UserRepository) ExistsByApiKey(ctx context.Context, apiKey string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.User{}).Where("api_key = ?", apiKey).Count(&count).Error
 	return count > 0, err
 }
 
