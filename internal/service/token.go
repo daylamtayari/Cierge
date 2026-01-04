@@ -44,7 +44,7 @@ type TokenRevocationError struct {
 }
 
 func (e *TokenRevocationError) Error() string {
-	return fmt.Sprintf("%w revocation_id: %s user_id: %s revoked_at: %v", e.Err, e.ID, e.UserID, e.RevokedAt)
+	return fmt.Sprintf("%v revocation_id: %s user_id: %s revoked_at: %v", e.Err, e.ID, e.UserID, e.RevokedAt)
 }
 
 func (e *TokenRevocationError) Unwrap() error {
@@ -97,7 +97,7 @@ func (s *TokenService) ExtractToken(ctx context.Context, authHeader string) (Tok
 		}
 		return ApiToken, "", ErrInvalidToken
 	default:
-		return TokenType("invalid"), "", ErrInvalidTokenType
+		return TokenType(parts[0]), "", ErrInvalidTokenType
 	}
 }
 
