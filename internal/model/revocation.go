@@ -11,4 +11,5 @@ type Revocation struct {
 	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	JTI       string    `gorm:"column:jti;type:varchar(255);not null;uniqueIndex"`
 	RevokedAt time.Time `gorm:"not null;default:now()"`
+	RevokedBy string    `gorm:"type:varchar(255)"`
 }
