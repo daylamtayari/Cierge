@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/daylamtayari/cierge/internal/config"
 	"github.com/daylamtayari/cierge/internal/model"
@@ -22,15 +23,17 @@ const (
 )
 
 var (
-	ErrInvalidHeaderFormat   = errors.New("invalid authorization header format")
+	ErrApiKeyCheckFail       = errors.New("failed to check API keys")
 	ErrExpiredToken          = errors.New("expired token")
-	ErrRevocationCheckFail   = errors.New("revocation check failed")
+	ErrInvalidHeaderFormat   = errors.New("invalid authorization header format")
 	ErrInvalidIssuer         = errors.New("invalid issuer")
 	ErrInvalidSigningMethod  = errors.New("invalid signing method")
 	ErrInvalidToken          = errors.New("invalid token")
 	ErrInvalidTokenSignature = errors.New("invalid token signature")
 	ErrInvalidTokenType      = errors.New("invalid token type")
+	ErrRevocationCheckFail   = errors.New("revocation check failed")
 	ErrRevokedToken          = errors.New("revoked token")
+	ErrUnknownApiKey         = errors.New("unknown API key")
 )
 
 type TokenRevocationError struct {
@@ -96,6 +99,25 @@ func (s *TokenService) ExtractToken(ctx context.Context, authHeader string) (Tok
 	}
 }
 
+// Validates an API key token and returns the corresponding user
+func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*model.User, error) {
+	// Perform a light validation check that the token is only alphanumerics
+	// Length should already be equal to 30 as checked by the ExtractToken method
+	for _, r := range apiToken {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+			return nil, ErrInvalidToken
+		}
+	}
+	user, err := s.userRepo.GetByApiKey(ctx, apiToken)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("%w: %w", ErrApiKeyCheckFail, err)
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrUnknownApiKey
+	}
+	return user, nil
+}
+
+// Validates a bearer token and returns the corresponding access token claims
 func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(bearerToken, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
