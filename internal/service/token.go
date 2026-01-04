@@ -117,9 +117,21 @@ func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*
 	return user, nil
 }
 
-// Validates a bearer token and returns the corresponding access token claims
+// Validates a bearer token wrapping the ValidateJWTToken method
 func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
-	token, err := jwt.ParseWithClaims(bearerToken, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
+	claims, err := s.ValidateJWTToken(ctx, bearerToken)
+	return &AccessTokenClaims{RegisteredClaims: *claims}, err
+}
+
+// Validates a refresh token wrapping the ValidateJWTToken method
+func (s *TokenService) ValidateRefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenClaims, error) {
+	claims, err := s.ValidateJWTToken(ctx, refreshToken)
+	return &RefreshTokenClaims{RegisteredClaims: *claims}, err
+}
+
+// Validates a JWT token and returns the corresponding access token claims
+func (s *TokenService) ValidateJWTToken(ctx context.Context, jwtToken string) (*jwt.RegisteredClaims, error) {
+	token, err := jwt.ParseWithClaims(jwtToken, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("%w: %v", ErrInvalidSigningMethod, token.Header["alg"])
 		} else if token.Method.Alg() != jwt.SigningMethodHS512.Alg() {
@@ -139,7 +151,7 @@ func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken stri
 		}
 	}
 
-	claims, ok := token.Claims.(*AccessTokenClaims)
+	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok {
 		return nil, ErrInvalidToken
 	}
