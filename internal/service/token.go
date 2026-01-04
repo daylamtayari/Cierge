@@ -12,6 +12,7 @@ import (
 	"github.com/daylamtayari/cierge/internal/model"
 	"github.com/daylamtayari/cierge/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -33,6 +34,7 @@ var (
 	ErrInvalidTokenType      = errors.New("invalid token type")
 	ErrRevocationCheckFail   = errors.New("revocation check failed")
 	ErrRevokedToken          = errors.New("revoked token")
+	ErrSignatureFail         = errors.New("failed to sign token")
 	ErrUnknownApiKey         = errors.New("unknown API key")
 )
 
@@ -119,18 +121,18 @@ func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*
 
 // Validates a bearer token wrapping the ValidateJWTToken method
 func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
-	claims, err := s.ValidateJWTToken(ctx, bearerToken)
+	claims, err := s.validateJWTToken(ctx, bearerToken)
 	return &AccessTokenClaims{RegisteredClaims: *claims}, err
 }
 
 // Validates a refresh token wrapping the ValidateJWTToken method
 func (s *TokenService) ValidateRefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenClaims, error) {
-	claims, err := s.ValidateJWTToken(ctx, refreshToken)
+	claims, err := s.validateJWTToken(ctx, refreshToken)
 	return &RefreshTokenClaims{RegisteredClaims: *claims}, err
 }
 
 // Validates a JWT token and returns the corresponding access token claims
-func (s *TokenService) ValidateJWTToken(ctx context.Context, jwtToken string) (*jwt.RegisteredClaims, error) {
+func (s *TokenService) validateJWTToken(ctx context.Context, jwtToken string) (*jwt.RegisteredClaims, error) {
 	token, err := jwt.ParseWithClaims(jwtToken, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("%w: %v", ErrInvalidSigningMethod, token.Header["alg"])
@@ -173,4 +175,44 @@ func (s *TokenService) ValidateJWTToken(ctx context.Context, jwtToken string) (*
 	}
 
 	return claims, nil
+}
+
+// Generates a bearer token for a given user ID and returns the token and an optional error
+func (s *TokenService) GenerateBearerToken(ctx context.Context, userID uuid.UUID) (string, error) {
+	return s.generateJWTToken(ctx, userID, s.accessTokenExpiry)
+}
+
+// Generates a refresh token for a given user ID and returns the token and an optional error
+func (s *TokenService) GenerateRefreshToken(ctx context.Context, userID uuid.UUID) (string, error) {
+	return s.generateJWTToken(ctx, userID, s.refreshTokenExpiry)
+}
+
+// Generates a JWT for a given user ID and with a given expiry and returns the token and an optional error
+func (s *TokenService) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry time.Duration) (string, error) {
+	jti := uuid.New().String()
+	now := time.Now().UTC()
+
+	claims := jwt.RegisteredClaims{
+		ID:        jti,
+		Subject:   userID.String(),
+		Issuer:    s.jwtIssuer,
+		IssuedAt:  jwt.NewNumericDate(now),
+		ExpiresAt: jwt.NewNumericDate(now.Add(expiry)),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	tokenString, err := token.SignedString([]byte(s.jwtSecret))
+	if err != nil {
+		return "", ErrSignatureFail
+	}
+	return tokenString, nil
+}
+
+// Revokes a token for a given JTI
+func (s *TokenService) RevokeToken(ctx context.Context, jti string, userId uuid.UUID, revokedBy string) error {
+	return s.revocationRepo.Create(ctx, &model.Revocation{
+		UserID:    userId,
+		JTI:       jti,
+		RevokedBy: revokedBy,
+	})
 }
