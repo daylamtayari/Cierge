@@ -37,5 +37,7 @@ func (r *RevocationRepository) Create(ctx context.Context, revocation *model.Rev
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
+	revocation.RevokedAt = time.Now().UTC()
+
 	return r.db.WithContext(ctx).Create(revocation).Error
 }
