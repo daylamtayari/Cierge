@@ -1,13 +1,18 @@
 package service
 
-import "github.com/daylamtayari/cierge/internal/repository"
+import (
+	"github.com/daylamtayari/cierge/internal/config"
+	"github.com/daylamtayari/cierge/internal/repository"
+)
 
 type Services struct {
 	Token *TokenService
+	User  *UserService
 }
 
-func New(repos repository.Repositories) *Services {
+func New(repos repository.Repositories, config config.Config) *Services {
 	return &Services{
-		Token: NewTokenService(repos.User),
+		User:  NewUserService(repos.User),
+		Token: NewTokenService(repos.User, config.Auth),
 	}
 }
