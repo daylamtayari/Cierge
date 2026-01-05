@@ -81,6 +81,6 @@ func ErrorCollector(ctx context.Context) *errcol.ErrorCollector {
 		return errorCollector
 	}
 	errorCollector := &errcol.ErrorCollector{}
-	errorCollector.Add(fmt.Errorf("error collector not in context, creating new"), zerolog.ErrorLevel, false)
+	errorCollector.Add(fmt.Errorf("error collector not in context, creating new"), zerolog.ErrorLevel, false, nil, "error collector not found in context")
 	return errorCollector
 }
