@@ -51,7 +51,6 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 		})
 
 		if tokenType == service.ApiToken {
-			logger.Debug().Msg("handling API token")
 			validatedUser, err := m.tokenService.ValidateApiToken(c.Request.Context(), tokenString)
 			if err != nil {
 				if errors.Is(err, service.ErrApiKeyCheckFail) {
@@ -66,7 +65,6 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			}
 			user = validatedUser
 		} else {
-			logger.Debug().Msg("handling bearer token")
 			claims, err := m.tokenService.ValidateBearerToken(c.Request.Context(), tokenString)
 
 			if err != nil {

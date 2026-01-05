@@ -36,7 +36,8 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 				Str("user_agent", c.Request.UserAgent()).
 				Int64("content_length", c.Request.ContentLength).
 				Str("content_type", contentType).
-				Interface("headers", sanitizeHeaders(c.Request.Header.Clone())),
+				Interface("headers", sanitizeHeaders(c.Request.Header.Clone())).
+				Interface("url_parameters", c.Params),
 			).Logger()
 
 		// Create our error collector as well
