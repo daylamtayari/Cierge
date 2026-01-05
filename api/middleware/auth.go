@@ -49,11 +49,13 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			if err != nil {
 				if errors.Is(err, service.ErrApiKeyCheckFail) {
 					logger.Error().Err(err).Str("auth_method", string(tokenType)).Msg("failed authentication attempt due to an error checking the API key")
+					m.respondInternalServerError(c)
+					return
 				} else {
 					logger.Info().Err(err).Str("auth_method", string(tokenType)).Msg("failed authentication attempt due to an incorrect API key")
+					m.respondUnauthorized(c)
+					return
 				}
-				m.respondUnauthorized(c)
-				return
 			}
 			user = validatedUser
 		} else {
@@ -88,10 +90,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 				// Return an internal server error if the user ID value failed to parse
 				// due to either not actually being a UUID which is very problematic
 				// or due to an issue with the parsing, also problematic
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"error":      "Internal server error",
-					"request_id": appctx.RequestID(c.Request.Context()),
-				})
+				m.respondInternalServerError(c)
 				return
 			}
 
@@ -103,10 +102,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 					return
 				}
 				logger.Error().Err(err).Str("auth_method", string(tokenType)).Str("user_id", userID.String()).Msg("failed to retrieve user")
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"error":      "Internal server error",
-					"request_id": appctx.RequestID(c.Request.Context()),
-				})
+				m.respondInternalServerError(c)
 				return
 			}
 
@@ -165,6 +161,14 @@ func (m *AuthMiddleware) respondUnauthorized(c *gin.Context) {
 func (m *AuthMiddleware) respondForbidden(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 		"error":      "Forbidden",
+		"request_id": appctx.RequestID(c.Request.Context()),
+	})
+}
+
+// Return an Internal Server Error response
+func (m *AuthMiddleware) respondInternalServerError(c *gin.Context) {
+	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+		"error":      "Internal server error",
 		"request_id": appctx.RequestID(c.Request.Context()),
 	})
 }
