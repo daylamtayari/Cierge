@@ -7,9 +7,11 @@ import (
 )
 
 type ErrorInfo struct {
-	Message  string
+	Error    string
 	Severity zerolog.Level
 	Expected bool
+	Fields   map[string]any
+	Message  string
 }
 
 type ErrorCollector struct {
@@ -20,6 +22,7 @@ type ErrorCollector struct {
 func NewErrorCollector() *ErrorCollector {
 	return &ErrorCollector{
 		errors: make([]ErrorInfo, 0),
+		mu:     &sync.RWMutex{},
 	}
 }
 
@@ -31,15 +34,39 @@ func (e *ErrorCollector) HasErrors() bool {
 	return len(e.errors) > 0
 }
 
+// Returns the highest severity error that the error
+// collector has.
+// If there are multiple of the same severity it will
+// return the last one added
+func (e *ErrorCollector) HighestSeverity() ErrorInfo {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	if len(e.errors) == 0 {
+		return ErrorInfo{}
+	}
+
+	highestSeverity := ErrorInfo{}
+	for i := len(e.errors) - 1; i >= 0; i-- {
+		err := e.errors[i]
+		if err.Severity > highestSeverity.Severity {
+			highestSeverity = err
+		}
+	}
+	return highestSeverity
+}
+
 // Add an error to the error collector
-func (e *ErrorCollector) Add(err error, severity zerolog.Level, expected bool) {
+func (e *ErrorCollector) Add(err error, severity zerolog.Level, expected bool, fields map[string]any, message string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
 	e.errors = append(e.errors, ErrorInfo{
-		Message:  err.Error(),
+		Error:    err.Error(),
 		Severity: severity,
 		Expected: expected,
+		Fields:   fields,
+		Message:  message,
 	})
 }
 
@@ -52,5 +79,5 @@ func (e *ErrorCollector) ApplyToEvent(event *zerolog.Event) *zerolog.Event {
 	if len(e.errors) == 0 {
 		return event
 	}
-	return event.Interface("errors", e.errors)
+	return event.Interface("error", e.errors)
 }
