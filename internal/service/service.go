@@ -10,9 +10,9 @@ type Services struct {
 	User  *UserService
 }
 
-func New(repos repository.Repositories, config config.Config) *Services {
+func New(repos *repository.Repositories, cfg *config.Config) *Services {
 	return &Services{
 		User:  NewUserService(repos.User),
-		Token: NewTokenService(repos.User, config.Auth),
+		Token: NewTokenService(repos.User, cfg.Auth),
 	}
 }

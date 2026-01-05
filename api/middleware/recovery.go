@@ -58,10 +58,9 @@ func Recovery() gin.HandlerFunc {
 					c.Error(err.(error)) //nolint:errcheck
 					c.Abort()
 				} else {
-					requestID := appctx.RequestID(c.Request.Context())
 					c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 						"error":      "Internal server error",
-						"request_id": requestID,
+						"request_id": appctx.RequestID(c.Request.Context()),
 					})
 				}
 			}

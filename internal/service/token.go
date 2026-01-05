@@ -122,12 +122,18 @@ func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*
 // Validates a bearer token wrapping the ValidateJWTToken method
 func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
 	claims, err := s.validateJWTToken(ctx, bearerToken)
+	if err != nil {
+		return nil, err
+	}
 	return &AccessTokenClaims{RegisteredClaims: *claims}, err
 }
 
 // Validates a refresh token wrapping the ValidateJWTToken method
 func (s *TokenService) ValidateRefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenClaims, error) {
 	claims, err := s.validateJWTToken(ctx, refreshToken)
+	if err != nil {
+		return nil, err
+	}
 	return &RefreshTokenClaims{RegisteredClaims: *claims}, err
 }
 
