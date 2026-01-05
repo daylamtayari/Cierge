@@ -9,6 +9,7 @@ import (
 	"github.com/daylamtayari/cierge/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 )
 
 type AuthMiddleware struct {
@@ -43,16 +44,20 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 
 		var user *model.User
 
+		logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+			return c.Str("auth_method", string(tokenType))
+		})
+
 		if tokenType == service.ApiToken {
 			logger.Debug().Msg("handling API token")
 			validatedUser, err := m.tokenService.ValidateApiToken(c.Request.Context(), tokenString)
 			if err != nil {
 				if errors.Is(err, service.ErrApiKeyCheckFail) {
-					logger.Error().Err(err).Str("auth_method", string(tokenType)).Msg("failed authentication attempt due to an error checking the API key")
+					logger.Error().Err(err).Msg("failed authentication attempt due to an error checking the API key")
 					m.respondInternalServerError(c)
 					return
 				} else {
-					logger.Info().Err(err).Str("auth_method", string(tokenType)).Msg("failed authentication attempt due to an incorrect API key")
+					logger.Info().Err(err).Msg("failed authentication attempt due to an incorrect API key")
 					m.respondUnauthorized(c)
 					return
 				}
@@ -66,19 +71,18 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 				var revocationError *service.TokenRevocationError
 				switch {
 				case errors.Is(err, service.ErrInvalidIssuer):
-					logger.Warn().Err(err).Str("auth_method", string(tokenType)).Msg("valid bearer token was received but from an invalid issuer")
+					logger.Warn().Err(err).Msg("valid bearer token was received but from an invalid issuer")
 				case errors.Is(err, service.ErrInvalidTokenSignature):
-					logger.Warn().Err(err).Str("auth_method", string(tokenType)).Msg("failed authentication attempt due to an invalid token signature")
+					logger.Warn().Err(err).Msg("failed authentication attempt due to an invalid token signature")
 				case errors.As(err, &revocationError):
 					logger.Warn().Err(revocationError.Err).
-						Str("auth_method", string(tokenType)).
 						Str("user_id", revocationError.UserID.String()).
 						Time("revoked_at", revocationError.RevokedAt).
 						Str("revoked_by", revocationError.RevokedBy).
 						Str("revoked_jti", revocationError.JTI).
 						Msg("failed authentication attempt due to attempted usage of a revoked bearer token")
 				default:
-					logger.Info().Err(err).Str("auth_method", string(tokenType)).Msg("failed authentication attempt with a bearer token")
+					logger.Info().Err(err).Msg("failed authentication attempt with a bearer token")
 				}
 				m.respondUnauthorized(c)
 				return
@@ -86,7 +90,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 
 			userID, err := uuid.Parse(claims.Subject)
 			if err != nil {
-				logger.Error().Err(err).Str("auth_method", string(tokenType)).Str("jwt_subject", claims.Subject).Msg("failed to parse the bearer token subject into a UUID")
+				logger.Error().Err(err).Str("jwt_subject", claims.Subject).Msg("failed to parse the bearer token subject into a UUID")
 				// Return an internal server error if the user ID value failed to parse
 				// due to either not actually being a UUID which is very problematic
 				// or due to an issue with the parsing, also problematic
@@ -97,11 +101,11 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			retrievedUser, err := m.userService.GetByID(c.Request.Context(), userID)
 			if err != nil {
 				if errors.Is(err, service.ErrUserDNE) {
-					logger.Warn().Str("auth_method", string(tokenType)).Str("user_id", userID.String()).Msg("user with valid bearer token no longer exists")
+					logger.Warn().Str("user_id", userID.String()).Msg("user with valid bearer token no longer exists")
 					m.respondUnauthorized(c)
 					return
 				}
-				logger.Error().Err(err).Str("auth_method", string(tokenType)).Str("user_id", userID.String()).Msg("failed to retrieve user")
+				logger.Error().Err(err).Str("user_id", userID.String()).Msg("failed to retrieve user")
 				m.respondInternalServerError(c)
 				return
 			}
@@ -110,16 +114,16 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 		}
 		c.Set("user", user)
 		c.Set("is_admin", user.IsAdmin)
-
 		ctx := appctx.WithUserID(c.Request.Context(), user.ID)
-		augLogger := logger.With().
-			Str("user_id", user.ID.String()).
-			Str("auth_method", string(tokenType)).
-			Bool("is_admin", user.IsAdmin).
-			Logger()
-		ctx = appctx.WithLogger(ctx, &augLogger)
-		c.Request = c.Request.WithContext(ctx)
 
+		logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+			return c.
+				Str("user_id", user.ID.String()).
+				Str("auth_method", string(tokenType)).
+				Bool("is_admin", user.IsAdmin)
+		})
+
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
 }
