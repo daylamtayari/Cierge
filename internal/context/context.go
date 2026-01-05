@@ -2,8 +2,10 @@ package context
 
 import (
 	"context"
+	"fmt"
 	"os"
 
+	"github.com/daylamtayari/cierge/pkg/errcol"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
@@ -11,9 +13,10 @@ import (
 type ctxKey string
 
 const (
-	loggerKey    ctxKey = "logger"
-	requestIDKey ctxKey = "request_id"
-	userIDKey    ctxKey = "user_id"
+	loggerKey         ctxKey = "logger"
+	requestIDKey      ctxKey = "request_id"
+	userIDKey         ctxKey = "user_id"
+	errorCollectorKey ctxKey = "error_collector"
 )
 
 // Adds a logger to the context
@@ -65,4 +68,19 @@ func UserID(ctx context.Context) uuid.UUID {
 	// user ID. A UUIDv4 can never be all zeros due to
 	// the version and variant bits.
 	return uuid.UUID{}
+}
+
+// Adds an error collector to the context
+func WithErrorCollector(ctx context.Context, errorCollector *errcol.ErrorCollector) context.Context {
+	return context.WithValue(ctx, errorCollectorKey, errorCollector)
+}
+
+// Returns the error collector from the context
+func ErrorCollector(ctx context.Context) *errcol.ErrorCollector {
+	if errorCollector, ok := ctx.Value(errorCollectorKey).(*errcol.ErrorCollector); ok {
+		return errorCollector
+	}
+	errorCollector := &errcol.ErrorCollector{}
+	errorCollector.Add(fmt.Errorf("error collector not in context, creating new"), zerolog.ErrorLevel, false)
+	return errorCollector
 }
