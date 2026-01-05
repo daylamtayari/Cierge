@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	appctx "github.com/daylamtayari/cierge/internal/context"
@@ -28,15 +29,16 @@ func NewAuthMiddleware(tokenService *service.TokenService, userService *service.
 func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := appctx.Logger(c.Request.Context())
+		errorCol := appctx.ErrorCollector(c.Request.Context())
 
 		authHeader := c.GetHeader("Authorization")
 
 		tokenType, tokenString, err := m.tokenService.ExtractToken(c.Request.Context(), authHeader)
 		if err != nil {
 			if errors.Is(err, service.ErrInvalidTokenType) {
-				logger.Info().Err(err).Str("input_token_type", string(tokenType)).Msg("failed authentication attempt due to an invalid token type")
+				errorCol.Add(err, zerolog.InfoLevel, true, map[string]any{"input_token_type": string(tokenType)}, "failed authentication attempt due to an invalid token type")
 			} else {
-				logger.Info().Err(err).Msgf("failed authentication attempt due to an invalid %v token", tokenType)
+				errorCol.Add(err, zerolog.InfoLevel, true, nil, fmt.Sprintf("failed authentication attempt due to an invalid %v token", tokenType))
 			}
 			m.respondUnauthorized(c)
 			return
@@ -53,11 +55,11 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			validatedUser, err := m.tokenService.ValidateApiToken(c.Request.Context(), tokenString)
 			if err != nil {
 				if errors.Is(err, service.ErrApiKeyCheckFail) {
-					logger.Error().Err(err).Msg("failed authentication attempt due to an error checking the API key")
+					errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed authentication attempt due to an error checking the API key")
 					m.respondInternalServerError(c)
 					return
 				} else {
-					logger.Info().Err(err).Msg("failed authentication attempt due to an incorrect API key")
+					errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed authentication attempt due to an incorrect API key")
 					m.respondUnauthorized(c)
 					return
 				}
@@ -71,18 +73,18 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 				var revocationError *service.TokenRevocationError
 				switch {
 				case errors.Is(err, service.ErrInvalidIssuer):
-					logger.Warn().Err(err).Msg("valid bearer token was received but from an invalid issuer")
+					errorCol.Add(err, zerolog.WarnLevel, true, nil, "failed authentication attempt due to a valid bearer token but from an invalid issuer")
 				case errors.Is(err, service.ErrInvalidTokenSignature):
-					logger.Warn().Err(err).Msg("failed authentication attempt due to an invalid token signature")
+					errorCol.Add(err, zerolog.WarnLevel, true, nil, "failed authentication attempt due to an invalid token signature")
 				case errors.As(err, &revocationError):
-					logger.Warn().Err(revocationError.Err).
-						Str("user_id", revocationError.UserID.String()).
-						Time("revoked_at", revocationError.RevokedAt).
-						Str("revoked_by", revocationError.RevokedBy).
-						Str("revoked_jti", revocationError.JTI).
-						Msg("failed authentication attempt due to attempted usage of a revoked bearer token")
+					errorCol.Add(err, zerolog.WarnLevel, true, map[string]any{
+						"user_id":     revocationError.UserID.String(),
+						"revoked_at":  revocationError.RevokedAt,
+						"revoked_by":  revocationError.RevokedBy,
+						"revoked_jti": revocationError.JTI,
+					}, "failed authentication attempt due to attempted usage of a revoked bearer token")
 				default:
-					logger.Info().Err(err).Msg("failed authentication attempt with a bearer token")
+					errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed authentication attempt with a bearer token")
 				}
 				m.respondUnauthorized(c)
 				return
@@ -90,7 +92,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 
 			userID, err := uuid.Parse(claims.Subject)
 			if err != nil {
-				logger.Error().Err(err).Str("jwt_subject", claims.Subject).Msg("failed to parse the bearer token subject into a UUID")
+				errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"jwt_subject": claims.Subject}, "failed to parse the bearer token subject into a UUID")
 				// Return an internal server error if the user ID value failed to parse
 				// due to either not actually being a UUID which is very problematic
 				// or due to an issue with the parsing, also problematic
@@ -101,11 +103,11 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			retrievedUser, err := m.userService.GetByID(c.Request.Context(), userID)
 			if err != nil {
 				if errors.Is(err, service.ErrUserDNE) {
-					logger.Warn().Str("user_id", userID.String()).Msg("user with valid bearer token no longer exists")
+					errorCol.Add(err, zerolog.WarnLevel, true, map[string]any{"user_id": userID.String()}, "user with valid bearer token no longer exists")
 					m.respondUnauthorized(c)
 					return
 				}
-				logger.Error().Err(err).Str("user_id", userID.String()).Msg("failed to retrieve user")
+				errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"user_id": userID.String()}, "failed to retrieve user during auth flow")
 				m.respondInternalServerError(c)
 				return
 			}
@@ -133,10 +135,11 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := appctx.Logger(c.Request.Context())
+		errorCol := appctx.ErrorCollector(c.Request.Context())
 
 		isAdmin := c.GetBool("is_admin")
 		if !isAdmin {
-			logger.Warn().Msg("user attempted to access an administrative endpoint")
+			errorCol.Add(nil, zerolog.WarnLevel, true, nil, "user attempted to access an administrative endpoint")
 			m.respondForbidden(c)
 			return
 		}

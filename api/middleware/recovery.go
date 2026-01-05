@@ -11,6 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 
 	appctx "github.com/daylamtayari/cierge/internal/context"
 )
@@ -32,26 +33,24 @@ func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				logger := appctx.Logger(c.Request.Context())
+				errorCol := appctx.ErrorCollector(c.Request.Context())
 
 				brokenPipe := brokenPipeError(err)
 
 				if brokenPipe {
-					logger.Warn().Err(err.(error)).Msg("broken pipe occurred")
+					errorCol.Add(err.(error), zerolog.WarnLevel, false, nil, "broken pipe occurred")
 				} else if gin.IsDebugging() {
 					// Include request dump if in dev mode
-					logger.Error().
-						Err(err.(error)).
-						Str("path", c.Request.URL.Path).
-						Str("request", secureRequestDump(c.Request)).
-						Bytes("stack", debug.Stack()).
-						Msg("panic recovered")
+					errorCol.Add(err.(error), zerolog.ErrorLevel, false, map[string]any{
+						"path":    c.Request.URL.Path,
+						"request": secureRequestDump(c.Request),
+						"stack":   debug.Stack(),
+					}, "panic recovered")
 				} else {
-					logger.Error().
-						Err(err.(error)).
-						Str("path", c.Request.URL.Path).
-						Bytes("stack", debug.Stack()).
-						Msg("panic recovered")
+					errorCol.Add(err.(error), zerolog.ErrorLevel, false, map[string]any{
+						"path":  c.Request.URL.Path,
+						"stack": debug.Stack(),
+					}, "panic recovered")
 				}
 
 				if brokenPipe {
