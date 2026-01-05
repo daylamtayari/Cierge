@@ -1,28 +1,49 @@
 package errcol
 
 import (
+	"runtime"
 	"sync"
 
 	"github.com/rs/zerolog"
 )
 
+// Stores the information on the
+// caller, getting the last frame.
+// The File is the full path of
+// the file that called the error
+// and Line is the line number
+// that the error was added from
+type CallerInfo struct {
+	File string
+	Line int
+}
+
+// Stores information about an error
 type ErrorInfo struct {
-	Error    string
-	Severity zerolog.Level
-	Expected bool
-	Fields   map[string]any
-	Message  string
+	Error      string
+	Severity   zerolog.Level
+	Expected   bool
+	Fields     map[string]any
+	Message    string
+	CallerInfo CallerInfo
 }
 
+// An error collector that stores
+// a list of errors
 type ErrorCollector struct {
-	errors []ErrorInfo
-	mu     *sync.RWMutex
+	errors     []ErrorInfo
+	mu         *sync.RWMutex
+	callerInfo bool
 }
 
-func NewErrorCollector() *ErrorCollector {
+// Creates a new error collector
+// If callerInfo is set to true, the file and line information
+// of where an error was called is stored with an error
+func NewErrorCollector(callerInfo bool) *ErrorCollector {
 	return &ErrorCollector{
-		errors: make([]ErrorInfo, 0),
-		mu:     &sync.RWMutex{},
+		errors:     make([]ErrorInfo, 0),
+		mu:         &sync.RWMutex{},
+		callerInfo: callerInfo,
 	}
 }
 
@@ -61,13 +82,25 @@ func (e *ErrorCollector) Add(err error, severity zerolog.Level, expected bool, f
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	e.errors = append(e.errors, ErrorInfo{
+	errorInfo := ErrorInfo{
 		Error:    err.Error(),
 		Severity: severity,
 		Expected: expected,
 		Fields:   fields,
 		Message:  message,
-	})
+	}
+
+	if e.callerInfo {
+		_, file, line, ok := runtime.Caller(1)
+		if ok {
+			errorInfo.CallerInfo = CallerInfo{
+				File: file,
+				Line: line,
+			}
+		}
+	}
+
+	e.errors = append(e.errors, errorInfo)
 }
 
 // Applies all of the errors to a given zerolog event, setting them all

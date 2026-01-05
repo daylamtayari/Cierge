@@ -40,7 +40,7 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 			).Logger()
 
 		// Create our error collector as well
-		errorCol := errcol.NewErrorCollector()
+		errorCol := errcol.NewErrorCollector(true)
 
 		ctx := appctx.WithLogger(c.Request.Context(), &logger)
 		ctx = appctx.WithErrorCollector(ctx, errorCol)
