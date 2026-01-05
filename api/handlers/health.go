@@ -1,45 +1,30 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/rs/zerolog"
 
 	appctx "github.com/daylamtayari/cierge/internal/context"
+	"github.com/daylamtayari/cierge/internal/service"
 )
 
-type HealthResponse struct {
-	Status string `json:"status"`
-}
-
-func Health(db *gorm.DB, timeout time.Duration) gin.HandlerFunc {
+func Health(healthService *service.HealthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logger := appctx.Logger(c.Request.Context())
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
+		errorCol := appctx.ErrorCollector(c.Request.Context())
 
-		// Check database connectivity
-		sqlDB, err := db.DB()
+		err := healthService.GetDBConnectivity(c.Request.Context())
 		if err != nil {
-			logger.Error().Err(err).Msg("health check: failed to get database connection")
-			c.JSON(http.StatusServiceUnavailable, HealthResponse{
-				Status: "unavailable",
-			})
-			return
-		}
-		if err := sqlDB.PingContext(ctx); err != nil {
-			logger.Error().Err(err).Msg("health check: failed to ping database")
-			c.JSON(http.StatusServiceUnavailable, HealthResponse{
-				Status: "unavailable",
+			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "DB connectivity check failed")
+			c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{
+				"status": "unavailable",
 			})
 			return
 		}
 
-		c.JSON(http.StatusOK, HealthResponse{
-			Status: "ok",
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
 		})
 	}
 }

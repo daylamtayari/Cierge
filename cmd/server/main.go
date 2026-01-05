@@ -43,7 +43,8 @@ func main() {
 	}
 
 	repos := repository.New(db, cfg.Database.Timeout.Duration())
-	router := api.NewRouter(cfg, logger, repos)
+	services := service.New(repos, cfg)
+	router := api.NewRouter(cfg, logger, services)
 	server := &http.Server{
 		Addr:    cfg.Server.Address(),
 		Handler: router,

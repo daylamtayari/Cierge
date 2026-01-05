@@ -7,10 +7,10 @@ import (
 	"github.com/daylamtayari/cierge/api/handlers"
 	"github.com/daylamtayari/cierge/api/middleware"
 	"github.com/daylamtayari/cierge/internal/config"
-	"github.com/daylamtayari/cierge/internal/repository"
+	"github.com/daylamtayari/cierge/internal/service"
 )
 
-func NewRouter(cfg *config.Config, logger zerolog.Logger, repos *repository.Repositories) *gin.Engine {
+func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Services) *gin.Engine {
 	// Set gin mode based on environment
 	if cfg.IsDevelopment() {
 		gin.SetMode(gin.DebugMode)
@@ -32,6 +32,8 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, repos *repository.Repo
 	router.Use(middleware.Secure(cfg.IsDevelopment()))
 	router.Use(middleware.Recovery())
 
+	authMiddleware := middleware.NewAuthMiddleware(services.Token, services.User)
+
 	// Set trusted proxies to specified or nil, unless in dev
 	// mode where it will trust all proxies (gin default, INSECURE)
 	// NOTE: If you run cierge behind a proxy, you NEED to
@@ -42,7 +44,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, repos *repository.Repo
 		router.SetTrustedProxies(nil) //nolint:errcheck
 	}
 
-	router.GET("/health", handlers.Health(repos.DB(), repos.Timeout()))
+	router.GET("/health", handlers.Health(services.Health))
 
 	return router
 }
