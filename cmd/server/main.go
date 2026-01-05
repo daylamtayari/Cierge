@@ -13,10 +13,10 @@ import (
 	"github.com/daylamtayari/cierge/internal/database"
 	"github.com/daylamtayari/cierge/internal/logging"
 	"github.com/daylamtayari/cierge/internal/repository"
+	"github.com/daylamtayari/cierge/internal/service"
+	"github.com/daylamtayari/cierge/internal/version"
 	"github.com/rs/zerolog"
 )
-
-var Version = "dev"
 
 func main() {
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
@@ -26,7 +26,7 @@ func main() {
 		logger.Fatal().Err(err).Msg("failed to load config")
 	}
 
-	logger = logging.New(cfg.LogLevel, cfg.IsDevelopment()).With().Str("environment", string(cfg.Environment)).Str("version", Version).Logger()
+	logger = logging.New(cfg.LogLevel, cfg.IsDevelopment()).With().Str("environment", string(cfg.Environment)).Str("version", version.Version).Logger()
 	logger.Info().Msg("starting cierge server")
 
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
