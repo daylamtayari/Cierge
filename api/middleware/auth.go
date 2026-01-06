@@ -128,6 +128,39 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 	}
 }
 
+// Ensures that an authenticated user that is required to change their
+// password on next login, is not allowed to proceed
+// NOTE: Must be chained after RequireAuth()
+func (m *AuthMiddleware) RequirePasswordChange() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		errorCol := appctx.ErrorCollector(c.Request.Context())
+
+		gUser, ok := c.Get("user")
+		var user *model.User
+		if !ok {
+			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
+			m.respondForbidden(c)
+			return
+		} else if user, ok = gUser.(*model.User); !ok {
+			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user value from gin context failed to cast to a User type")
+			m.respondForbidden(c)
+			return
+		}
+
+		if user.NeedsPasswordChange() {
+			errorCol.Add(nil, zerolog.InfoLevel, true, nil, "user requires password change before proceeding")
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error":      "Forbidden",
+				"request_id": appctx.RequestID(c.Request.Context()),
+				"message":    "Password change is required",
+			})
+			return
+		}
+
+		c.Next()
+	}
+}
+
 // Ensures that the authenticated user has administrator privileges
 // NOTE: Must be chained after RequireAuth()
 func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
