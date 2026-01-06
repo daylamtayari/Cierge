@@ -62,6 +62,8 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 		if errorCol.HasErrors() {
 			highestSeverity = errorCol.HighestSeverity()
 			logMessage = highestSeverity.Message
+		} else if gcMessage := c.GetString("message"); gcMessage != "" {
+			logMessage = gcMessage
 		}
 
 		if highestSeverity.Severity >= zerolog.ErrorLevel || statusCode >= 500 {
