@@ -31,17 +31,26 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 		logger := appctx.Logger(c.Request.Context())
 		errorCol := appctx.ErrorCollector(c.Request.Context())
 
-		authHeader := c.GetHeader("Authorization")
+		var tokenType service.TokenType
+		var tokenString string
 
-		tokenType, tokenString, err := m.tokenService.ExtractToken(c.Request.Context(), authHeader)
-		if err != nil {
-			if errors.Is(err, service.ErrInvalidTokenType) {
-				errorCol.Add(err, zerolog.InfoLevel, true, map[string]any{"input_token_type": string(tokenType)}, "failed authentication attempt due to an invalid token type")
-			} else {
-				errorCol.Add(err, zerolog.InfoLevel, true, nil, fmt.Sprintf("failed authentication attempt due to an invalid %v token", tokenType))
+		cookieAccessToken, err := c.Cookie(service.AccessTokenCookieName)
+		if err == nil && cookieAccessToken != "" {
+			tokenType = service.BearerToken
+			tokenString = cookieAccessToken
+		} else {
+			// Fall back to Auth header - for API usage
+			authHeader := c.GetHeader("Authorization")
+			tokenType, tokenString, err = m.tokenService.ExtractToken(c.Request.Context(), authHeader)
+			if err != nil {
+				if errors.Is(err, service.ErrInvalidTokenType) {
+					errorCol.Add(err, zerolog.InfoLevel, true, map[string]any{"input_token_type": string(tokenType)}, "failed authentication attempt due to an invalid token type")
+				} else {
+					errorCol.Add(err, zerolog.InfoLevel, true, nil, fmt.Sprintf("failed authentication attempt due to an invalid %v token", tokenType))
+				}
+				m.respondUnauthorized(c)
+				return
 			}
-			m.respondUnauthorized(c)
-			return
 		}
 
 		var user *model.User
@@ -112,6 +121,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 
 			user = retrievedUser
 		}
+
 		c.Set("user", user)
 		c.Set("is_admin", user.IsAdmin)
 		ctx := appctx.WithUserID(c.Request.Context(), user.ID)
