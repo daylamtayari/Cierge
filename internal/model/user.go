@@ -17,6 +17,7 @@ type User struct {
 	PasswordChangedAt   *time.Time `gorm:"type:timestamptz"`
 	LastLoginAt         *time.Time `gorm:"type:timestamptz"`
 	FailedLoginAttempts int        `gorm:"type:int;not null;default:0"`
+	FirstFailedLogin    *time.Time `gorm:"type:timestamptz"`
 	LockedUntil         *time.Time `gorm:"type:timestamptz"`
 
 	// OIDC fields
