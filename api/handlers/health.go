@@ -26,5 +26,6 @@ func Health(healthService *service.HealthService) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
 		})
+		c.Set("message", "retrieved health")
 	}
 }

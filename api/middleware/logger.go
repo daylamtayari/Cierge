@@ -84,10 +84,10 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 			logEvent = errorCol.ApplyToEvent(logEvent)
 		}
 		logEvent.
+			Dur("duration", duration).
 			Dict("response", zerolog.Dict().
 				Int("status", statusCode).
-				Int("body_size", c.Writer.Size()).
-				Dur("duration", duration),
+				Int("body_size", c.Writer.Size()),
 			).Msg(logMessage)
 	}
 }
