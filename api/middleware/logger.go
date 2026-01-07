@@ -59,7 +59,7 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 		var logLevel zerolog.Level
 		var highestSeverity errcol.ErrorInfo
 		logMessage := "request completed"
-		if errorCol.HasErrors() {
+		if errorCol.HasErrors() && statusCode >= 400 {
 			highestSeverity = errorCol.HighestSeverity()
 			logMessage = highestSeverity.Message
 		} else if gcMessage := c.GetString("message"); gcMessage != "" {
