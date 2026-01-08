@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 
-	"github.com/daylamtayari/cierge/api/handlers"
+	"github.com/daylamtayari/cierge/api/handler"
 	"github.com/daylamtayari/cierge/api/middleware"
 	"github.com/daylamtayari/cierge/internal/config"
 	"github.com/daylamtayari/cierge/internal/service"
@@ -34,6 +34,8 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 
 	authMiddleware := middleware.NewAuthMiddleware(services.Token, services.User)
 
+	handlers := handler.New(services, cfg)
+
 	// Set trusted proxies to specified or nil, unless in dev
 	// mode where it will trust all proxies (gin default, INSECURE)
 	// NOTE: If you run cierge behind a proxy, you NEED to
@@ -44,7 +46,14 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		router.SetTrustedProxies(nil) //nolint:errcheck
 	}
 
-	router.GET("/health", handlers.Health(services.Health))
+	// Public routes
+	router.GET("/health", handler.Health(services.Health))
+
+	// Auth routes
+	authRoutes := router.Group("/auth")
+	{
+		authRoutes.POST("/login", handlers.Auth.Login)
+	}
 
 	return router
 }
