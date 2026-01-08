@@ -12,9 +12,11 @@ type Services struct {
 }
 
 func New(repos *repository.Repositories, cfg *config.Config) *Services {
+	userService := NewUserService(repos.User)
+
 	return &Services{
-		User:   NewUserService(repos.User),
-		Token:  NewTokenService(repos.User, cfg.Auth),
+		User:   userService,
+		Token:  NewTokenService(userService, cfg.Auth),
 		Health: NewHealthService(repos.DB(), repos.Timeout()),
 	}
 }
