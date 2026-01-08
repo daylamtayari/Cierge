@@ -183,8 +183,8 @@ func (s *TokenService) validateJWTToken(ctx context.Context, jwtToken string) (*
 	return claims, nil
 }
 
-// Generates a bearer token for a given user ID and returns the token and an optional error
-func (s *TokenService) GenerateBearerToken(ctx context.Context, userID uuid.UUID) (string, error) {
+// Generates an access token for a given user ID and returns the token and an optional error
+func (s *TokenService) GenerateAccessToken(ctx context.Context, userID uuid.UUID) (string, error) {
 	return s.generateJWTToken(ctx, userID, s.accessTokenExpiry)
 }
 
