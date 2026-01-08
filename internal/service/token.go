@@ -110,11 +110,11 @@ func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*
 			return nil, ErrInvalidToken
 		}
 	}
-	user, err := s.userRepo.GetByApiKey(ctx, apiToken)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, fmt.Errorf("%w: %w", ErrApiKeyCheckFail, err)
-	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+	user, err := s.userService.GetByApiKey(ctx, apiToken)
+	if err != nil && errors.Is(err, ErrUserDNE) {
 		return nil, ErrUnknownApiKey
+	} else if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrApiKeyCheckFail, err)
 	}
 	return user, nil
 }
