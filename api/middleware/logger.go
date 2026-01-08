@@ -37,6 +37,7 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 				Int64("content_length", c.Request.ContentLength).
 				Str("content_type", contentType).
 				Interface("headers", sanitizeHeaders(c.Request.Header.Clone())).
+				Interface("cookies", sanitizeCookies(c.Request.Cookies())).
 				Interface("url_parameters", c.Params),
 			).Logger()
 
@@ -100,4 +101,23 @@ func sanitizeHeaders(headers http.Header) http.Header {
 		headers["Authorization"] = []string{"*****"}
 	}
 	return headers
+}
+
+// Sanitizes the access token and refresh token cookies for logging
+func sanitizeCookies(cookies []*http.Cookie) []*http.Cookie {
+	sanitized := make([]*http.Cookie, len(cookies))
+
+	for i, cookie := range cookies {
+		cookieCopy := *cookie
+		switch cookieCopy.Name {
+		case "access_token":
+			cookieCopy.Value = "*****"
+		case "refresh_token":
+			cookieCopy.Value = "*****"
+		}
+
+		sanitized[i] = &cookieCopy
+	}
+
+	return sanitized
 }
