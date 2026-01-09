@@ -74,7 +74,7 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 	user, err := s.userService.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrInvalidCredentials
+			return nil, ErrUserDNE
 		}
 		return nil, fmt.Errorf("%w: %w", ErrFailFetchUser, err)
 	}

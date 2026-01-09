@@ -43,6 +43,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	tokenSet, err := h.authService.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		switch {
+		case errors.Is(err, service.ErrUserDNE):
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "user does not exist")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error":      "Invalid credentials",
+				"request_id": appctx.RequestID(c.Request.Context()),
+			})
+			return
 		case errors.Is(err, service.ErrInvalidCredentials):
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "invalid user credentials")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
