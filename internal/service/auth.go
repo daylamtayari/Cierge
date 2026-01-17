@@ -136,7 +136,7 @@ func (s *AuthService) decodeHash(encodedHash string) (*argon2Params, []byte, []b
 	if len(parts) != 6 {
 		return nil, nil, nil, ErrInvalidHashFormat
 	}
-	if parts[1] != "argo2id" {
+	if parts[1] != "argon2id" {
 		return nil, nil, nil, ErrIncompatibleAlgorithm
 	}
 
