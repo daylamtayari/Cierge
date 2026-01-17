@@ -61,6 +61,20 @@ func (s *UserService) GetByApiKey(ctx context.Context, apiKey string) (*model.Us
 	return user, nil
 }
 
+// Retrieves all users
+func (s *UserService) GetUsers(ctx context.Context) ([]model.User, error) {
+	return s.userRepo.List(ctx)
+}
+
+// Retrieves user count
+func (s *UserService) GetUserCount(ctx context.Context) (int, error) {
+	users, err := s.GetUsers(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return len(users), nil
+}
+
 // Records a successful login
 func (s *UserService) RecordSuccessfulLogin(ctx context.Context, userId uuid.UUID) error {
 	return s.userRepo.RecordSuccessfulLogin(ctx, userId)

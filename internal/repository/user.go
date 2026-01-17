@@ -82,21 +82,21 @@ func (r *UserRepository) ExistsByApiKey(ctx context.Context, apiKey string) (boo
 }
 
 // List all users
-func (r *UserRepository) List(ctx context.Context) ([]*model.User, error) {
+func (r *UserRepository) List(ctx context.Context) ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var users []*model.User
+	var users []model.User
 	err := r.db.WithContext(ctx).Find(&users).Error
 	return users, err
 }
 
 // Get all admin users
-func (r *UserRepository) GetAdmins(ctx context.Context) ([]*model.User, error) {
+func (r *UserRepository) GetAdmins(ctx context.Context) ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	var users []*model.User
+	var users []model.User
 	err := r.db.WithContext(ctx).Where("is_admin = true").Find(&users).Error
 	return users, err
 }
