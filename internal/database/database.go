@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/daylamtayari/cierge/internal/config"
 	"github.com/daylamtayari/cierge/internal/model"
@@ -10,7 +11,11 @@ import (
 )
 
 func New(cfg config.DatabaseConfig, isDevelopment bool) (*gorm.DB, error) {
-	gormCfg := &gorm.Config{}
+	gormCfg := &gorm.Config{
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
+	}
 
 	db, err := gorm.Open(postgres.Open(cfg.DSN()), gormCfg)
 	if err != nil {
