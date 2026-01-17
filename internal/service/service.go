@@ -14,7 +14,7 @@ type Services struct {
 
 func New(repos *repository.Repositories, cfg *config.Config) *Services {
 	userService := NewUserService(repos.User)
-	tokenService := NewTokenService(userService, cfg.Auth)
+	tokenService := NewTokenService(userService, cfg.Auth, repos.Revocation)
 
 	return &Services{
 		User:   userService,

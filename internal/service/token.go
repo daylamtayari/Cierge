@@ -68,9 +68,10 @@ type TokenService struct {
 	refreshTokenExpiry time.Duration
 }
 
-func NewTokenService(userService *UserService, authConfig config.AuthConfig) *TokenService {
+func NewTokenService(userService *UserService, authConfig config.AuthConfig, revocationRepo *repository.RevocationRepository) *TokenService {
 	return &TokenService{
 		userService:        userService,
+		revocationRepo:     revocationRepo,
 		jwtSecret:          authConfig.JWTSecret,
 		jwtIssuer:          authConfig.JWTIssuer,
 		accessTokenExpiry:  authConfig.AccessTokenExpiry.Duration(),
