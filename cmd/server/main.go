@@ -44,6 +44,21 @@ func main() {
 
 	repos := repository.New(db, cfg.Database.Timeout.Duration())
 	services := service.New(repos, cfg)
+
+	// Handle default admin user creation if no users exist
+	userCount, err := services.User.GetUserCount(context.Background())
+	if err != nil {
+		logger.Error().Err(err).Msg("Failed to retrieve user count")
+	} else if userCount == 0 {
+		defaultAdmin := cfg.DefaultAdmin
+		hashedPassword := services.Auth.HashPassword(defaultAdmin.Password)
+		_, err = services.User.Create(context.Background(), defaultAdmin.Email, hashedPassword, true)
+		if err != nil {
+			logger.Error().Err(err).Msg("Failed to create default admin user")
+			logger.Warn().Msg("Server does not have any valid users")
+		}
+	}
+
 	router := api.NewRouter(cfg, logger, services)
 	server := &http.Server{
 		Addr:    cfg.Server.Address(),
