@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"net/mail"
+	"strings"
 	"time"
 
 	"github.com/daylamtayari/cierge/internal/model"
@@ -12,7 +14,8 @@ import (
 )
 
 var (
-	ErrUserDNE = errors.New("user does not exist")
+	ErrUserDNE      = errors.New("user does not exist")
+	ErrInvalidEmail = errors.New("invalid email address")
 )
 
 type UserService struct {
@@ -63,6 +66,39 @@ func (s *UserService) RecordSuccessfulLogin(ctx context.Context, userId uuid.UUI
 	return s.userRepo.RecordSuccessfulLogin(ctx, userId)
 }
 
+// Records a failed login
 func (s *UserService) RecordFailedLogin(ctx context.Context, userID uuid.UUID, lockUntil *time.Time) error {
 	return s.userRepo.RecordFailedLogin(ctx, userID, lockUntil)
+}
+
+// Create a user from their email (that is then validated), password hash, and isAdmin boolean value
+// Returns a user object pointer and an error which is nil if successful
+func (s *UserService) Create(ctx context.Context, email string, hashedPassword string, isAdmin bool) (*model.User, error) {
+	// Email validation
+	if len(email) > 254 {
+		return nil, ErrInvalidEmail
+	}
+	parsedEmail, err := mail.ParseAddress(strings.ToLower(email))
+	if err != nil {
+		return nil, ErrInvalidEmail
+	}
+	emailParts := strings.Split(parsedEmail.Address, "@")
+	if len(emailParts) != 2 {
+		return nil, ErrInvalidEmail
+	}
+	if len(emailParts[0]) > 64 || len(emailParts[1]) > 255 {
+		return nil, ErrInvalidEmail
+	}
+
+	user := model.User{
+		Email:        parsedEmail.Address,
+		PasswordHash: &hashedPassword,
+		IsAdmin:      isAdmin,
+	}
+
+	err = s.userRepo.Create(ctx, &user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
