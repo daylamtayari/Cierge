@@ -170,6 +170,7 @@ func (r *UserRepository) RecordFailedLogin(ctx context.Context, id uuid.UUID, lo
 
 	updates := map[string]any{
 		"failed_login_attempts": gorm.Expr("failed_login_attempts + 1"),
+		"last_failed_login":     gorm.Expr("now()"),
 	}
 
 	if lockUntil != nil {

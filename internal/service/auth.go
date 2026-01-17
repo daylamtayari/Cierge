@@ -88,7 +88,7 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 		return nil, err
 	}
 	if !match {
-		if user.FailedLoginAttempts+1 >= s.authConfig.RateLimitRequests && time.Now().UTC().Sub(*user.FirstFailedLogin) >= s.authConfig.RateLimitWindow.Duration() {
+		if user.FailedLoginAttempts+1 >= s.authConfig.RateLimitRequests && time.Now().UTC().Sub(*user.LastFailedLogin) <= s.authConfig.RateLimitWindow.Duration() {
 			lockUntil := time.Now().UTC().Add(s.authConfig.RateLimitWindow.Duration())
 			err = s.userService.RecordFailedLogin(ctx, user.ID, &lockUntil)
 		} else {
