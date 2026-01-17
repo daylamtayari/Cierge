@@ -104,7 +104,8 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 	if err != nil {
 		return nil, err
 	}
-	return tokenSet, nil
+	err = s.userService.RecordSuccessfulLogin(ctx, user.ID)
+	return tokenSet, err
 }
 
 // Checks if the provided password matches the stored encoded hash
