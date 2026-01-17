@@ -15,6 +15,7 @@ type Config struct {
 	Auth         AuthConfig         `json:"auth"`
 	Cloud        CloudConfig        `json:"cloud"`
 	Notification NotificationConfig `json:"notification"`
+	DefaultAdmin User               `json:"default_admin"`
 }
 
 type Environment string
@@ -23,6 +24,11 @@ const (
 	EnvironmentDev  Environment = "dev"
 	EnvironmentProd Environment = "prod"
 )
+
+type User struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
 // Necessary for parsing of defaults from tags
 type Duration time.Duration
