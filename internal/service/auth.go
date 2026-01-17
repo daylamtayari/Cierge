@@ -167,9 +167,10 @@ func (s *AuthService) decodeHash(encodedHash string) (*argon2Params, []byte, []b
 }
 
 // Hashes a given password and returns the argon2id hash
-func (s *AuthService) hashPassword(password string) string {
+func (s *AuthService) HashPassword(password string) string {
 	salt := make([]byte, s.argonParams.SaltLength)
-	rand.Read(salt)
+	rand.Read(salt) // nolint:errcheck
+	// crypto/rand.Read "never" returns an error and if it fails, it crashes the program per the documentation
 
 	hash := argon2.IDKey(
 		[]byte(password),
