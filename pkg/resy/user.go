@@ -1,5 +1,9 @@
 package resy
 
+import (
+	"net/http"
+)
+
 // Represents a Resy user
 // NOTE: Not all fields are populated or included
 // depending on the API endpoint that it is returned from
@@ -44,4 +48,21 @@ type PaymentMethod struct {
 	Type            string `json:"type"`
 	ExpirationYear  int    `json:"exp_year"`
 	ExpirationMonth int    `json:"exp_month"`
+}
+
+// Retrieves the current user
+func (c *Client) GetUser() (*User, error) {
+	reqUrl := Host + "/2/user"
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var user User
+	err = c.Do(req, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
