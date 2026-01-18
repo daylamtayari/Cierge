@@ -37,13 +37,13 @@ type SlotSize struct {
 // requires a payment (deposit)
 // and its details
 type SlotPayment struct {
-	IsPaid           bool   `json:"is_paid"`
-	DepositFee       int    `json:"deposit_fee"`
-	ServiceCharge    string `json:"service_charge"`
-	VenueShare       int    `json:"venue_share"`
-	PaymentStructure int    `json:"payment_structure"`
-	SecsCancelCutOff int    `json:"secs_cancel_cut_off"`
-	TimeCancelCutOff string `json:"time_cancel_cut_off"`
-	SecsChangeCutOff int    `json:"secs_change_cut_off"`
-	TimeChangeCutOff string `json:"time_change_cut_off"`
+	IsPaid           bool    `json:"is_paid"`
+	DepositFee       float32 `json:"deposit_fee"`
+	ServiceCharge    string  `json:"service_charge"`
+	VenueShare       int     `json:"venue_share"`
+	PaymentStructure int     `json:"payment_structure"`
+	SecsCancelCutOff int     `json:"secs_cancel_cut_off"`
+	TimeCancelCutOff string  `json:"time_cancel_cut_off"`
+	SecsChangeCutOff int     `json:"secs_change_cut_off"`
+	TimeChangeCutOff string  `json:"time_change_cut_off"`
 }

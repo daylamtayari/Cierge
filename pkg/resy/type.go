@@ -1,6 +1,7 @@
 package resy
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -68,4 +69,38 @@ func (t ResyDate) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return fmt.Appendf(nil, "\"%s\"", t.Format(ResyDateFormat)), nil
+}
+
+// Rating represents a restaurant's rating
+// Need to create a custom type as Resy is annoying and depending on the
+// API endpoint, the `rating` field in the `venue` object can be either
+// a float value representing the rating or an object containing the
+// rating and the amount of reviews (which can also be represented
+// by the `total_ratings` field in a `venue` object...)
+type Rating struct {
+	Score float32 `json:"score"`
+	Count int     `json:"count"`
+}
+
+// UnmarshalJSON handles both rating formats
+func (r *Rating) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as a float first
+	var value float32
+	if err := json.Unmarshal(data, &value); err == nil {
+		r.Score = value
+		return nil
+	}
+
+	// Otherwise, try the object
+	var detail struct {
+		Average float32 `json:"average"`
+		Count   int     `json:"count"`
+	}
+	if err := json.Unmarshal(data, &detail); err != nil {
+		return err
+	}
+
+	r.Score = detail.Average
+	r.Count = detail.Count
+	return nil
 }
