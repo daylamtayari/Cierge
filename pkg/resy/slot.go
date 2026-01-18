@@ -7,9 +7,15 @@ import (
 	"time"
 )
 
+// Represents a time slot available
+// at a restaurant to book
+// The Quantity field represents
+// the amount of this time slot that
+// are available to book
 type Slot struct {
-	Config SlotConfig
-	Date   SlotDate
+	Config   SlotConfig
+	Date     SlotDate
+	Quantity int
 }
 
 // Represents the configuration
@@ -43,16 +49,21 @@ type SlotSize struct {
 // Represents whether a slot
 // requires a payment (deposit)
 // and its details
+// Pointers are required for all fields
+// but the IsPaid field as if a restaurant
+// does not have a deposit, Resy will still
+// include this object and every field will
+// be specified as `null`
 type SlotPayment struct {
-	IsPaid           bool    `json:"is_paid"`
-	DepositFee       float32 `json:"deposit_fee"`
-	ServiceCharge    string  `json:"service_charge"`
-	VenueShare       int     `json:"venue_share"`
-	PaymentStructure int     `json:"payment_structure"`
-	SecsCancelCutOff int     `json:"secs_cancel_cut_off"`
-	TimeCancelCutOff string  `json:"time_cancel_cut_off"`
-	SecsChangeCutOff int     `json:"secs_change_cut_off"`
-	TimeChangeCutOff string  `json:"time_change_cut_off"`
+	IsPaid           bool     `json:"is_paid"`
+	DepositFee       *float32 `json:"deposit_fee"`
+	ServiceCharge    *string  `json:"service_charge"`
+	VenueShare       *int     `json:"venue_share"`
+	PaymentStructure *int     `json:"payment_structure"`
+	SecsCancelCutOff *int     `json:"secs_cancel_cut_off"`
+	TimeCancelCutOff *string  `json:"time_cancel_cut_off"`
+	SecsChangeCutOff *int     `json:"secs_change_cut_off"`
+	TimeChangeCutOff *string  `json:"time_change_cut_off"`
 }
 
 // Returns available slots for a specified venue ID, a Venue object, and an error that is nil if
@@ -87,10 +98,10 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 	type getSlotResponse struct {
 		Results struct {
 			Venues []struct {
-				Venue Venue
-				Slots []Slot
-			}
-		}
+				Venue Venue  `json:"venue"`
+				Slots []Slot `json:"slots"`
+			} `json:"venues"`
+		} `json:"results"`
 	}
 
 	var getSlotRes getSlotResponse
