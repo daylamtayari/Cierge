@@ -1,5 +1,12 @@
 package resy
 
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"time"
+)
+
 type Slot struct {
 	Config SlotConfig
 	Date   SlotDate
@@ -46,4 +53,54 @@ type SlotPayment struct {
 	TimeCancelCutOff string  `json:"time_cancel_cut_off"`
 	SecsChangeCutOff int     `json:"secs_change_cut_off"`
 	TimeChangeCutOff string  `json:"time_change_cut_off"`
+}
+
+// Returns available slots for a specified venue ID, a Venue object, and an error that is nil if
+// successful. If no venues are returned, `ErrNoVenues` is returned as the error.
+func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *Venue, error) {
+	type getSlotRequest struct {
+		Lat       int    `json:"lat"`
+		Long      int    `json:"long"`
+		Day       string `json:"day"`
+		PartySize int    `json:"party_size"`
+		VenueId   int    `json:"venue_id"`
+	}
+
+	reqUrl := Host + "/4/find"
+	getSlotReq := getSlotRequest{
+		Lat:       0,
+		Long:      0,
+		VenueId:   venueId,
+		Day:       day.Format("2006-01-02"),
+		PartySize: partySize,
+	}
+	reqBody, err := json.Marshal(getSlotReq)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	type getSlotResponse struct {
+		Results struct {
+			Venues []struct {
+				Venue Venue
+				Slots []Slot
+			}
+		}
+	}
+
+	var getSlotRes getSlotResponse
+	err = c.Do(req, &getSlotRes)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(getSlotRes.Results.Venues) == 0 {
+		return nil, nil, ErrNoVenues
+	}
+	return getSlotRes.Results.Venues[0].Slots, &getSlotRes.Results.Venues[0].Venue, nil
 }
