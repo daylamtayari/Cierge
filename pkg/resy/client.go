@@ -105,7 +105,7 @@ func (c *Client) Do(req *http.Request, v any) error {
 			// If a byte array is provided, the body value
 			// is returned directly and not unmarshalled
 			*v.(*[]byte) = body
-		} else {
+		} else if v != nil {
 			err = json.Unmarshal(body, &v)
 		}
 		if err != nil {
