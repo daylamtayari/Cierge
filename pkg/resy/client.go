@@ -14,6 +14,7 @@ const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 
 var (
 	ErrBadRequest      = errors.New("bad or malformed request")
+	ErrPaymentRequired = errors.New("payment required")
 	ErrUnauthorized    = errors.New("unauthorized")
 	ErrUnhandledStatus = errors.New("unhandled status code returned")
 )
@@ -117,6 +118,8 @@ func (c *Client) Do(req *http.Request, v any) error {
 		return nil
 	case 201:
 		return nil
+	case 402:
+		return ErrPaymentRequired
 	case 419:
 		// Resy returns the 419 status code for 'Unauthorized' error messages
 		// why not a 401 or 403? don't ask me...
