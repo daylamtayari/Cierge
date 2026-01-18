@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -66,10 +67,27 @@ type SlotPayment struct {
 	TimeChangeCutOff *string  `json:"time_change_cut_off"`
 }
 
+// Represents a slot's details that are
+// returned when fetching a slot's details
+// Numerous fields are returned but the booking
+// token is the only thing handled at this point
+// as a lot of the other fields contain
+// repetitive data that is mostly unnecessary if
+// you're not trying to render a frontend
+type SlotDetails struct {
+	BookingToken BookingToken `json:"book_token"`
+	User         User         `json:"user"`
+}
+
+type BookingToken struct {
+	Expiry time.Time `json:"date_expires"`
+	Value  string    `json:"value"`
+}
+
 // Returns available slots for a specified venue ID, a Venue object, and an error that is nil if
 // successful. If no venues are returned, `ErrNoVenues` is returned as the error.
 func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *Venue, error) {
-	type getSlotRequest struct {
+	type getSlotsRequest struct {
 		Lat       int    `json:"lat"`
 		Long      int    `json:"long"`
 		Day       string `json:"day"`
@@ -78,14 +96,14 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 	}
 
 	reqUrl := Host + "/4/find"
-	getSlotReq := getSlotRequest{
+	getSlotsReq := getSlotsRequest{
 		Lat:       0,
 		Long:      0,
 		VenueId:   venueId,
 		Day:       day.Format("2006-01-02"),
 		PartySize: partySize,
 	}
-	reqBody, err := json.Marshal(getSlotReq)
+	reqBody, err := json.Marshal(getSlotsReq)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,7 +113,7 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 		return nil, nil, err
 	}
 
-	type getSlotResponse struct {
+	type getSlotsResponse struct {
 		Results struct {
 			Venues []struct {
 				Venue Venue  `json:"venue"`
@@ -104,14 +122,48 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 		} `json:"results"`
 	}
 
-	var getSlotRes getSlotResponse
-	err = c.Do(req, &getSlotRes)
+	var getSlotsRes getSlotsResponse
+	err = c.Do(req, &getSlotsRes)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if len(getSlotRes.Results.Venues) == 0 {
+	if len(getSlotsRes.Results.Venues) == 0 {
 		return nil, nil, ErrNoVenues
 	}
-	return getSlotRes.Results.Venues[0].Slots, &getSlotRes.Results.Venues[0].Venue, nil
+	return getSlotsRes.Results.Venues[0].Slots, &getSlotsRes.Results.Venues[0].Venue, nil
+}
+
+// Gets the details about a slot
+// This creates a booking token that is valid for 5 minutes
+func (c *Client) GetSlotDetails(slotConfig string, day time.Time, partySize int) (*SlotDetails, error) {
+	type getSlotDetailsRequest struct {
+		ConfigId  string
+		Day       string
+		PartySize string
+	}
+
+	reqUrl := Host + "/3/details"
+	getSlotDetailsReq := getSlotDetailsRequest{
+		ConfigId:  slotConfig,
+		Day:       day.Format("2006-01-02"),
+		PartySize: strconv.Itoa(partySize),
+	}
+	reqBody, err := json.Marshal(getSlotDetailsReq)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	var slotDetails SlotDetails
+	err = c.Do(req, &slotDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	return &slotDetails, nil
 }

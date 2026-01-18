@@ -1,6 +1,8 @@
 package resy
 
 // Represents a Resy user
+// NOTE: Not all fields are populated or included
+// depending on the API endpoint that it is returned from
 type User struct {
 	Id                      int             `json:"id"`
 	FirstName               string          `json:"first_name"`

@@ -1,5 +1,11 @@
 package resy
 
+import "errors"
+
+var (
+	ErrNoVenues = errors.New("no venues returned")
+)
+
 // Represents a restaurant venue
 // NOTE: Not all fields may be populated
 // on every request, the Resy API is
