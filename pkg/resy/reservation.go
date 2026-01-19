@@ -21,6 +21,7 @@ type Reservation struct {
 	Occasion             *string           `json:"occasion"`
 	Price                float32           `json:"price"`
 	Status               ReservationStatus `json:"status"`
+	Venue                ReservationVenue  `json:"venue"`
 	Config               ReservationConfig `json:"config"`
 	IsPickup             bool              `json:"is_pickup"`
 	AddOnsAvailable      bool              `json:"add_ons_available"`
@@ -61,6 +62,12 @@ type ReservationConfig struct {
 type ReservationOccasion struct {
 	Occasion   string `json:"occasion"`
 	OccasionId string `json:"occasion_id"`
+}
+
+// Represents a reservation's venue
+type ReservationVenue struct {
+	VenueId  int    `json:"id"`
+	Currency string `json:"currency"`
 }
 
 var (
