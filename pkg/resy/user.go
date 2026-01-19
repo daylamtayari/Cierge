@@ -33,6 +33,8 @@ type User struct {
 	IsPlatinumNightEligible bool            `json:"is_platinum_night_eligible"`
 	GuestId                 int             `json:"guest_id"`
 	ResyMemberSince         int             `json:"resy_member_since"`
+	ResySelect              int             `json:"resy_select"`
+	NotifyWins              int             `json:"notify_wins"`
 }
 
 // Represents a user's payment method
