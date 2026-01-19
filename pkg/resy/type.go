@@ -2,7 +2,6 @@ package resy
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 )
@@ -31,16 +30,9 @@ func (t *ResyDatetime) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Custom marshaller for the ResyDatetime type
-func (t ResyDatetime) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte("null"), nil
-	}
-	return fmt.Appendf(nil, "\"%s\"", t.Format(ResyDatetimeFormat)), nil
-}
-
 // ResyDate wraps time.Time to
 // handle Resy's date format
+// NOTE: Timezone value is UTC
 type ResyDate struct {
 	time.Time
 }
@@ -59,16 +51,40 @@ func (t *ResyDate) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	t.Time = parsedTime
+	// Included for clarity but technically
+	// repetitive as no time or timezone value
+	// is specified so it is already in UTC
+	t.Time = parsedTime.UTC()
 	return nil
 }
 
-// Custom marshaller for the ResyDatetime type
-func (t ResyDate) MarshalJSON() ([]byte, error) {
-	if t.IsZero() {
-		return []byte("null"), nil
+// Wraps time.Time to handle
+// a time value (e.g. a time slot)
+// No date value is set
+// NOTE: Timezone value is UTC
+type ResyTime struct {
+	time.Time
+}
+
+const ResyTimeFormat = "13:01:02"
+
+// Custom unmarshaller for the ResyTime type
+func (t *ResyTime) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	if s == "null" || s == "" {
+		return nil
 	}
-	return fmt.Appendf(nil, "\"%s\"", t.Format(ResyDateFormat)), nil
+
+	parsedTime, err := time.Parse(ResyTimeFormat, s)
+	if err != nil {
+		return err
+	}
+
+	// Included for clarity but technically
+	// repetitive as no time or timezone value
+	// is specified so it is already in UTC
+	t.Time = parsedTime.UTC()
+	return nil
 }
 
 // Rating represents a restaurant's rating
