@@ -14,6 +14,7 @@ const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 
 var (
 	ErrBadRequest      = errors.New("bad or malformed request")
+	ErrBadGateway      = errors.New("bad gateway - likely due to malformed input")
 	ErrPaymentRequired = errors.New("payment required")
 	ErrUnauthorized    = errors.New("unauthorized")
 	ErrUnhandledStatus = errors.New("unhandled status code returned")
@@ -124,6 +125,10 @@ func (c *Client) Do(req *http.Request, v any) error {
 		// Resy returns the 419 status code for 'Unauthorized' error messages
 		// why not a 401 or 403? don't ask me...
 		return ErrUnauthorized
+	case 502:
+		// Identified that Resy will return 502s on various errors related to
+		// malformed or unexpected input values
+		return ErrBadGateway
 	default:
 		return fmt.Errorf("%w: %d", ErrUnhandledStatus, res.StatusCode)
 	}
