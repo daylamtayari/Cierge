@@ -13,7 +13,7 @@ type User struct {
 	LastName                string          `json:"last_name"`
 	Bio                     *string         `json:"bio"`
 	MobileNumber            string          `json:"mobile_number"`
-	EmailAddress            string          `json:"email_address"`
+	EmailAddress            string          `json:"em_address"`
 	EmailVerified           int             `json:"em_is_verified"`
 	MobileNumberVerified    int             `json:"mobile_number_is_verified"`
 	IsActive                int             `json:"is_active"`
