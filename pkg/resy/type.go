@@ -120,3 +120,24 @@ func (r *Rating) UnmarshalJSON(data []byte) error {
 	r.Count = detail.Count
 	return nil
 }
+
+// Represents a key value field
+type KeyValue struct {
+	Id    int    `json:"id"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// Represents the value of a filter
+type FilterValue struct {
+	KeyValue
+	Start *string `json:"start"`
+	End   *string `json:"end"`
+}
+
+// Represents a key value field that
+// also supports filters
+type KeyValueFilter struct {
+	KeyValue
+	Filters []FilterValue `json:"filters"`
+}
