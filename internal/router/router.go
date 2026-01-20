@@ -1,12 +1,12 @@
-package api
+package router
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 
-	"github.com/daylamtayari/cierge/api/handler"
-	"github.com/daylamtayari/cierge/api/middleware"
 	"github.com/daylamtayari/cierge/internal/config"
+	"github.com/daylamtayari/cierge/internal/handler"
+	"github.com/daylamtayari/cierge/internal/middleware"
 	"github.com/daylamtayari/cierge/internal/service"
 )
 
@@ -53,6 +53,12 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	authRoutes := router.Group("/auth")
 	{
 		authRoutes.POST("/login", handlers.Auth.Login)
+	}
+
+	authenticated := router.Group("/api")
+	authenticated.Use(authMiddleware.RequireAuth())
+	{
+		authenticated.GET("/health", handler.Health(services.Health))
 	}
 
 	return router

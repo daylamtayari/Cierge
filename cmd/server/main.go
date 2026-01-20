@@ -8,11 +8,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/internal/config"
 	"github.com/daylamtayari/cierge/internal/database"
 	"github.com/daylamtayari/cierge/internal/logging"
 	"github.com/daylamtayari/cierge/internal/repository"
+	"github.com/daylamtayari/cierge/internal/router"
 	"github.com/daylamtayari/cierge/internal/service"
 	"github.com/daylamtayari/cierge/internal/version"
 	"github.com/rs/zerolog"
@@ -59,7 +59,7 @@ func main() {
 		}
 	}
 
-	router := api.NewRouter(cfg, logger, services)
+	router := router.NewRouter(cfg, logger, services)
 	server := &http.Server{
 		Addr:    cfg.Server.Address(),
 		Handler: router,
