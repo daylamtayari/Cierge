@@ -32,10 +32,14 @@ type Venue struct {
 	Favorite        bool             `json:"favorite"`
 	CurrencyCode    string           `json:"currency_code"`
 	CurrencySymbol  string           `json:"currency_symbol"`
+	Locale          VenueLocale      `json:"locale"`
+	Location        VenueLocation    `json:"location"`
 	Country         string           `json:"country"`
 	Region          string           `json:"region"`
 	Locality        string           `json:"locality"`
 	Neighborhood    string           `json:"neighborhood"`
+	Contact         VenueContact     `json:"contact"`
+	Reopen          VenueReopen      `json:"reopen"`
 	LastUpdatedAt   int              `json:"last_updated_at"`
 	LeadTimeInDays  int              `json:"lead_time_in_days"`
 	ServiceTypes    []KeyValueFilter `json:"service_types"`
@@ -47,7 +51,8 @@ type Venue struct {
 // The Resy field is the Resy
 // venue ID
 type VenueId struct {
-	Resy int `json:"resy"`
+	Resy   int    `json:"resy"`
+	Google string `json:"google"`
 }
 
 // Represents a restaurant
@@ -59,19 +64,46 @@ type VenueGroup struct {
 	Venues []int  `json:"venues"`
 }
 
+// Represents the locale of a
+// venue including the timezone
+// and currency
+type VenueLocale struct {
+	Currency string `json:"currency"`
+	Timezone string `json:"time_zone"`
+}
+
+// Contact information of a restaurant
+type VenueContact struct {
+	PhoneNumber string `json:"phone_number"`
+	Website     string `json:"url"`
+}
+
+// The reopening date of a venue
+// This can be set if the restaurant is
+// closed and has a planned reopening date,
+// otherwise a nil value is present
+type VenueReopen struct {
+	Date *ResyDate `json:"date"`
+}
+
 // Represents the location of a venue,
 // this is usually the city that the venue
 // is in and not the exact location
 // The Geo field however contains the
 // coordinates of the restaurant itself
 // (can sometimes have slight deviation)
-type Location struct {
+type VenueLocation struct {
 	Id           int         `json:"id"`
 	Timezone     string      `json:"time_zone"`
 	Neighborhood string      `json:"neighborhood"`
 	Geo          GeoLocation `json:"geo"`
 	Code         string      `json:"code"`
 	UrlSlug      string      `json:"url_slug"`
+	Country      string      `json:"country"`
+	Address1     *string     `json:"address_1"`
+	Address2     *string     `json:"address_2"`
+	PostalCode   string      `json:"postal_code"`
+	Region       string      `json:"region"`
 }
 
 // Represents coordinates to
@@ -149,6 +181,23 @@ func (c *Client) SearchVenue(query string, pageLimit *int) ([]Venue, error) {
 	}
 
 	return searchVenueRes.Search.Hits, nil
+}
+
+// Retrieves information about a specified venue
+func (c *Client) GetVenue(venueId int) (*Venue, error) {
+	reqUrl := Host + "/3/venue?id=" + strconv.Itoa(venueId)
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var venue Venue
+	err = c.Do(req, &venue)
+	if err != nil {
+		return nil, err
+	}
+
+	return &venue, nil
 }
 
 // Gets the configuration for a venue and returns a Venue type with as
