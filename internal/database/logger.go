@@ -8,8 +8,6 @@ import (
 	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
-
-	appctx "github.com/daylamtayari/cierge/internal/context"
 )
 
 type Logger struct {
@@ -18,11 +16,15 @@ type Logger struct {
 	logLevel      gormlogger.LogLevel
 }
 
-func NewLogger(logger zerolog.Logger) *Logger {
+func NewLogger(logger zerolog.Logger, isDevelopment bool) *Logger {
+	logLevel := gormlogger.Warn
+	if isDevelopment {
+		logLevel = gormlogger.Info
+	}
 	return &Logger{
 		logger:        logger,
 		slowThreshold: 200 * time.Millisecond,
-		logLevel:      gormlogger.Info,
+		logLevel:      logLevel,
 	}
 }
 
@@ -35,15 +37,15 @@ func (l *Logger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 }
 
 func (l *Logger) Info(ctx context.Context, msg string, args ...any) {
-	appctx.Logger(ctx).Info().Msgf(msg, args...)
+	l.logger.Info().Msgf(msg, args...)
 }
 
 func (l *Logger) Warn(ctx context.Context, msg string, args ...any) {
-	appctx.Logger(ctx).Warn().Msgf(msg, args...)
+	l.logger.Warn().Msgf(msg, args...)
 }
 
 func (l *Logger) Error(ctx context.Context, msg string, args ...any) {
-	appctx.Logger(ctx).Error().Msgf(msg, args...)
+	l.logger.Error().Msgf(msg, args...)
 }
 
 func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
@@ -53,8 +55,7 @@ func (l *Logger) Trace(ctx context.Context, begin time.Time, fc func() (sql stri
 
 	elapsed := time.Since(begin)
 	sql, rows := fc()
-	logger := appctx.Logger(ctx)
-	log := logger.With().Dur("duration", elapsed).Int64("rows", rows).Logger()
+	log := l.logger.With().Dur("duration", elapsed).Int64("rows", rows).Logger()
 
 	switch {
 	case err != nil && !errors.Is(err, gorm.ErrRecordNotFound):

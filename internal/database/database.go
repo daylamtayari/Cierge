@@ -6,15 +6,17 @@ import (
 
 	"github.com/daylamtayari/cierge/internal/config"
 	"github.com/daylamtayari/cierge/internal/model"
+	"github.com/rs/zerolog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func New(cfg config.DatabaseConfig, isDevelopment bool) (*gorm.DB, error) {
+func New(cfg config.DatabaseConfig, logger zerolog.Logger, isDevelopment bool) (*gorm.DB, error) {
 	gormCfg := &gorm.Config{
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
 		},
+		Logger: NewLogger(logger, isDevelopment),
 	}
 
 	db, err := gorm.Open(postgres.Open(cfg.DSN()), gormCfg)
