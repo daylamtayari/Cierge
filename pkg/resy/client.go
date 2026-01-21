@@ -24,11 +24,6 @@ var (
 	ErrUnhandledStatus = errors.New("unhandled status code returned")
 )
 
-type Tokens struct {
-	ApiKey string
-	Token  string
-}
-
 type Client struct {
 	client *http.Client
 }
@@ -54,6 +49,10 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 // Tokens include the generic Resy API key and the user's token.
 // A user agent value to be added to requests is also accepted and if
 // an empty string is provided, a popular generic user agent is used.
+// NOTE: A Tokens value that is not scoped to a particular user,
+// i.e. only has an ApiKey value but not a Token value, can be used to
+// make requests that require the ApiKey but not authentication
+// In such cases, the X-Resy-* headers will not be included
 func NewClient(httpClient *http.Client, tokens Tokens, userAgent string) *Client {
 	trans := http.DefaultTransport
 	if httpClient == nil {
@@ -66,15 +65,20 @@ func NewClient(httpClient *http.Client, tokens Tokens, userAgent string) *Client
 		userAgent = defaultUserAgent
 	}
 
+	headers := map[string]string{
+		"Authorization": "ResyAPI api_key=\"" + tokens.ApiKey + "\"",
+		// User Agent requires as Resy will throw 500s if not included
+		"User-Agent": userAgent,
+	}
+
+	if tokens.Token != "" {
+		headers["X-Resy-Auth-Token"] = tokens.Token
+		headers["X-Resy-Universal-Auth"] = tokens.Token
+	}
+
 	httpClient.Transport = &transport{
-		base: trans,
-		headers: map[string]string{
-			"Authorization":         "ResyAPI api_key=\"" + tokens.ApiKey + "\"",
-			"X-Resy-Auth-Token":     tokens.Token,
-			"X-Resy-Universal-Auth": tokens.Token,
-			// User Agent requires as Resy will throw 500s if not included
-			"User-Agent": userAgent,
-		},
+		base:    trans,
+		headers: headers,
 	}
 
 	return &Client{
