@@ -34,6 +34,11 @@ type SlotConfig struct {
 // datetime for a slot
 // The start represents the reservation
 // time, and end the expected end
+// NOTE: The timezone value of the
+// time fields is to UTC but the times
+// are in local time
+// e.g. 15:04 local time
+// -> 15:04:00 +0000 UTC
 type SlotDate struct {
 	Start ResyDatetime `json:"start"`
 	End   ResyDatetime `json:"end"`

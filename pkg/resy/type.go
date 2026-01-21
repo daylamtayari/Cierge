@@ -8,6 +8,7 @@ import (
 
 // ResyDatetime wraps time.Time to
 // handle Resy's datetime format
+// NOTE: Timezone value is UTC
 type ResyDatetime struct {
 	time.Time
 }
