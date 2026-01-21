@@ -100,6 +100,7 @@ type VenueLocation struct {
 	Code         string      `json:"code"`
 	UrlSlug      string      `json:"url_slug"`
 	Country      string      `json:"country"`
+	CountryIso   string      `json:"country_iso3166"`
 	Address1     *string     `json:"address_1"`
 	Address2     *string     `json:"address_2"`
 	PostalCode   string      `json:"postal_code"`
