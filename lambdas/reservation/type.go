@@ -6,7 +6,8 @@ import (
 	"github.com/daylamtayari/cierge/pkg/resy"
 )
 
-// Reservation date is a UTC time
+// Represents the data that is provided to the lambda
+// NOTE: Reservation date should be in the venue's local time
 type LambdaEvent struct {
 	JobID           string      `json:"job_id"`
 	Platform        string      `json:"platform"`
