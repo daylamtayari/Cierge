@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -16,14 +18,28 @@ import (
 	"github.com/daylamtayari/cierge/internal/service"
 	"github.com/daylamtayari/cierge/internal/version"
 	"github.com/rs/zerolog"
+	"github.com/spf13/pflag"
 )
 
 func main() {
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
+	if len(os.Args) > 1 && os.Args[1] == "version" {
+		printVersion()
+		return
+	}
+
+	devMode := pflag.Bool("dev", false, "Run in development mode (overrides config)")
+	pflag.Parse()
+
 	cfg, err := config.Load()
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to load config")
+	}
+
+	if *devMode {
+		cfg.Environment = config.EnvironmentDev
+		logger.Info().Msg("development mode enabled via command flag")
 	}
 
 	logger = logging.New(cfg.LogLevel, cfg.IsDevelopment()).With().Str("environment", string(cfg.Environment)).Str("version", version.Version).Logger()
@@ -105,4 +121,17 @@ func main() {
 		}
 		logger.Info().Msg("server exiting")
 	}
+}
+
+// Prints the version information
+func printVersion() {
+	ver := version.Version
+	if ver == "dev" {
+		if info, ok := debug.ReadBuildInfo(); ok {
+			if info.Main.Version != "" && info.Main.Version != "(devel)" {
+				ver = info.Main.Version
+			}
+		}
+	}
+	fmt.Printf("version %s", ver)
 }
