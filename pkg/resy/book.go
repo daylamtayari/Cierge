@@ -16,6 +16,8 @@ type BookingConfirmation struct {
 // A paymentMethodId representing the ID of the user's payment method
 // should be passed if the restaurant requires a deposit or payment method
 // on file, otherwise a 402 Payment Required will be returned
+// If a reservation is no longer available, an ErrNotFound will be returned
+// as the API returns a 404 in such cases
 func (c *Client) BookReservation(bookingToken string, paymentMethodId *string) (*BookingConfirmation, error) {
 	reqUrl := Host + "/3/book"
 

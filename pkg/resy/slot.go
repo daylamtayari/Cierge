@@ -141,6 +141,9 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 
 // Gets the details about a slot
 // This creates a booking token that is valid for 5 minutes
+// NOTE: Resy will allow you to get the slot details and create a booking
+// token for a reservation that is not available. If a reservation is not available,
+// you will get a 404 Not Found when trying to book
 func (c *Client) GetSlotDetails(slotConfig string, day time.Time, partySize int) (*SlotDetails, error) {
 	type getSlotDetailsRequest struct {
 		ConfigId  string
