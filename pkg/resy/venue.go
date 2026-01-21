@@ -68,8 +68,8 @@ type VenueGroup struct {
 // venue including the timezone
 // and currency
 type VenueLocale struct {
-	Currency string `json:"currency"`
-	Timezone string `json:"time_zone"`
+	Currency string   `json:"currency"`
+	Timezone Timezone `json:"time_zone"`
 }
 
 // Contact information of a restaurant
@@ -94,7 +94,7 @@ type VenueReopen struct {
 // (can sometimes have slight deviation)
 type VenueLocation struct {
 	Id           int         `json:"id"`
-	Timezone     string      `json:"time_zone"`
+	Timezone     Timezone    `json:"time_zone"`
 	Neighborhood string      `json:"neighborhood"`
 	Geo          GeoLocation `json:"geo"`
 	Code         string      `json:"code"`

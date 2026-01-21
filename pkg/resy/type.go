@@ -66,7 +66,7 @@ type ResyTime struct {
 	time.Time
 }
 
-const ResyTimeFormat = "13:01:02"
+const ResyTimeFormat = "15:04:05"
 
 // Custom unmarshaller for the ResyTime type
 func (t *ResyTime) UnmarshalJSON(b []byte) error {
@@ -84,6 +84,27 @@ func (t *ResyTime) UnmarshalJSON(b []byte) error {
 	// repetitive as no time or timezone value
 	// is specified so it is already in UTC
 	t.Time = parsedTime.UTC()
+	return nil
+}
+
+// Timezone type to directly handle timezones
+type Timezone struct {
+	*time.Location
+}
+
+// Custom unmarshaller for the Timezone type
+func (t *Timezone) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	if s == "null" || s == "" {
+		return nil
+	}
+
+	loc, err := time.LoadLocation(s)
+	if err != nil {
+		return err
+	}
+
+	t.Location = loc
 	return nil
 }
 
