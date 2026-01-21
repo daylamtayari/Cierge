@@ -8,6 +8,9 @@ import (
 	"net/http"
 )
 
+// Resy API host
+const Host = "https://api.resy.com"
+
 // Generic popular user agent to use as default
 // if not specified by a user
 const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
@@ -20,6 +23,11 @@ var (
 	ErrUnauthorized    = errors.New("unauthorized")
 	ErrUnhandledStatus = errors.New("unhandled status code returned")
 )
+
+type Tokens struct {
+	ApiKey string
+	Token  string
+}
 
 type Client struct {
 	client *http.Client

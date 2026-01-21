@@ -6,11 +6,3 @@
 // If there are any structs or fields that are not handled that you desire,
 // please submit a PR and I will happily implement them.
 package resy
-
-// Resy API host
-const Host = "https://api.resy.com"
-
-type Tokens struct {
-	ApiKey string
-	Token  string
-}
