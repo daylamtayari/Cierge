@@ -27,7 +27,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 
 	// Global middleware
 	router.Use(middleware.RequestID())
-	router.Use(middleware.Logger(logger))
+	router.Use(middleware.Logger(logger, cfg.IsDevelopment()))
 	router.Use(middleware.CORS(cfg.Server.CORSOrigins))
 	router.Use(middleware.Secure(cfg.IsDevelopment()))
 	router.Use(middleware.Recovery())

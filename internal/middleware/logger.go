@@ -10,9 +10,10 @@ import (
 	appctx "github.com/daylamtayari/cierge/internal/context"
 	"github.com/daylamtayari/cierge/internal/version"
 	"github.com/daylamtayari/cierge/pkg/errcol"
+	"github.com/daylamtayari/cierge/pkg/querycol"
 )
 
-func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
+func Logger(baseLogger zerolog.Logger, isDevelopment bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -41,11 +42,13 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 				Interface("url_parameters", c.Params),
 			).Logger()
 
-		// Create our error collector as well
+		// Create error collector and query collector
 		errorCol := errcol.NewErrorCollector(true)
+		queryCol := querycol.NewQueryCollector(isDevelopment)
 
 		ctx := appctx.WithLogger(c.Request.Context(), &logger)
 		ctx = appctx.WithErrorCollector(ctx, errorCol)
+		ctx = appctx.WithQueryCollector(ctx, queryCol)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
@@ -56,6 +59,7 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 
 		logger = *appctx.Logger(c.Request.Context())
 		errorCol = appctx.ErrorCollector(c.Request.Context())
+		queryCol = appctx.QueryCollector(c.Request.Context())
 
 		var logLevel zerolog.Level
 		var highestSeverity errcol.ErrorInfo
@@ -83,6 +87,9 @@ func Logger(baseLogger zerolog.Logger) gin.HandlerFunc {
 		logEvent := logger.WithLevel(logLevel)
 		if errorCol.HasErrors() {
 			logEvent = errorCol.ApplyToEvent(logEvent)
+		}
+		if queryCol.HasQueries() {
+			logEvent = queryCol.ApplyToEvent(logEvent)
 		}
 		logEvent.
 			Dur("duration", duration).
