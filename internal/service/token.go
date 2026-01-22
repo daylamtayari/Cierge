@@ -19,8 +19,9 @@ import (
 type TokenType string
 
 const (
-	BearerToken TokenType = "Bearer"
-	ApiToken    TokenType = "api"
+	BearerToken   TokenType = "Bearer"
+	ApiToken      TokenType = "api"
+	CallbackToken TokenType = "callback"
 )
 
 var (
