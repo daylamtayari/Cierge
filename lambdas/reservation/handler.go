@@ -43,7 +43,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, output)
+		complete(ctx, event, output)
 		return nil
 	}
 
@@ -53,7 +53,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, output)
+		complete(ctx, event, output)
 		return nil
 	}
 
@@ -63,7 +63,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, output)
+		complete(ctx, event, output)
 		return nil
 	}
 
@@ -77,16 +77,17 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, output)
+		complete(ctx, event, output)
 		return nil
 	}
 
 	output.ReservationTime = bookingResult.ReservationTime
 	output.PlatformConfirmation = bookingResult.PlatformConfirmation
 	output.Success = true
+	output.Message = "reservation completed successfully"
 	output.Level = "info"
 
-	complete(ctx, output)
+	complete(ctx, event, output)
 	return nil
 }
 
@@ -109,15 +110,36 @@ func decryptToken(ctx context.Context, encryptedToken string) (string, error) {
 
 // Exit handler of the Lambda
 // Calculates duration, notifies server of output, and outputs job output to stdout
-func complete(ctx context.Context, output JobOutput) {
+func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
 	if startTime, ok := ctx.Value(startTimeKey).(time.Time); ok {
 		output.Duration = time.Now().UTC().Sub(startTime)
 	} else {
 		output.Duration = time.Duration(0)
 	}
 
-	// TODO: Notify server
 	marshalledOutput, _ := json.Marshal(output)
+
+	callbackSecret, err := decryptToken(ctx, event.EncryptedCallBackSecret)
+	if err != nil {
+		// Keep success as true if the reservation completed
+		// as that is the core goal of this lambda and the
+		// output will still be sent to stdout
+		output.Message += " - error: failed to decrypt token"
+		output.Error = err.Error()
+		output.Level = "error"
+	} else {
+		err = notifyServer(ctx, event.ServerEndpoint, callbackSecret, marshalledOutput)
+		if err != nil {
+			// Keep success as true if the reservation completed
+			// as that is the core goal of this lambda and the
+			// output will still be sent to stdout
+			output.Message += "- error: failed to notify server"
+			output.Error = err.Error()
+			output.Level = "error"
+			marshalledOutput, _ = json.Marshal(output)
+		}
+	}
+
 	fmt.Print(string(marshalledOutput))
 }
 

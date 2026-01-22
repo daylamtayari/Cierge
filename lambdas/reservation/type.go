@@ -10,15 +10,16 @@ import (
 // NOTE: Reservation date must have UTC timezone
 // NOTE: Preferred times must have UTC timezone and in order of preference
 type LambdaEvent struct {
-	JobID           *uuid.UUID  `json:"job_id"`
-	Platform        string      `json:"platform"`
-	PlatformVenueId string      `json:"platform_venue_id"`
-	EncryptedToken  string      `json:"encrypted_token"`
-	ReservationDate time.Time   `json:"reservation_date"`
-	PartySize       int         `json:"party_size"`
-	PreferredTimes  []time.Time `json:"preferred_times"`
-	DropTime        time.Time   `json:"drop_time"`
-	ServerEndpoint  string      `json:"server_endpoint"`
+	JobID                   *uuid.UUID  `json:"job_id"`
+	Platform                string      `json:"platform"`
+	PlatformVenueId         string      `json:"platform_venue_id"`
+	EncryptedToken          string      `json:"encrypted_token"`
+	EncryptedCallBackSecret string      `json:"encrypted_callback_secret"`
+	ReservationDate         time.Time   `json:"reservation_date"`
+	PartySize               int         `json:"party_size"`
+	PreferredTimes          []time.Time `json:"preferred_times"`
+	DropTime                time.Time   `json:"drop_time"`
+	ServerEndpoint          string      `json:"server_endpoint"`
 }
 
 // Result of a booking
@@ -36,7 +37,7 @@ type JobOutput struct {
 	JobId         *uuid.UUID    `json:"job_id"`
 	Duration      time.Duration `json:"duration"`
 	Message       string        `json:"error_message"`
-	Error         string        `json:"error"`
+	Error         string        `json:"error,omitempty"`
 	Level         string        `json:"level"`
 	StartTime     time.Time     `json:"start_time"`
 	BookingStart  time.Time     `json:"booking_start"`
