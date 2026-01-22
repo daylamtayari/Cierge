@@ -5,6 +5,7 @@ use (
 	./cmd/cli
 	./lambdas/reservation
 	./pkg/errcol
+	./pkg/querycol
 	./pkg/opentable
 	./pkg/resy
 )
