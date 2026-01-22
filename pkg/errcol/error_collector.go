@@ -14,18 +14,18 @@ import (
 // and Line is the line number
 // that the error was added from
 type CallerInfo struct {
-	File string
-	Line int
+	File string `json:"file"`
+	Line int    `json:"line"`
 }
 
 // Stores information about an error
 type ErrorInfo struct {
-	Error      string
-	Severity   zerolog.Level
-	Expected   bool
-	Fields     map[string]any
-	Message    string
-	CallerInfo CallerInfo
+	Error      string         `json:"error"`
+	Severity   zerolog.Level  `json:"severity"`
+	Expected   bool           `json:"expected"`
+	Fields     map[string]any `json:"fields,omitempty"`
+	Message    string         `json:"message"`
+	CallerInfo CallerInfo     `json:"caller_info"`
 }
 
 // An error collector that stores
