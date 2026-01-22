@@ -7,11 +7,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func New(level zerolog.Level, isDevelopment bool) zerolog.Logger {
+func New(level zerolog.Level, prettyOutput bool) zerolog.Logger {
 	zerolog.SetGlobalLevel(level)
 	zerolog.TimestampFieldName = "timestamp"
 
-	if isDevelopment {
+	if prettyOutput {
 		// Pretty output for when running in development
 		return zerolog.New(zerolog.ConsoleWriter{
 			Out:        os.Stdout,

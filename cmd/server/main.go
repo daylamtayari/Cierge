@@ -30,6 +30,7 @@ func main() {
 	}
 
 	devMode := pflag.Bool("dev", false, "Run in development mode (overrides config)")
+	jsonOutput := pflag.Bool("json", false, "Force output logs to be JSON even during development mode")
 	pflag.Parse()
 
 	cfg, err := config.Load()
@@ -42,7 +43,12 @@ func main() {
 		logger.Info().Msg("development mode enabled via command flag")
 	}
 
-	logger = logging.New(cfg.LogLevel, cfg.IsDevelopment()).With().Str("environment", string(cfg.Environment)).Str("version", version.Version).Logger()
+	prettyOutput := cfg.IsDevelopment()
+	if *jsonOutput {
+		prettyOutput = false
+	}
+
+	logger = logging.New(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", version.Version).Logger()
 	logger.Info().Msg("starting cierge server")
 
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
