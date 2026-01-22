@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/daylamtayari/cierge/pkg/errcol"
+	"github.com/daylamtayari/cierge/pkg/querycol"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
@@ -17,6 +18,7 @@ const (
 	requestIDKey      ctxKey = "request_id"
 	userIDKey         ctxKey = "user_id"
 	errorCollectorKey ctxKey = "error_collector"
+	queryCollectorKey ctxKey = "query_collector"
 )
 
 // Adds a logger to the context
@@ -83,4 +85,18 @@ func ErrorCollector(ctx context.Context) *errcol.ErrorCollector {
 	errorCollector := &errcol.ErrorCollector{}
 	errorCollector.Add(fmt.Errorf("error collector not in context, creating new"), zerolog.ErrorLevel, false, nil, "error collector not found in context")
 	return errorCollector
+}
+
+// Adds a query collector to the context
+func WithQueryCollector(ctx context.Context, queryCollector *querycol.QueryCollector) context.Context {
+	return context.WithValue(ctx, queryCollectorKey, queryCollector)
+}
+
+// Returns the query collector from the context
+func QueryCollector(ctx context.Context) *querycol.QueryCollector {
+	if queryCollector, ok := ctx.Value(queryCollectorKey).(*querycol.QueryCollector); ok {
+		return queryCollector
+	}
+	// If not found, returns a new query collector
+	return querycol.NewQueryCollector(false)
 }
