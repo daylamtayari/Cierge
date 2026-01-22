@@ -41,7 +41,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 	if err != nil {
 		output.Message = "failed to decrypt token"
 		output.Success = false
-		output.Error = err
+		output.Error = err.Error()
 		output.Level = "error"
 		complete(ctx, output)
 		return nil
@@ -51,7 +51,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 	if err != nil {
 		output.Message = "failed to create booking client"
 		output.Success = false
-		output.Error = err
+		output.Error = err.Error()
 		output.Level = "error"
 		complete(ctx, output)
 		return nil
@@ -61,7 +61,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 	if err != nil {
 		output.Message = "failed to perform pre-booking checks"
 		output.Success = false
-		output.Error = err
+		output.Error = err.Error()
 		output.Level = "error"
 		complete(ctx, output)
 		return nil
@@ -75,7 +75,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 	if err != nil {
 		output.Message = "failed to perform booking"
 		output.Success = false
-		output.Error = err
+		output.Error = err.Error()
 		output.Level = "error"
 		complete(ctx, output)
 		return nil

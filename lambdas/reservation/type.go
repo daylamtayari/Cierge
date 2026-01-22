@@ -36,7 +36,7 @@ type JobOutput struct {
 	JobId         *uuid.UUID    `json:"job_id"`
 	Duration      time.Duration `json:"duration"`
 	Message       string        `json:"error_message"`
-	Error         error         `json:"error"`
+	Error         string        `json:"error"`
 	Level         string        `json:"level"`
 	StartTime     time.Time     `json:"start_time"`
 	BookingStart  time.Time     `json:"booking_start"`
