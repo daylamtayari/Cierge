@@ -45,7 +45,7 @@ func main() {
 	logger = logging.New(cfg.LogLevel, cfg.IsDevelopment()).With().Str("environment", string(cfg.Environment)).Str("version", version.Version).Logger()
 	logger.Info().Msg("starting cierge server")
 
-	db, err := database.New(cfg.Database, logger, cfg.IsDevelopment())
+	db, err := database.New(cfg.Database, cfg.IsDevelopment())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to connect to the database")
 	}
