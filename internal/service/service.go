@@ -10,6 +10,7 @@ type Services struct {
 	User   *UserService
 	Health *HealthService
 	Auth   *AuthService
+	Job    *JobService
 }
 
 func New(repos *repository.Repositories, cfg *config.Config) *Services {
@@ -21,5 +22,6 @@ func New(repos *repository.Repositories, cfg *config.Config) *Services {
 		Token:  tokenService,
 		Health: NewHealthService(repos.DB(), repos.Timeout()),
 		Auth:   NewAuthService(userService, tokenService, &cfg.Auth),
+		Job:    NewJobService(repos.Job),
 	}
 }
