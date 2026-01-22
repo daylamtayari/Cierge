@@ -30,6 +30,7 @@ type Job struct {
 	ScheduledAt        time.Time  `gorm:"not null;index:idx_jobs_scheduled,where:status = 'scheduled'"`
 	DropConfigID       *uuid.UUID `gorm:"type:uuid"`
 	CallbackSecretHash *string    `gorm:"type:varchar(255)"`
+	Callbacked         bool       `gorm:"not null;default:false"`
 
 	Status      JobStatus `gorm:"type:job_status;not null;default:'scheduled';index:idx_jobs_status;index:idx_jobs_user_status"`
 	StartedAt   *time.Time
