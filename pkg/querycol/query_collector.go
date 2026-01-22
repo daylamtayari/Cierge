@@ -71,7 +71,10 @@ func (q *QueryCollector) Add(sql string, duration time.Duration, rows int64, err
 	query := QueryInfo{
 		Duration: duration,
 		Rows:     rows,
-		Error:    err.Error(),
+	}
+
+	if err != nil {
+		query.Error = err.Error()
 	}
 
 	if q.includeSql {
