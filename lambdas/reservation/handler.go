@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/kms"
@@ -23,80 +22,88 @@ var (
 	ErrKmsDecrypt   = errors.New("failed to decrypt token")
 )
 
+// Main handler of Lambda and performs the core logic
+// - Decrypts token
+// - Creates booking client
+// - Performs pre-booking checks
+// - Performs booking
 func HandleRequest(ctx context.Context, event LambdaEvent) error {
-	logs := make([]LogEntry, 0)
-	ctx = context.WithValue(ctx, startTimeKey, time.Now().UTC())
+	startTime := time.Now().UTC()
 
-	logEntry(&logs, slog.LevelInfo, "starting job", map[string]any{
-		"job_id": event.JobID,
-	})
+	log := map[string]any{
+		"job_id":     event.JobID,
+		"start_time": startTime,
+	}
+
+	ctx = context.WithValue(ctx, startTimeKey, startTime)
 
 	token, err := decryptToken(ctx, event.EncryptedToken)
 	if err != nil {
-		logEntry(&logs, slog.LevelError, "failed to decrypt token", map[string]any{
-			"error": err.Error(),
-		})
+		log["message"] = "failed to decrypt token"
+		log["error"] = err.Error()
+		log["level"] = "error"
 		complete(ctx, event, JobOutput{
 			Status:       StatusFail,
 			ErrorMessage: err.Error(),
-			Logs:         logs,
+			Log:          log,
 		})
+		return nil
 	}
 
 	bookingClient, err := NewBookingClient(event.Platform, token)
 	if err != nil {
-		logEntry(&logs, slog.LevelError, "failed to create booking client", map[string]any{
-			"error": err.Error(),
-		})
+		log["message"] = "failed to create booking client"
+		log["error"] = err.Error()
+		log["level"] = "error"
 		complete(ctx, event, JobOutput{
 			Status:       StatusFail,
 			ErrorMessage: err.Error(),
-			Logs:         logs,
+			Log:          log,
 		})
+		return nil
 	}
 
 	err = bookingClient.PreBookingCheck(ctx, event)
 	if err != nil {
-		logEntry(&logs, slog.LevelError, "failed to perform pre-booking checks", map[string]any{
-			"error": err.Error(),
-		})
+		log["message"] = "failed to perform pre-booking checks"
+		log["error"] = err.Error()
+		log["level"] = "error"
 		complete(ctx, event, JobOutput{
 			Status:       StatusFail,
 			ErrorMessage: err.Error(),
-			Logs:         logs,
+			Log:          log,
 		})
+		return nil
 	}
 
 	waitUntil(event.DropTime)
-	logEntry(&logs, slog.LevelInfo, "starting booking attempts", map[string]any{
-		"actual_time": time.Now().UTC().Format(time.RFC3339Nano),
-		"drift_ns":    time.Since(event.DropTime).Nanoseconds(),
-	})
+	log["booking_start"] = time.Now().UTC()
+	log["drift_ns"] = time.Since(event.DropTime).Nanoseconds()
 
 	bookingResult, err := bookingClient.Book(ctx, event)
 	if err != nil {
-		logEntry(&logs, slog.LevelError, "failed to perform booking", map[string]any{
-			"error": err.Error(),
-		})
+		log["message"] = "failed to perform booking"
+		log["error"] = err.Error()
+		log["level"] = "error"
 		complete(ctx, event, JobOutput{
 			Status:       StatusFail,
 			ErrorMessage: err.Error(),
-			Logs:         logs,
+			Log:          log,
 		})
 	}
 
-	logEntry(&logs, slog.LevelInfo, "booking attempt successful", map[string]any{
-		"reservation_time":      bookingResult.ReservationTime,
-		"platform_confirmation": bookingResult.PlatformConfirmation,
-	})
+	log["reservation_time"] = bookingResult.ReservationTime
+	log["platform_confirmation"] = bookingResult.PlatformConfirmation
+	log["level"] = "info"
 
 	complete(ctx, event, JobOutput{
 		Status: StatusSuccess,
-		Logs:   logs,
+		Log:    log,
 	})
 	return nil
 }
 
+// Decrypts the users token using KMS
 func decryptToken(ctx context.Context, encryptedToken string) (string, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(encryptedToken)
 	if err != nil {
@@ -113,21 +120,15 @@ func decryptToken(ctx context.Context, encryptedToken string) (string, error) {
 	return string(decrypted.Plaintext), nil
 }
 
-func logEntry(logs *[]LogEntry, level slog.Level, msg string, fields map[string]any) {
-	*logs = append(*logs, LogEntry{
-		Time:   time.Now().UTC(),
-		Level:  level,
-		Msg:    msg,
-		Fields: fields,
-	})
-}
-
+// Exit handler of the Lambda
+// Calculates duration, notifies server of output, and outputs job output to stdout
 func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
 	if startTime, ok := ctx.Value(startTimeKey).(time.Time); ok {
 		output.Duration = time.Now().UTC().Sub(startTime)
 	} else {
 		output.Duration = time.Duration(0)
 	}
+	output.Log["duration"] = output.Duration
 
 	output.JobId = event.JobID
 	// TODO: Notify server

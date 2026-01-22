@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -44,13 +43,5 @@ type JobOutput struct {
 	Result       *BookingResult `json:"result"`
 	Duration     time.Duration  `json:"duration"`
 	ErrorMessage string         `json:"error_message"`
-	Logs         []LogEntry     `json:"logs"`
-}
-
-// Represents a log entry
-type LogEntry struct {
-	Time   time.Time      `json:"time"`
-	Level  slog.Level     `json:"level"`
-	Msg    string         `json:"msg"`
-	Fields map[string]any `json:"fields,omitempty"`
+	Log          map[string]any `json:"log"`
 }
