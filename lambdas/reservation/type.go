@@ -1,15 +1,17 @@
 package main
 
 import (
+	"log/slog"
 	"time"
 
-	"github.com/daylamtayari/cierge/pkg/resy"
+	"github.com/google/uuid"
 )
 
 // Represents the data that is provided to the lambda
-// NOTE: Reservation date should be in the venue's local time
+// NOTE: Reservation date must have UTC timezone
+// NOTE: Preferred times must have UTC timezone and in order of preference
 type LambdaEvent struct {
-	JobID           string      `json:"job_id"`
+	JobID           *uuid.UUID  `json:"job_id"`
 	Platform        string      `json:"platform"`
 	PlatformVenueId string      `json:"platform_venue_id"`
 	EncryptedToken  string      `json:"encrypted_token"`
@@ -22,16 +24,33 @@ type LambdaEvent struct {
 
 // Result of a booking
 type BookingResult struct {
-	Success         bool      `json:"success"`
-	ReservationTime time.Time `json:"reservation_time"`
-	resy.BookingConfirmation
+	Success              bool           `json:"success"`
+	ReservationTime      time.Time      `json:"reservation_time"`
+	PlatformConfirmation map[string]any `json:"platform_confirmation"`
 }
+
+type Status string
+
+const (
+	StatusSuccess = Status("success")
+	StatusFail    = Status("fail")
+)
 
 // Output value of the job that is sent back to the
 // server and set as the output
 type JobOutput struct {
-	Status       string        `json:"status"`
-	Result       BookingResult `json:"result"`
-	ErrorMessage string        `json:"error_message"`
-	Logs         string        `json:"logs"`
+	JobId        *uuid.UUID     `json:"job_id"`
+	Status       Status         `json:"status"`
+	Result       *BookingResult `json:"result"`
+	Duration     time.Duration  `json:"duration"`
+	ErrorMessage string         `json:"error_message"`
+	Logs         []LogEntry     `json:"logs"`
+}
+
+// Represents a log entry
+type LogEntry struct {
+	Time   time.Time      `json:"time"`
+	Level  slog.Level     `json:"level"`
+	Msg    string         `json:"msg"`
+	Fields map[string]any `json:"fields,omitempty"`
 }
