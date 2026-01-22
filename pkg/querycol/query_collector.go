@@ -95,9 +95,9 @@ func (q *QueryCollector) ApplyToEvent(event *zerolog.Event) *zerolog.Event {
 	}
 
 	queryOutput := struct {
-		TotalQueries  int
-		TotalDuration time.Duration
-		Queries       []QueryInfo
+		TotalQueries  int           `json:"total_queries"`
+		TotalDuration time.Duration `json:"total_duration"`
+		Queries       []QueryInfo   `json:"queries"`
 	}{
 		TotalQueries:  len(q.queries),
 		TotalDuration: q.TotalDuration(),
