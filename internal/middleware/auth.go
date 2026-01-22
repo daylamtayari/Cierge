@@ -48,7 +48,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 				} else {
 					errorCol.Add(err, zerolog.InfoLevel, true, nil, fmt.Sprintf("failed authentication attempt due to an invalid %v token", tokenType))
 				}
-				m.respondUnauthorized(c)
+				respondUnauthorized(c)
 				return
 			}
 		}
@@ -64,11 +64,11 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			if err != nil {
 				if errors.Is(err, service.ErrApiKeyCheckFail) {
 					errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed authentication attempt due to an error checking the API key")
-					m.respondInternalServerError(c)
+					respondInternalServerError(c)
 					return
 				} else {
 					errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed authentication attempt due to an incorrect API key")
-					m.respondUnauthorized(c)
+					respondUnauthorized(c)
 					return
 				}
 			}
@@ -93,7 +93,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 				default:
 					errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed authentication attempt with a bearer token")
 				}
-				m.respondUnauthorized(c)
+				respondUnauthorized(c)
 				return
 			}
 
@@ -103,7 +103,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 				// Return an internal server error if the user ID value failed to parse
 				// due to either not actually being a UUID which is very problematic
 				// or due to an issue with the parsing, also problematic
-				m.respondInternalServerError(c)
+				respondInternalServerError(c)
 				return
 			}
 
@@ -111,11 +111,11 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			if err != nil {
 				if errors.Is(err, service.ErrUserDNE) {
 					errorCol.Add(err, zerolog.WarnLevel, true, map[string]any{"user_id": userID.String()}, "user with valid bearer token no longer exists")
-					m.respondUnauthorized(c)
+					respondUnauthorized(c)
 					return
 				}
 				errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"user_id": userID.String()}, "failed to retrieve user during auth flow")
-				m.respondInternalServerError(c)
+				respondInternalServerError(c)
 				return
 			}
 
@@ -149,11 +149,11 @@ func (m *AuthMiddleware) RequirePasswordChange() gin.HandlerFunc {
 		var user *model.User
 		if !ok {
 			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
-			m.respondForbidden(c)
+			respondForbidden(c)
 			return
 		} else if user, ok = gUser.(*model.User); !ok {
 			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user value from gin context failed to cast to a User type")
-			m.respondForbidden(c)
+			respondForbidden(c)
 			return
 		}
 
@@ -181,7 +181,7 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 		isAdmin := c.GetBool("is_admin")
 		if !isAdmin {
 			errorCol.Add(nil, zerolog.WarnLevel, true, nil, "user attempted to access an administrative endpoint")
-			m.respondForbidden(c)
+			respondForbidden(c)
 			return
 		}
 
@@ -195,28 +195,4 @@ func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-// Return an Unauthorized error response
-func (m *AuthMiddleware) respondUnauthorized(c *gin.Context) {
-	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-		"error":      "Unauthorized",
-		"request_id": appctx.RequestID(c.Request.Context()),
-	})
-}
-
-// Return a Forbidden error response
-func (m *AuthMiddleware) respondForbidden(c *gin.Context) {
-	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"error":      "Forbidden",
-		"request_id": appctx.RequestID(c.Request.Context()),
-	})
-}
-
-// Return an Internal Server Error response
-func (m *AuthMiddleware) respondInternalServerError(c *gin.Context) {
-	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-		"error":      "Internal server error",
-		"request_id": appctx.RequestID(c.Request.Context()),
-	})
 }
