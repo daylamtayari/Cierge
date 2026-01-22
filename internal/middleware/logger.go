@@ -8,7 +8,6 @@ import (
 	"github.com/rs/zerolog"
 
 	appctx "github.com/daylamtayari/cierge/internal/context"
-	"github.com/daylamtayari/cierge/internal/version"
 	"github.com/daylamtayari/cierge/pkg/errcol"
 	"github.com/daylamtayari/cierge/pkg/querycol"
 )
@@ -26,7 +25,6 @@ func Logger(baseLogger zerolog.Logger, isDevelopment bool) gin.HandlerFunc {
 		// Create request-scoped logger
 		logger := baseLogger.With().
 			Str("request_id", requestID).
-			Str("version", version.Version).
 			Str("gin_version", gin.Version).
 			// Request information
 			// Intentional no logging of IP for privacy
