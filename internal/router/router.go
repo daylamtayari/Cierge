@@ -33,6 +33,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	router.Use(middleware.Recovery())
 
 	authMiddleware := middleware.NewAuthMiddleware(services.Token, services.User)
+	callbackAuthMiddleware := middleware.NewCallbackAuthMiddleware(services.Job)
 
 	handlers := handler.New(services, cfg)
 
@@ -53,6 +54,12 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	authRoutes := router.Group("/auth")
 	{
 		authRoutes.POST("/login", handlers.Auth.Login)
+	}
+
+	// Internal callback routes
+	internalRoutes := router.Group("/internal")
+	{
+		internalRoutes.POST("/job/status", callbackAuthMiddleware.RequireCallbackAuth(), handlers.JobCallback.HandleJobCallback)
 	}
 
 	authenticated := router.Group("/api")
