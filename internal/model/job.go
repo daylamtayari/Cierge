@@ -27,9 +27,9 @@ type Job struct {
 	PartySize       int16          `gorm:"type:smallint;not null"`
 	PreferredTimes  pq.StringArray `gorm:"type:varchar(10)[];not null"`
 
-	ScheduledAt    time.Time  `gorm:"not null;index:idx_jobs_scheduled,where:status = 'scheduled'"`
-	DropConfigID   *uuid.UUID `gorm:"type:uuid"`
-	CallbackSecret *string    `gorm:"type:varchar(64)"`
+	ScheduledAt        time.Time  `gorm:"not null;index:idx_jobs_scheduled,where:status = 'scheduled'"`
+	DropConfigID       *uuid.UUID `gorm:"type:uuid"`
+	CallbackSecretHash *string    `gorm:"type:varchar(255)"`
 
 	Status      JobStatus `gorm:"type:job_status;not null;default:'scheduled';index:idx_jobs_status;index:idx_jobs_user_status"`
 	StartedAt   *time.Time
