@@ -30,76 +30,63 @@ var (
 func HandleRequest(ctx context.Context, event LambdaEvent) error {
 	startTime := time.Now().UTC()
 
-	log := map[string]any{
-		"job_id":     event.JobID,
-		"start_time": startTime,
+	output := JobOutput{
+		JobId:     event.JobID,
+		StartTime: startTime,
 	}
 
 	ctx = context.WithValue(ctx, startTimeKey, startTime)
 
 	token, err := decryptToken(ctx, event.EncryptedToken)
 	if err != nil {
-		log["message"] = "failed to decrypt token"
-		log["error"] = err.Error()
-		log["level"] = "error"
-		complete(ctx, event, JobOutput{
-			Status:       StatusFail,
-			ErrorMessage: err.Error(),
-			Log:          log,
-		})
+		output.Message = "failed to decrypt token"
+		output.Success = false
+		output.Error = err
+		output.Level = "error"
+		complete(ctx, output)
 		return nil
 	}
 
 	bookingClient, err := NewBookingClient(event.Platform, token)
 	if err != nil {
-		log["message"] = "failed to create booking client"
-		log["error"] = err.Error()
-		log["level"] = "error"
-		complete(ctx, event, JobOutput{
-			Status:       StatusFail,
-			ErrorMessage: err.Error(),
-			Log:          log,
-		})
+		output.Message = "failed to create booking client"
+		output.Success = false
+		output.Error = err
+		output.Level = "error"
+		complete(ctx, output)
 		return nil
 	}
 
 	err = bookingClient.PreBookingCheck(ctx, event)
 	if err != nil {
-		log["message"] = "failed to perform pre-booking checks"
-		log["error"] = err.Error()
-		log["level"] = "error"
-		complete(ctx, event, JobOutput{
-			Status:       StatusFail,
-			ErrorMessage: err.Error(),
-			Log:          log,
-		})
+		output.Message = "failed to perform pre-booking checks"
+		output.Success = false
+		output.Error = err
+		output.Level = "error"
+		complete(ctx, output)
 		return nil
 	}
 
 	waitUntil(event.DropTime)
-	log["booking_start"] = time.Now().UTC()
-	log["drift_ns"] = time.Since(event.DropTime).Nanoseconds()
+	output.BookingStart = time.Now().UTC()
+	output.DriftNs = time.Since(event.DropTime).Nanoseconds()
 
 	bookingResult, err := bookingClient.Book(ctx, event)
 	if err != nil {
-		log["message"] = "failed to perform booking"
-		log["error"] = err.Error()
-		log["level"] = "error"
-		complete(ctx, event, JobOutput{
-			Status:       StatusFail,
-			ErrorMessage: err.Error(),
-			Log:          log,
-		})
+		output.Message = "failed to perform booking"
+		output.Success = false
+		output.Error = err
+		output.Level = "error"
+		complete(ctx, output)
+		return nil
 	}
 
-	log["reservation_time"] = bookingResult.ReservationTime
-	log["platform_confirmation"] = bookingResult.PlatformConfirmation
-	log["level"] = "info"
+	output.ReservationTime = bookingResult.ReservationTime
+	output.PlatformConfirmation = bookingResult.PlatformConfirmation
+	output.Success = true
+	output.Level = "info"
 
-	complete(ctx, event, JobOutput{
-		Status: StatusSuccess,
-		Log:    log,
-	})
+	complete(ctx, output)
 	return nil
 }
 
@@ -122,15 +109,13 @@ func decryptToken(ctx context.Context, encryptedToken string) (string, error) {
 
 // Exit handler of the Lambda
 // Calculates duration, notifies server of output, and outputs job output to stdout
-func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
+func complete(ctx context.Context, output JobOutput) {
 	if startTime, ok := ctx.Value(startTimeKey).(time.Time); ok {
 		output.Duration = time.Now().UTC().Sub(startTime)
 	} else {
 		output.Duration = time.Duration(0)
 	}
-	output.Log["duration"] = output.Duration
 
-	output.JobId = event.JobID
 	// TODO: Notify server
 	marshalledOutput, _ := json.Marshal(output)
 	fmt.Print(string(marshalledOutput))

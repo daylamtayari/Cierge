@@ -28,20 +28,18 @@ type BookingResult struct {
 	PlatformConfirmation map[string]any `json:"platform_confirmation"`
 }
 
-type Status string
-
-const (
-	StatusSuccess = Status("success")
-	StatusFail    = Status("fail")
-)
-
-// Output value of the job that is sent back to the
-// server and set as the output
+// Represents the output value of the job
+// as well as the log event for the Lambda
+// It is sent back to the server at completion
+// and logged to stdout
 type JobOutput struct {
-	JobId        *uuid.UUID     `json:"job_id"`
-	Status       Status         `json:"status"`
-	Result       *BookingResult `json:"result"`
-	Duration     time.Duration  `json:"duration"`
-	ErrorMessage string         `json:"error_message"`
-	Log          map[string]any `json:"log"`
+	JobId         *uuid.UUID    `json:"job_id"`
+	Duration      time.Duration `json:"duration"`
+	Message       string        `json:"error_message"`
+	Error         error         `json:"error"`
+	Level         string        `json:"level"`
+	StartTime     time.Time     `json:"start_time"`
+	BookingStart  time.Time     `json:"booking_start"`
+	DriftNs       int64         `json:"drift_ns"`
+	BookingResult `json:"booking_result"`
 }
