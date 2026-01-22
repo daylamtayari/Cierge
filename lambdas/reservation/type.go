@@ -24,7 +24,6 @@ type LambdaEvent struct {
 
 // Result of a booking
 type BookingResult struct {
-	Success              bool           `json:"success"`
 	ReservationTime      time.Time      `json:"reservation_time"`
 	PlatformConfirmation map[string]any `json:"platform_confirmation"`
 }
@@ -34,13 +33,14 @@ type BookingResult struct {
 // It is sent back to the server at completion
 // and logged to stdout
 type JobOutput struct {
-	JobId         *uuid.UUID    `json:"job_id"`
-	Duration      time.Duration `json:"duration"`
-	Message       string        `json:"error_message"`
-	Error         string        `json:"error,omitempty"`
-	Level         string        `json:"level"`
-	StartTime     time.Time     `json:"start_time"`
-	BookingStart  time.Time     `json:"booking_start"`
-	DriftNs       int64         `json:"drift_ns"`
-	BookingResult `json:"booking_result"`
+	JobId        *uuid.UUID    `json:"job_id"`
+	Success      bool          `json:"success"`
+	Duration     time.Duration `json:"duration"`
+	Message      string        `json:"error_message"`
+	Error        string        `json:"error,omitempty"`
+	Level        string        `json:"level"`
+	StartTime    time.Time     `json:"start_time"`
+	BookingStart time.Time     `json:"booking_start"`
+	DriftNs      int64         `json:"drift_ns"`
+	BookingResult
 }

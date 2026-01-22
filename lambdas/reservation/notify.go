@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -37,9 +38,10 @@ func notifyServer(ctx context.Context, serverEndpoint string, callbackSecret str
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close() //nolint:errcheck
 
 	if res.StatusCode != 200 {
-		return ErrUnsuccessfulStatusCode
+		return fmt.Errorf("%w: %d", ErrUnsuccessfulStatusCode, res.StatusCode)
 	}
 	return nil
 }

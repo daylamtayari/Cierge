@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 var (
 	ErrNoMatchingSlotsFound = errors.New("no slots matching the preferred times found")
 	ErrNoSlotsFound         = errors.New("no reservation slots found")
+	ErrFailedToBookSlots    = errors.New("failed to book any of the slots")
 	ErrUnmarshalToken       = errors.New("failed to unmarshal token")
 )
 
@@ -31,7 +33,11 @@ func NewResyClient(token string) (*ResyClient, error) {
 		return nil, fmt.Errorf("%w: %w", ErrUnmarshalToken, err)
 	}
 
-	resyClient.client = resy.NewClient(nil, resyClient.tokens, "")
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	resyClient.client = resy.NewClient(httpClient, resyClient.tokens, "")
 
 	return &resyClient, nil
 }
@@ -83,11 +89,11 @@ func (c *ResyClient) Book(ctx context.Context, event LambdaEvent) (*BookingResul
 		if err == nil {
 			// If no errors are returned, the reservation
 			// was successfully booked
-			break
+			return bookingResult, nil
 		}
 	}
 
-	return bookingResult, nil
+	return nil, ErrFailedToBookSlots
 }
 
 // Books a given slot for a given party size
@@ -116,7 +122,6 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 	}
 
 	return &BookingResult{
-		Success:         true,
 		ReservationTime: slot.Date.Start.Time,
 		PlatformConfirmation: map[string]any{
 			"resy_token":     bookingConfirmation.ReservationToken,

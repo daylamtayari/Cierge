@@ -67,7 +67,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		return nil
 	}
 
-	waitUntil(event.DropTime)
+	waitUntil(ctx, event.DropTime)
 	output.BookingStart = time.Now().UTC()
 	output.DriftNs = time.Since(event.DropTime).Nanoseconds()
 
@@ -133,7 +133,7 @@ func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
 			// Keep success as true if the reservation completed
 			// as that is the core goal of this lambda and the
 			// output will still be sent to stdout
-			output.Message += "- error: failed to notify server"
+			output.Message += " - error: failed to notify server"
 			output.Error = err.Error()
 			output.Level = "error"
 			marshalledOutput, _ = json.Marshal(output)
@@ -144,7 +144,7 @@ func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
 }
 
 // Waits until a specified time
-func waitUntil(target time.Time) {
+func waitUntil(ctx context.Context, target time.Time) {
 	for {
 		remaining := time.Until(target)
 
@@ -167,6 +167,9 @@ func waitUntil(target time.Time) {
 
 		for time.Now().Before(target) {
 			// Busy wait until the exact time is hit
+			if ctx.Err() != nil {
+				return
+			}
 		}
 		return
 	}
