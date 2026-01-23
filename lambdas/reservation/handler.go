@@ -119,7 +119,7 @@ func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
 
 	marshalledOutput, _ := json.Marshal(output)
 
-	callbackSecret, err := decryptToken(ctx, event.EncryptedCallBackSecret)
+	callbackSecret, err := decryptToken(ctx, event.EncryptedCallbackSecret)
 	if err != nil {
 		// Keep success as true if the reservation completed
 		// as that is the core goal of this lambda and the

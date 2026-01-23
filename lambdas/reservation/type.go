@@ -14,7 +14,7 @@ type LambdaEvent struct {
 	Platform                string      `json:"platform"`
 	PlatformVenueId         string      `json:"platform_venue_id"`
 	EncryptedToken          string      `json:"encrypted_token"`
-	EncryptedCallBackSecret string      `json:"encrypted_callback_secret"`
+	EncryptedCallbackSecret string      `json:"encrypted_callback_secret"`
 	ReservationDate         time.Time   `json:"reservation_date"`
 	PartySize               int         `json:"party_size"`
 	PreferredTimes          []time.Time `json:"preferred_times"`

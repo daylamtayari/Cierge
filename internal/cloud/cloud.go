@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrUnsupportedProvider = errors.New("unsupported provider specified")
+	ErrUnsupportedProvider = errors.New("unsupported cloud provider specified")
 )
 
 // Provider defines the interface that all cloud providers must implement
@@ -56,4 +56,3 @@ func AvailableProviders() []config.CloudProvider {
 
 	return providers
 }
-
