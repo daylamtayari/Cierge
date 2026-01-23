@@ -3,8 +3,7 @@ package cloud
 import (
 	"context"
 	"errors"
-
-	"github.com/daylamtayari/cierge/internal/config"
+	"strings"
 )
 
 var (
@@ -24,12 +23,25 @@ type Provider interface {
 	Send(ctx context.Context, notifType NotificationType, message string)
 }
 
+// Represents a notification provider's constructor
 type ProviderConstructor func(config map[string]any) (Provider, error)
 
-var registry = make(map[string]ProviderConstructor)
+// Represents a notification provider's configuration validator
+type ProviderConfigValidator func(config map[string]any, isProduction bool) error
 
-// Registers a notification provider's constructor
-func Register(name string, constructor ProviderConstructor) {
+// Contains a notification provider's
+// constructor and configuration validator
+type ProviderRegistration struct {
+	Constructor ProviderConstructor
+	Validator   ProviderConfigValidator
+}
+
+// A map of notification providers
+// The key value is always lower case
+var registry = make(map[string]ProviderRegistration)
+
+// Registers a notification provider's constructor and validator
+func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
 	if constructor == nil {
 		panic("notification: register constructor is nil")
 	}
@@ -37,17 +49,30 @@ func Register(name string, constructor ProviderConstructor) {
 		panic("notification: register called twice for the same provider: " + name)
 	}
 
-	registry[name] = constructor
+	registry[strings.ToLower(name)] = ProviderRegistration{
+		Constructor: constructor,
+		Validator:   configValidator,
+	}
 }
 
 // Creates a new provider for the notification provider specified
-func NewProvider(cfg *config.NotificationProvider) (Provider, error) {
-	constructor, exists := registry[cfg.Name]
+func NewProvider(name string, config map[string]any) (Provider, error) {
+	provider, exists := registry[name]
 	if !exists {
 		return nil, ErrUnsupportedProvider
 	}
 
-	return constructor(cfg.Config)
+	return provider.Constructor(config)
+}
+
+// Validates a notification provider's config
+func ValidateConfig(name string, config map[string]any, isProduction bool) error {
+	provider, exists := registry[name]
+	if !exists {
+		return ErrUnsupportedProvider
+	}
+
+	return provider.Validator(config, isProduction)
 }
 
 // Returns a slice of all available of notification providers
@@ -59,4 +84,3 @@ func AvailableProviders() []string {
 
 	return providers
 }
-

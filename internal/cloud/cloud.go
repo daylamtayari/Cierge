@@ -20,18 +20,18 @@ type Provider interface {
 	EncryptData(ctx context.Context) error
 }
 
+// Represents a cloud provider's constructor
+type ProviderConstructor func(config map[string]any) (Provider, error)
+
+// Represents a cloud provider's configuration validator
+type ProviderConfigValidator func(config map[string]any, isProduction bool) error
+
 // Contains a cloud provider's constructor
 // and configuration validator
 type ProviderRegistration struct {
 	Constructor ProviderConstructor
 	Validator   ProviderConfigValidator
 }
-
-// Represents a cloud provider's constructor
-type ProviderConstructor func(config map[string]any) (Provider, error)
-
-// Represents a cloud provider's configuration validator
-type ProviderConfigValidator func(config map[string]any, isProduction bool) error
 
 // A map of cloud providers
 // The key value is always lower case
