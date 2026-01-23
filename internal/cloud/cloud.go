@@ -3,8 +3,7 @@ package cloud
 import (
 	"context"
 	"errors"
-
-	"github.com/daylamtayari/cierge/internal/config"
+	"strings"
 )
 
 var (
@@ -34,10 +33,12 @@ type ProviderConstructor func(config map[string]any) (Provider, error)
 // Represents a cloud provider's configuration validator
 type ProviderConfigValidator func(config map[string]any, isProduction bool) error
 
-var registry = make(map[config.CloudProvider]ProviderRegistration)
+// A map of cloud providers
+// The key value is always lower case
+var registry = make(map[string]ProviderRegistration)
 
 // Registers a cloud provider's constructor
-func Register(name config.CloudProvider, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
+func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
 	if constructor == nil {
 		panic("cloud: register constructor is nil")
 	}
@@ -45,35 +46,35 @@ func Register(name config.CloudProvider, constructor ProviderConstructor, config
 		panic("cloud: register called twice for the same provider: " + name)
 	}
 
-	registry[name] = ProviderRegistration{
+	registry[strings.ToLower(name)] = ProviderRegistration{
 		Constructor: constructor,
 		Validator:   configValidator,
 	}
 }
 
 // Creates a new provider for the cloud provider specified in the config
-func NewProvider(cfg *config.CloudConfig) (Provider, error) {
-	provider, exists := registry[cfg.Provider]
+func NewProvider(name string, config map[string]any) (Provider, error) {
+	provider, exists := registry[name]
 	if !exists {
 		return nil, ErrUnsupportedProvider
 	}
 
-	return provider.Constructor(cfg.Config)
+	return provider.Constructor(config)
 }
 
 // Validates a cloud provider's config
-func ValidateConfig(cfg *config.CloudConfig, isProduction bool) error {
-	provider, exists := registry[cfg.Provider]
+func ValidateConfig(name string, config map[string]any, isProduction bool) error {
+	provider, exists := registry[name]
 	if !exists {
 		return ErrUnsupportedProvider
 	}
 
-	return provider.Validator(cfg.Config, isProduction)
+	return provider.Validator(config, isProduction)
 }
 
 // Returns a slice of all available cloud providers
-func AvailableProviders() []config.CloudProvider {
-	providers := make([]config.CloudProvider, 0, len(registry))
+func AvailableProviders() []string {
+	providers := make([]string, 0, len(registry))
 	for name := range registry {
 		providers = append(providers, name)
 	}

@@ -108,17 +108,10 @@ type OIDCProvider struct {
 }
 
 // Cloud configuration
-type CloudProvider string
-
-const (
-	CloudProviderAWS   CloudProvider = "aws"
-	CloudProviderAzure CloudProvider = "azure"
-	CloudProviderGCP   CloudProvider = "gcp"
-)
 
 type CloudConfig struct {
-	Provider CloudProvider  `json:"provider" default:"aws"`
-	Config   map[string]any `json:"config"`
+	Name   string         `json:"provider" default:"aws"`
+	Config map[string]any `json:"config"`
 }
 
 // Notification configuration

@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/daylamtayari/cierge/internal/cloud"
-	"github.com/daylamtayari/cierge/internal/config"
 )
 
 type Provider struct {
 }
 
 func init() {
-	cloud.Register(config.CloudProviderAWS, NewProvider, ValidateConfig)
+	cloud.Register("aws", NewProvider, ValidateConfig)
 }
 
 // Returns a new AWS provider
