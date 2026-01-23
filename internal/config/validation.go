@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/daylamtayari/cierge/internal/cloud"
+	"github.com/daylamtayari/cierge/internal/notification"
 )
 
 type ValidationError struct {
@@ -131,6 +133,26 @@ func (c *Config) Validate() error {
 			}
 		} else {
 			errs = append(errs, ValidationError{"cloud.provider", "cloud provider specified is not supported"})
+		}
+	}
+
+	// Notification validation
+	availableNotificationProviders := notification.AvailableProviders()
+	for i, notificationProvider := range c.Notification {
+		// Only runs the validation if the notification provider is enabled
+		// Notification providers can be disabled or enabled server wide in the configuration and this
+		// cannot be changed without restarting the server, so no risk of a notification provider not being validated
+		if !notificationProvider.Enabled {
+			continue
+		}
+
+		if slices.Contains(availableNotificationProviders, notificationProvider.Name) {
+			err := notification.ValidateConfig(notificationProvider.Name, notificationProvider.Config, !c.IsDevelopment())
+			if err != nil {
+				errs = append(errs, ValidationError{"notification[" + strconv.Itoa(i) + "].config", err.Error()})
+			}
+		} else {
+			errs = append(errs, ValidationError{"notification[" + strconv.Itoa(i) + "].name", "notification provider specified is not supported"})
 		}
 	}
 
