@@ -19,6 +19,9 @@ import (
 	"github.com/daylamtayari/cierge/internal/version"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
+
+	// Registering of cloud providers
+	_ "github.com/daylamtayari/cierge/internal/cloud/aws"
 )
 
 func main() {

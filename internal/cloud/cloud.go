@@ -37,7 +37,7 @@ type ProviderRegistration struct {
 // The key value is always lower case
 var registry = make(map[string]ProviderRegistration)
 
-// Registers a cloud provider's constructor
+// Registers a cloud provider's constructor and validator
 func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
 	if constructor == nil {
 		panic("cloud: register constructor is nil")
