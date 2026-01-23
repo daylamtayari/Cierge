@@ -8,14 +8,14 @@ import (
 )
 
 type Config struct {
-	Environment  Environment        `json:"environment" default:"dev"`
-	LogLevel     zerolog.Level      `json:"log_level" default:"info"`
-	Server       ServerConfig       `json:"server"`
-	Database     DatabaseConfig     `json:"database"`
-	Auth         AuthConfig         `json:"auth"`
-	Cloud        CloudConfig        `json:"cloud"`
-	Notification NotificationConfig `json:"notification"`
-	DefaultAdmin User               `json:"default_admin"`
+	Environment  Environment            `json:"environment" default:"dev"`
+	LogLevel     zerolog.Level          `json:"log_level" default:"info"`
+	Server       ServerConfig           `json:"server"`
+	Database     DatabaseConfig         `json:"database"`
+	Auth         AuthConfig             `json:"auth"`
+	Cloud        CloudConfig            `json:"cloud"`
+	Notification []NotificationProvider `json:"notification"`
+	DefaultAdmin User                   `json:"default_admin"`
 }
 
 type Environment string
@@ -122,16 +122,11 @@ type CloudConfig struct {
 }
 
 // Notification configuration
-type NotificationConfig struct {
-	Email   NotificationChannelConfig `json:"email"`
-	SMS     NotificationChannelConfig `json:"sms"`
-	Webhook NotificationChannelConfig `json:"webhook"`
-}
 
-type NotificationChannelConfig struct {
-	Enabled     bool `json:"enabled" default:"false"`
-	TokenExpiry bool `json:"token_expiry" default:"true"`
-	JobStarted  bool `json:"job_started" default:"false"`
-	JobSuccess  bool `json:"job_success" deffault:"true"`
-	JobFailed   bool `json:"job_failed" default:"true"`
+// Represents a notification provider and it's config
+// The name should match the notification provider name
+type NotificationProvider struct {
+	Name    string         `json:"name"`
+	Enabled bool           `json:"enabled"`
+	Config  map[string]any `json:"config"`
 }
