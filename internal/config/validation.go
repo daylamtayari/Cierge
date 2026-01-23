@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"slices"
 	"strings"
+
+	"github.com/daylamtayari/cierge/internal/cloud"
 )
 
 type ValidationError struct {
@@ -96,7 +98,7 @@ func (c *Config) Validate() error {
 			errs = append(errs, ValidationError{"auth.oidc_providers", "at least one provider is required when using OIDC"})
 		}
 		for name, provider := range c.Auth.OIDCProviders {
-			prefix := fmt.Sprintf("auth.oidc.providers.%s", name)
+			prefix := "auth.oidc.providers." + name
 
 			if provider.ClientID == "" {
 				errs = append(errs, ValidationError{prefix + ".client_id", "client ID is required"})
@@ -116,18 +118,20 @@ func (c *Config) Validate() error {
 	}
 
 	// Cloud validation
-	switch c.Cloud.Provider {
-	case CloudProviderAWS:
-		// Valid
-	case CloudProviderAzure, CloudProviderGCP:
-		errs = append(errs, ValidationError{"cloud.provider", "GCP and Azure are not currently supported cloud providers"})
-	case "":
-		errs = append(errs, ValidationError{"cloud.provider", "cloud provider must be specified"})
-	default:
-		errs = append(errs, ValidationError{"cloud.provider", "cloud provider must be 'aws', 'azure', or 'gcp'"})
-	}
 	if c.Cloud.Config == nil {
 		errs = append(errs, ValidationError{"cloud.config", "cloud configuration must be provided"})
+	} else if c.Cloud.Provider == "" {
+		errs = append(errs, ValidationError{"cloud.provider", "cloud provider must be specified"})
+	} else {
+		availableCloudProviders := cloud.AvailableProviders()
+		if slices.Contains(availableCloudProviders, c.Cloud.Provider) {
+			err := cloud.ValidateConfig(c.Cloud.Provider, c.Cloud.Config, !c.IsDevelopment())
+			if err != nil {
+				errs = append(errs, ValidationError{"cloud.config", err.Error()})
+			}
+		} else {
+			errs = append(errs, ValidationError{"cloud.provider", "cloud provider specified is not supported"})
+		}
 	}
 
 	if len(errs) > 0 {

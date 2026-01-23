@@ -110,8 +110,8 @@ type OIDCProvider struct {
 // Cloud configuration
 
 type CloudConfig struct {
-	Name   string         `json:"provider" default:"aws"`
-	Config map[string]any `json:"config"`
+	Provider string         `json:"provider" default:"aws"`
+	Config   map[string]any `json:"config"`
 }
 
 // Notification configuration
