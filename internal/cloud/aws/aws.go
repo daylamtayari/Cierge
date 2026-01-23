@@ -7,26 +7,26 @@ import (
 	"github.com/daylamtayari/cierge/internal/config"
 )
 
-type AWSProvider struct {
+type Provider struct {
 }
 
 func init() {
-	cloud.Register(config.CloudProviderAWS, NewAWSProvider)
+	cloud.Register(config.CloudProviderAWS, NewProvider)
 }
 
 // Returns a new AWS provider
-func NewAWSProvider(config map[string]any) (cloud.Provider, error) {
-	return &AWSProvider{}, nil
+func NewProvider(config map[string]any) (cloud.Provider, error) {
+	return &Provider{}, nil
 }
 
-func (p *AWSProvider) ScheduleJob(ctx context.Context) error {
+func (p *Provider) ScheduleJob(ctx context.Context) error {
 	return nil
 }
 
-func (p *AWSProvider) CancelJob(ctx context.Context) error {
+func (p *Provider) CancelJob(ctx context.Context) error {
 	return nil
 }
 
-func (p *AWSProvider) EncryptData(ctx context.Context) error {
+func (p *Provider) EncryptData(ctx context.Context) error {
 	return nil
 }
