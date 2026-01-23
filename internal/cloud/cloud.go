@@ -21,12 +21,23 @@ type Provider interface {
 	EncryptData(ctx context.Context) error
 }
 
+// Contains a cloud provider's constructor
+// and configuration validator
+type ProviderRegistration struct {
+	Constructor ProviderConstructor
+	Validator   ProviderConfigValidator
+}
+
+// Represents a cloud provider's constructor
 type ProviderConstructor func(config map[string]any) (Provider, error)
 
-var registry = make(map[config.CloudProvider]ProviderConstructor)
+// Represents a cloud provider's configuration validator
+type ProviderConfigValidator func(config map[string]any, isProduction bool) error
+
+var registry = make(map[config.CloudProvider]ProviderRegistration)
 
 // Registers a cloud provider's constructor
-func Register(name config.CloudProvider, constructor ProviderConstructor) {
+func Register(name config.CloudProvider, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
 	if constructor == nil {
 		panic("cloud: register constructor is nil")
 	}
@@ -34,17 +45,30 @@ func Register(name config.CloudProvider, constructor ProviderConstructor) {
 		panic("cloud: register called twice for the same provider: " + name)
 	}
 
-	registry[name] = constructor
+	registry[name] = ProviderRegistration{
+		Constructor: constructor,
+		Validator:   configValidator,
+	}
 }
 
 // Creates a new provider for the cloud provider specified in the config
 func NewProvider(cfg *config.CloudConfig) (Provider, error) {
-	constructor, exists := registry[cfg.Provider]
+	provider, exists := registry[cfg.Provider]
 	if !exists {
 		return nil, ErrUnsupportedProvider
 	}
 
-	return constructor(cfg.Config)
+	return provider.Constructor(cfg.Config)
+}
+
+// Validates a cloud provider's config
+func ValidateConfig(cfg *config.CloudConfig, isProduction bool) error {
+	provider, exists := registry[cfg.Provider]
+	if !exists {
+		return ErrUnsupportedProvider
+	}
+
+	return provider.Validator(cfg.Config, isProduction)
 }
 
 // Returns a slice of all available cloud providers

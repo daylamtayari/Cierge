@@ -11,7 +11,7 @@ type Provider struct {
 }
 
 func init() {
-	cloud.Register(config.CloudProviderAWS, NewProvider)
+	cloud.Register(config.CloudProviderAWS, NewProvider, ValidateConfig)
 }
 
 // Returns a new AWS provider
@@ -28,5 +28,9 @@ func (p *Provider) CancelJob(ctx context.Context) error {
 }
 
 func (p *Provider) EncryptData(ctx context.Context) error {
+	return nil
+}
+
+func ValidateConfig(config map[string]any, isProduction bool) error {
 	return nil
 }
