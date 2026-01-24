@@ -9,6 +9,8 @@ import (
 )
 
 var (
+	ErrDuplicateProvider   = errors.New("cloud register called twice for the same provider")
+	ErrNilConstructor      = errors.New("cloud register constructor is nil")
 	ErrUnsupportedProvider = errors.New("unsupported cloud provider specified")
 )
 
@@ -40,18 +42,20 @@ type ProviderRegistration struct {
 var registry = make(map[string]ProviderRegistration)
 
 // Registers a cloud provider's constructor and validator
-func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
+func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) error {
 	if constructor == nil {
-		panic("cloud: register constructor is nil")
+		return ErrNilConstructor
 	}
 	if _, exists := registry[name]; exists {
-		panic("cloud: register called twice for the same provider: " + name)
+		return ErrDuplicateProvider
 	}
 
 	registry[strings.ToLower(name)] = ProviderRegistration{
 		Constructor: constructor,
 		Validator:   configValidator,
 	}
+
+	return nil
 }
 
 // Creates a new provider for the cloud provider specified in the config

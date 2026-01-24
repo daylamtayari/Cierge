@@ -10,15 +10,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/daylamtayari/cierge/server/internal/cloud"
+	"github.com/daylamtayari/cierge/server/internal/cloud/aws"
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/database"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	"github.com/daylamtayari/cierge/server/internal/service"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
-
-	// Registering of cloud providers
-	_ "github.com/daylamtayari/cierge/server/internal/cloud/aws"
 )
 
 func main() {
@@ -50,6 +49,19 @@ func main() {
 
 	logger = NewLogger(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", Version).Logger()
 	logger.Info().Msg("starting cierge server")
+
+	// Register cloud providers
+	cloudProviders := []string{"aws"}
+	for _, providerName := range cloudProviders {
+		switch providerName {
+		case "aws":
+			err = cloud.Register("aws", aws.NewProvider, aws.ValidateConfig)
+		}
+
+		if err != nil {
+			logger.Error().Err(err).Msgf("failed to register cloud provider %q", providerName)
+		}
+	}
 
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
 	if err != nil {

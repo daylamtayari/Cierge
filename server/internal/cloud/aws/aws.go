@@ -9,10 +9,6 @@ import (
 type Provider struct {
 }
 
-func init() {
-	cloud.Register("aws", NewProvider, ValidateConfig)
-}
-
 // Returns a new AWS provider
 func NewProvider(config map[string]any) (cloud.Provider, error) {
 	return &Provider{}, nil
