@@ -13,7 +13,6 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/database"
 	"github.com/daylamtayari/cierge/server/internal/repository"
-	"github.com/daylamtayari/cierge/server/internal/router"
 	"github.com/daylamtayari/cierge/server/internal/service"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
@@ -82,7 +81,7 @@ func main() {
 		}
 	}
 
-	router := router.NewRouter(cfg, logger, services)
+	router := NewRouter(cfg, logger, services)
 	server := &http.Server{
 		Addr:    cfg.Server.Address(),
 		Handler: router,
