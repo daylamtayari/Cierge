@@ -3,6 +3,8 @@ package cloud
 import (
 	"context"
 	"errors"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -74,10 +76,5 @@ func ValidateConfig(name string, config map[string]any, isProduction bool) error
 
 // Returns a slice of all available cloud providers
 func AvailableProviders() []string {
-	providers := make([]string, 0, len(registry))
-	for name := range registry {
-		providers = append(providers, name)
-	}
-
-	return providers
+	return slices.Collect(maps.Keys(registry))
 }
