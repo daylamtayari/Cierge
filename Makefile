@@ -14,7 +14,7 @@ dev: ## Run server in dev mode with hot reload
 
 .PHONY: run
 run: ## Run server
-	go run ./cmd/server
+	go run ./server
 
 # Utilities and cleanup
 
