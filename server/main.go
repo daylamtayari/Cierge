@@ -12,11 +12,9 @@ import (
 
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/database"
-	"github.com/daylamtayari/cierge/server/internal/logging"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	"github.com/daylamtayari/cierge/server/internal/router"
 	"github.com/daylamtayari/cierge/server/internal/service"
-	"github.com/daylamtayari/cierge/server/internal/version"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 
@@ -51,7 +49,7 @@ func main() {
 		prettyOutput = false
 	}
 
-	logger = logging.New(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", version.Version).Logger()
+	logger = NewLogger(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", Version).Logger()
 	logger.Info().Msg("starting cierge server")
 
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
@@ -134,7 +132,7 @@ func main() {
 
 // Prints the version information
 func printVersion() {
-	ver := version.Version
+	ver := Version
 	if ver == "dev" {
 		if info, ok := debug.ReadBuildInfo(); ok {
 			if info.Main.Version != "" && info.Main.Version != "(devel)" {

@@ -1,4 +1,4 @@
-package logging
+package main
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func New(level zerolog.Level, prettyOutput bool) zerolog.Logger {
+func NewLogger(level zerolog.Level, prettyOutput bool) zerolog.Logger {
 	zerolog.SetGlobalLevel(level)
 	zerolog.TimestampFieldName = "timestamp"
 
