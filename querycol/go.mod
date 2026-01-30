@@ -1,4 +1,4 @@
-module github.com/daylamtayari/cierge/pkg/querycol
+module github.com/daylamtayari/cierge/querycol
 
 go 1.25.5
 
