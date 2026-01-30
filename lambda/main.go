@@ -6,6 +6,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
+
+	"github.com/daylamtayari/cierge/reservation"
 )
 
 var decrypter KMSDecrypter
@@ -23,5 +25,9 @@ func init() {
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	lambda.Start(handle)
+}
+
+func handle(ctx context.Context, event reservation.Event) error {
+	return reservation.HandleRequest(ctx, event, &decrypter)
 }
