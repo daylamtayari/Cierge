@@ -25,7 +25,8 @@ var (
 // - Creates booking client
 // - Performs pre-booking checks
 // - Performs booking
-func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error {
+// Returns an Output type representing the output of the reservation job
+func Handle(ctx context.Context, event Event, decrypter Decrypter) Output {
 	startTime := time.Now().UTC()
 
 	output := Output{
@@ -41,8 +42,7 @@ func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error 
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output, decrypter)
-		return nil
+		return complete(ctx, event, output, decrypter)
 	}
 
 	bookingClient, err := NewBookingClient(event.Platform, token)
@@ -51,8 +51,7 @@ func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error 
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output, decrypter)
-		return nil
+		return complete(ctx, event, output, decrypter)
 	}
 
 	err = bookingClient.PreBookingCheck(ctx, event)
@@ -61,8 +60,7 @@ func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error 
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output, decrypter)
-		return nil
+		return complete(ctx, event, output, decrypter)
 	}
 
 	waitUntil(ctx, event.DropTime)
@@ -75,8 +73,7 @@ func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error 
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output, decrypter)
-		return nil
+		return complete(ctx, event, output, decrypter)
 	}
 
 	output.ReservationTime = bookingResult.ReservationTime
@@ -85,8 +82,7 @@ func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error 
 	output.Message = "reservation completed successfully"
 	output.Level = "info"
 
-	complete(ctx, event, output, decrypter)
-	return nil
+	return complete(ctx, event, output, decrypter)
 }
 
 // Decrypts the users token using the Decrypter interface
@@ -106,18 +102,15 @@ func decryptToken(ctx context.Context, encryptedToken string, decrypter Decrypte
 
 // Exit handler of the Lambda
 // Calculates duration, notifies server of output, and outputs job output to stdout
-func complete(ctx context.Context, event Event, output Output, decrypter Decrypter) {
+func complete(ctx context.Context, event Event, output Output, decrypter Decrypter) Output {
 	if startTime, ok := ctx.Value(startTimeKey).(time.Time); ok {
 		output.Duration = time.Now().UTC().Sub(startTime)
 	} else {
 		output.Duration = time.Duration(0)
 	}
 
-	marshalledOutput, _ := json.Marshal(output)
-
 	if !event.Callback {
-		fmt.Print(string(marshalledOutput))
-		return
+		return output
 	}
 
 	callbackSecret, err := decryptToken(ctx, event.EncryptedCallbackSecret, decrypter)
@@ -129,6 +122,7 @@ func complete(ctx context.Context, event Event, output Output, decrypter Decrypt
 		output.Error = err.Error()
 		output.Level = "error"
 	} else {
+		marshalledOutput, _ := json.Marshal(output)
 		err = notifyServer(ctx, event.ServerEndpoint, callbackSecret, marshalledOutput)
 		if err != nil {
 			// Keep success as true if the reservation completed
@@ -137,11 +131,10 @@ func complete(ctx context.Context, event Event, output Output, decrypter Decrypt
 			output.Message += " - error: failed to notify server"
 			output.Error = err.Error()
 			output.Level = "error"
-			marshalledOutput, _ = json.Marshal(output)
 		}
 	}
 
-	fmt.Print(string(marshalledOutput))
+	return output
 }
 
 // Waits until a specified time
