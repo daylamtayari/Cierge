@@ -108,13 +108,15 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 
 	var bookingConfirmation *resy.BookingConfirmation
 
-	// If no payment methods are configured, book without
+	// If no payment methods are configured, book without, otherwise get
+	// default payment method and use that for booking
 	// This will work fine if the restaurant does not require a deposit
 	// but if it does, a resy.ErrPaymentRequired error will be returned
-	if len(slotDetails.User.PaymentMethods) == 0 {
+	paymentMethod := resy.GetDefaultPaymentMethod(&slotDetails.User)
+	if (paymentMethod == resy.PaymentMethod{}) {
 		bookingConfirmation, err = c.client.BookReservation(slotDetails.BookingToken.Value, nil)
 	} else {
-		paymentMethodId := strconv.Itoa(slotDetails.User.PaymentMethods[0].Id)
+		paymentMethodId := strconv.Itoa(paymentMethod.Id)
 		bookingConfirmation, err = c.client.BookReservation(slotDetails.BookingToken.Value, &paymentMethodId)
 	}
 	if err != nil {
