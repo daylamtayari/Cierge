@@ -69,7 +69,7 @@ type TokenService struct {
 	refreshTokenExpiry time.Duration
 }
 
-func NewTokenService(userService *UserService, authConfig config.AuthConfig, revocationRepo *repository.RevocationRepository) *TokenService {
+func NewTokenService(userService *UserService, authConfig config.Auth, revocationRepo *repository.RevocationRepository) *TokenService {
 	return &TokenService{
 		userService:        userService,
 		revocationRepo:     revocationRepo,

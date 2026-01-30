@@ -32,11 +32,11 @@ type AuthCookie struct {
 type AuthService struct {
 	userService  *UserService
 	tokenService *TokenService
-	authConfig   *config.AuthConfig
+	authConfig   *config.Auth
 	argonParams  *util.Argon2Params
 }
 
-func NewAuthService(userService *UserService, tokenService *TokenService, authConfig *config.AuthConfig) *AuthService {
+func NewAuthService(userService *UserService, tokenService *TokenService, authConfig *config.Auth) *AuthService {
 	return &AuthService{
 		userService:  userService,
 		tokenService: tokenService,

@@ -9,20 +9,22 @@ import (
 )
 
 var (
+	ErrDuplicateProvider   = errors.New("notifcation register called twice for the same provider")
+	ErrNilConstructor      = errors.New("notification register constructor is nil")
 	ErrUnsupportedProvider = errors.New("unsupported notification provider specified")
 )
 
-type NotificationType string
+type Type string
 
 const (
-	JobSuccessNotification   = NotificationType("job_success")
-	JobFailNotification      = NotificationType("job_fail")
-	TokenExpiredNotification = NotificationType("token_expired")
+	JobSuccess   = Type("job_success")
+	JobFail      = Type("job_fail")
+	TokenExpired = Type("token_expired")
 )
 
 // Defines the interface that all notification providers must implement
 type Provider interface {
-	Send(ctx context.Context, notifType NotificationType, message string)
+	Send(ctx context.Context, notifType Type, message string)
 }
 
 // Represents a notification provider's constructor
@@ -43,18 +45,20 @@ type ProviderRegistration struct {
 var registry = make(map[string]ProviderRegistration)
 
 // Registers a notification provider's constructor and validator
-func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) {
+func Register(name string, constructor ProviderConstructor, configValidator ProviderConfigValidator) error {
 	if constructor == nil {
-		panic("notification: register constructor is nil")
+		return ErrNilConstructor
 	}
 	if _, exists := registry[name]; exists {
-		panic("notification: register called twice for the same provider: " + name)
+		return ErrDuplicateProvider
 	}
 
 	registry[strings.ToLower(name)] = ProviderRegistration{
 		Constructor: constructor,
 		Validator:   configValidator,
 	}
+
+	return nil
 }
 
 // Creates a new provider for the notification provider specified

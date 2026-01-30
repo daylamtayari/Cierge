@@ -10,10 +10,10 @@ import (
 type Config struct {
 	Environment  Environment            `json:"environment" default:"dev"`
 	LogLevel     zerolog.Level          `json:"log_level" default:"info"`
-	Server       ServerConfig           `json:"server"`
-	Database     DatabaseConfig         `json:"database"`
-	Auth         AuthConfig             `json:"auth"`
-	Cloud        CloudConfig            `json:"cloud"`
+	Server       Server                 `json:"server"`
+	Database     Database               `json:"database"`
+	Auth         Auth                   `json:"auth"`
+	Cloud        Cloud                  `json:"cloud"`
 	Notification []NotificationProvider `json:"notification"`
 	DefaultAdmin User                   `json:"default_admin"`
 }
@@ -38,26 +38,26 @@ func (d Duration) Duration() time.Duration {
 }
 
 // HTTP server configuration
-type ServerConfig struct {
-	Host           string    `json:"host" default:"localhost"`
-	Port           int       `json:"port" default:"8080"`
-	TLS            TLSConfig `json:"tls"`
-	TrustedProxies []string  `json:"trusted_proxies"`
-	CORSOrigins    []string  `json:"cors_origins"`
+type Server struct {
+	Host           string   `json:"host" default:"localhost"`
+	Port           int      `json:"port" default:"8080"`
+	TLS            TLS      `json:"tls"`
+	TrustedProxies []string `json:"trusted_proxies"`
+	CORSOrigins    []string `json:"cors_origins"`
 }
 
-type TLSConfig struct {
+type TLS struct {
 	Enabled  bool   `json:"enabled" default:"false"`
 	CertFile string `json:"cert_file"`
 	KeyFile  string `json:"key_file"`
 }
 
-func (s ServerConfig) Address() string {
+func (s Server) Address() string {
 	return fmt.Sprintf("%s:%d", s.Host, s.Port)
 }
 
 // Database configuration
-type DatabaseConfig struct {
+type Database struct {
 	Host        string   `json:"host" default:"localhost"`
 	Port        int      `json:"port" default:"5432"`
 	User        string   `json:"user" default:"cierge"`
@@ -68,7 +68,7 @@ type DatabaseConfig struct {
 	Timeout     Duration `json:"timeout" default:"30s"`
 }
 
-func (d DatabaseConfig) DSN() string {
+func (d Database) DSN() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		d.Host, d.Port, d.User, d.Password, d.Database, d.SSLMode,
@@ -83,7 +83,7 @@ const (
 	AuthMethodOIDC  AuthMethod = "oidc"
 )
 
-type AuthConfig struct {
+type Auth struct {
 	Method        AuthMethod              `json:"method" default:"local"`
 	OIDCProviders map[string]OIDCProvider `json:"oidc_providers"`
 
@@ -109,7 +109,7 @@ type OIDCProvider struct {
 
 // Cloud configuration
 
-type CloudConfig struct {
+type Cloud struct {
 	Provider string         `json:"provider" default:"aws"`
 	Config   map[string]any `json:"config"`
 }

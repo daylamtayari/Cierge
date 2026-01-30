@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(cfg config.DatabaseConfig, isDevelopment bool) (*gorm.DB, error) {
+func New(cfg config.Database, isDevelopment bool) (*gorm.DB, error) {
 	gormCfg := &gorm.Config{
 		NowFunc: func() time.Time {
 			return time.Now().UTC()
