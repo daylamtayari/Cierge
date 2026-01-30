@@ -11,10 +11,10 @@ var (
 
 type BookingClient interface {
 	// Handles any pre-booking checks such as token validity
-	PreBookingCheck(ctx context.Context, event LambdaEvent) error
+	PreBookingCheck(ctx context.Context, event Event) error
 
 	// Attempts to perform a booking
-	Book(ctx context.Context, event LambdaEvent) (*BookingResult, error)
+	Book(ctx context.Context, event Event) (*BookingResult, error)
 }
 
 // Returns a new booking client for the specified platform

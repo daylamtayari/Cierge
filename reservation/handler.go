@@ -17,7 +17,7 @@ const (
 
 var (
 	ErrBase64Decode = errors.New("failed to decode base64")
-	ErrKmsDecrypt   = errors.New("failed to decrypt token")
+	ErrDecrypt      = errors.New("failed to decrypt token")
 )
 
 // Main handler of Lambda and performs the core logic
@@ -89,7 +89,7 @@ func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error 
 	return nil
 }
 
-// Decrypts the users token using KMS
+// Decrypts the users token using the Decrypter interface
 func decryptToken(ctx context.Context, encryptedToken string, decrypter Decrypter) (string, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(encryptedToken)
 	if err != nil {
@@ -98,7 +98,7 @@ func decryptToken(ctx context.Context, encryptedToken string, decrypter Decrypte
 
 	decrypted, err := decrypter.Decrypt(ctx, ciphertext)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrKmsDecrypt, err)
+		return "", fmt.Errorf("%w: %w", ErrDecrypt, err)
 	}
 
 	return string(decrypted), nil

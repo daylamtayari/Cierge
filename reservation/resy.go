@@ -44,7 +44,7 @@ func NewResyClient(token string) (*ResyClient, error) {
 
 // Performs pre-booking checks for the Resy client
 // - Test if the tokens are valid
-func (c *ResyClient) PreBookingCheck(ctx context.Context, event LambdaEvent) error {
+func (c *ResyClient) PreBookingCheck(ctx context.Context, event Event) error {
 	// Test token validity by retrieving the current user
 	_, err := c.client.GetUser()
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *ResyClient) PreBookingCheck(ctx context.Context, event LambdaEvent) err
 // - Retrieve slots
 // - Filter slots to matching slots
 // - Attempt to book slots in order of preference
-func (c *ResyClient) Book(ctx context.Context, event LambdaEvent) (*BookingResult, error) {
+func (c *ResyClient) Book(ctx context.Context, event Event) (*BookingResult, error) {
 	venueId, err := strconv.Atoi(event.PlatformVenueId)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 // Retrieves slots with a 0.05s pause between requests until either slots are found or the deadline after the drop time is expired
 // This is to handle if there is a slight delay in the API in marking slots as available after the drop time and ensuring this does
 // not cause the lambda to fail
-func (c *ResyClient) getSlotsUntilDeadline(ctx context.Context, event LambdaEvent, venueId int, deadline time.Duration) ([]resy.Slot, error) {
+func (c *ResyClient) getSlotsUntilDeadline(ctx context.Context, event Event, venueId int, deadline time.Duration) ([]resy.Slot, error) {
 	deadlineTime := event.DropTime.Add(deadline)
 	pauseDuration := 50 * time.Millisecond // 0.05s
 
