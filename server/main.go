@@ -12,6 +12,7 @@ import (
 
 	"github.com/daylamtayari/cierge/server/internal/cloud"
 	"github.com/daylamtayari/cierge/server/internal/cloud/aws"
+	"github.com/daylamtayari/cierge/server/internal/cloud/local"
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/database"
 	"github.com/daylamtayari/cierge/server/internal/repository"
@@ -33,6 +34,8 @@ func main() {
 	for _, providerName := range cloudProviders {
 		var err error
 		switch providerName {
+		case "local":
+			err = cloud.Register("local", local.NewProvider, local.ValidateConfig)
 		case "aws":
 			err = cloud.Register("aws", aws.NewProvider, aws.ValidateConfig)
 		}
