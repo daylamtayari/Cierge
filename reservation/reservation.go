@@ -20,7 +20,7 @@ var (
 	ErrDecrypt      = errors.New("failed to decrypt token")
 )
 
-// Main handler of Lambda and performs the core logic
+// Main handler of the reservation job and handles the core logic
 // - Decrypts token
 // - Creates booking client
 // - Performs pre-booking checks
