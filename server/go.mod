@@ -3,7 +3,7 @@ module github.com/daylamtayari/cierge/server
 go 1.25.5
 
 require (
-	github.com/daylamtayari/cierge/pkg/errcol v0.9.2
+	github.com/daylamtayari/cierge/errcol v0.9.3
 	github.com/daylamtayari/cierge/querycol v0.8.3
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0

@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog"
 
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
-	"github.com/daylamtayari/cierge/pkg/errcol"
+	"github.com/daylamtayari/cierge/errcol"
 	"github.com/daylamtayari/cierge/querycol"
 )
 
