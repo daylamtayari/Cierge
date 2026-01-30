@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/daylamtayari/cierge/resy"
@@ -18,6 +19,12 @@ var (
 	ErrFailedToBookSlots    = errors.New("failed to book any of the slots")
 	ErrUnmarshalToken       = errors.New("failed to unmarshal token")
 )
+
+type bookingAttempt struct {
+	result   *BookingResult
+	err      error
+	slotTime time.Time
+}
 
 type ResyClient struct {
 	client *resy.Client
@@ -34,7 +41,7 @@ func NewResyClient(token string) (*ResyClient, error) {
 	}
 
 	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 15 * time.Second,
 	}
 
 	resyClient.client = resy.NewClient(httpClient, resyClient.tokens, "")
@@ -76,23 +83,80 @@ func (c *ResyClient) Book(ctx context.Context, event Event) (*BookingResult, err
 		return nil, ErrNoMatchingSlotsFound
 	}
 
-	var bookingResult *BookingResult
-
-	// Attempt to book slots in order of preference
-	// Ignore 404 errors as that can be simply due to
-	// the reservation no longer being available
-	for _, slot := range matchingSlots {
-		bookingResult, err = c.bookSlot(slot, event.PartySize)
-		if err != nil && !errors.Is(err, resy.ErrNotFound) {
-			return nil, err
+	// If strict preference is set, attempt
+	// each reservation sequentially
+	// Otherwise, it will skip this if statement
+	// and use soft preference and book concurrently
+	if event.StrictPreference {
+		for _, slot := range matchingSlots {
+			bookingResult, err := c.bookSlot(slot, event.PartySize)
+			// Ignore 404 errors as that can be simply due to the reservation no longer being available
+			if err != nil && !errors.Is(err, resy.ErrNotFound) {
+				return nil, err
+			}
+			if err == nil {
+				// If no errors are returned, the reservation
+				// was successfully booked
+				return bookingResult, nil
+			}
 		}
-		if err == nil {
-			// If no errors are returned, the reservation
-			// was successfully booked
-			return bookingResult, nil
+
+		return nil, ErrFailedToBookSlots
+	}
+
+	// Create cancellable context (inherits parent cancellation)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	resultCh := make(chan bookingAttempt, len(matchingSlots))
+	var wg sync.WaitGroup
+
+	// Launch goroutines with 1-second stagger to maintain soft preference
+launchLoop:
+	for i, slot := range matchingSlots {
+		// Stagger launches (except first one)
+		if i > 0 {
+			select {
+			case <-time.After(1 * time.Second):
+				// Continue to launch next goroutine
+			case <-ctx.Done():
+				// Context cancelled
+				break launchLoop
+			}
+		}
+
+		// Check if context was cancelled
+		select {
+		case <-ctx.Done():
+			break launchLoop
+		default:
+			wg.Add(1)
+			go c.bookSlotConcurrent(ctx, &wg, resultCh, slot, event.PartySize)
 		}
 	}
 
+	// Close channel after all attempts complete
+	go func() {
+		wg.Wait()
+		close(resultCh)
+	}()
+
+	var errors []error
+	for attempt := range resultCh {
+		if attempt.err == nil {
+			// Cancel all other goroutines on success
+			cancel()
+			return attempt.result, nil
+		}
+
+		errors = append(errors, fmt.Errorf("slot at %s: %w",
+			attempt.slotTime.Format("15:04"), attempt.err))
+	}
+
+	// All attempts failed
+	if len(errors) > 0 {
+		return nil, fmt.Errorf("%w: %v", ErrFailedToBookSlots, errors)
+	}
 	return nil, ErrFailedToBookSlots
 }
 
@@ -131,6 +195,33 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 			"venue_opt_in":   bookingConfirmation.VenueOptIn,
 		},
 	}, nil
+}
+
+// Wraps bookSlot for goroutine execution with context cancellation support
+func (c *ResyClient) bookSlotConcurrent(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+	resultCh chan<- bookingAttempt,
+	slot resy.Slot,
+	partySize int,
+) {
+	defer wg.Done()
+
+	// Check if context already cancelled, skip if cancelled
+	select {
+	case <-ctx.Done():
+		return
+	default:
+	}
+
+	result, err := c.bookSlot(slot, partySize)
+
+	// Always send result back
+	resultCh <- bookingAttempt{
+		result:   result,
+		err:      err,
+		slotTime: slot.Date.Start.Time,
+	}
 }
 
 // Retrieves slots with a 0.05s pause between requests until either slots are found or the deadline after the drop time is expired

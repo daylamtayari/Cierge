@@ -10,6 +10,8 @@ import (
 // NOTE: Reservation date must have UTC timezone
 // NOTE: Preferred times must have UTC timezone and in order of preference
 // NOTE: Callback signifies whether or not a callback should be made
+// NOTE: Strict preference represents whether the preference should be
+// absolutely respected or not (not recommended for highly competitive reservations)
 type Event struct {
 	JobID                   *uuid.UUID  `json:"job_id"`
 	Platform                string      `json:"platform"`
@@ -22,6 +24,7 @@ type Event struct {
 	DropTime                time.Time   `json:"drop_time"`
 	ServerEndpoint          string      `json:"server_endpoint"`
 	Callback                bool        `json:"callback"`
+	StrictPreference        bool        `json:"strict_preference"`
 }
 
 // Result of a booking
