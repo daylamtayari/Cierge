@@ -36,13 +36,13 @@ func Load() (*Config, error) {
 	v.SetEnvPrefix("CIERGE")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
-	//
+
 	// Read config file
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("failed to read config file: %w", err)
+			return nil, err
 		}
-		// No return as could be specified by env variables and defaults
+		// No configuration file found but could be specified by env variables and defaults
 	}
 
 	var cfg Config
