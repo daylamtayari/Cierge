@@ -7,8 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
 type ctxKey string
@@ -27,23 +25,23 @@ var (
 // - Creates booking client
 // - Performs pre-booking checks
 // - Performs booking
-func HandleRequest(ctx context.Context, event LambdaEvent) error {
+func HandleRequest(ctx context.Context, event Event, decrypter Decrypter) error {
 	startTime := time.Now().UTC()
 
-	output := JobOutput{
+	output := Output{
 		JobId:     event.JobID,
 		StartTime: startTime,
 	}
 
 	ctx = context.WithValue(ctx, startTimeKey, startTime)
 
-	token, err := decryptToken(ctx, event.EncryptedToken)
+	token, err := decryptToken(ctx, event.EncryptedToken, decrypter)
 	if err != nil {
 		output.Message = "failed to decrypt token"
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output)
+		complete(ctx, event, output, decrypter)
 		return nil
 	}
 
@@ -53,7 +51,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output)
+		complete(ctx, event, output, decrypter)
 		return nil
 	}
 
@@ -63,7 +61,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output)
+		complete(ctx, event, output, decrypter)
 		return nil
 	}
 
@@ -77,7 +75,7 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 		output.Success = false
 		output.Error = err.Error()
 		output.Level = "error"
-		complete(ctx, event, output)
+		complete(ctx, event, output, decrypter)
 		return nil
 	}
 
@@ -87,30 +85,28 @@ func HandleRequest(ctx context.Context, event LambdaEvent) error {
 	output.Message = "reservation completed successfully"
 	output.Level = "info"
 
-	complete(ctx, event, output)
+	complete(ctx, event, output, decrypter)
 	return nil
 }
 
 // Decrypts the users token using KMS
-func decryptToken(ctx context.Context, encryptedToken string) (string, error) {
+func decryptToken(ctx context.Context, encryptedToken string, decrypter Decrypter) (string, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(encryptedToken)
 	if err != nil {
 		return "", fmt.Errorf("%w: %w", ErrBase64Decode, err)
 	}
 
-	decrypted, err := kmsClient.Decrypt(ctx, &kms.DecryptInput{
-		CiphertextBlob: ciphertext,
-	})
+	decrypted, err := decrypter.Decrypt(ctx, ciphertext)
 	if err != nil {
 		return "", fmt.Errorf("%w: %w", ErrKmsDecrypt, err)
 	}
 
-	return string(decrypted.Plaintext), nil
+	return string(decrypted), nil
 }
 
 // Exit handler of the Lambda
 // Calculates duration, notifies server of output, and outputs job output to stdout
-func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
+func complete(ctx context.Context, event Event, output Output, decrypter Decrypter) {
 	if startTime, ok := ctx.Value(startTimeKey).(time.Time); ok {
 		output.Duration = time.Now().UTC().Sub(startTime)
 	} else {
@@ -119,7 +115,7 @@ func complete(ctx context.Context, event LambdaEvent, output JobOutput) {
 
 	marshalledOutput, _ := json.Marshal(output)
 
-	callbackSecret, err := decryptToken(ctx, event.EncryptedCallbackSecret)
+	callbackSecret, err := decryptToken(ctx, event.EncryptedCallbackSecret, decrypter)
 	if err != nil {
 		// Keep success as true if the reservation completed
 		// as that is the core goal of this lambda and the
