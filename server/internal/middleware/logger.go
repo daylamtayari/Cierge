@@ -9,7 +9,7 @@ import (
 
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/pkg/errcol"
-	"github.com/daylamtayari/cierge/pkg/querycol"
+	"github.com/daylamtayari/cierge/querycol"
 )
 
 func Logger(baseLogger zerolog.Logger, isDevelopment bool) gin.HandlerFunc {

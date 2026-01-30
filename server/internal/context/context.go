@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/daylamtayari/cierge/pkg/errcol"
-	"github.com/daylamtayari/cierge/pkg/querycol"
+	"github.com/daylamtayari/cierge/querycol"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )

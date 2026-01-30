@@ -10,8 +10,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/daylamtayari/cierge/pkg/errcol v0.9.2 h1:dY1MuXZLFCG+XT3lf6EH/BQBOiAIgcVjaBLhBl0UM9k=
 github.com/daylamtayari/cierge/pkg/errcol v0.9.2/go.mod h1:/hX9zXlC/OfNDlthlcbabVH0LxzUSBeQtR74jzwmMlU=
-github.com/daylamtayari/cierge/pkg/querycol v0.8.2 h1:w9hDG/rZNyfFL2002dI+p+QD+f2KGT/x/xgB4bFwJb4=
-github.com/daylamtayari/cierge/pkg/querycol v0.8.2/go.mod h1:LX8Bf0ee3OzhWx/gG8n9251b2u8oGmu6me+zg6/Gv48=
+github.com/daylamtayari/cierge/querycol v0.8.3 h1:HjH5GI+sKUGn14jayku3pzoEJUr1k2LV4qRvipkmyNU=
+github.com/daylamtayari/cierge/querycol v0.8.3/go.mod h1:8m9qagdZii1u2oo27ndfu+2Wwb9e6YfYRIV5oxRlpI4=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=
