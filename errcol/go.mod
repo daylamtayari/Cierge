@@ -1,4 +1,4 @@
-module github.com/daylamtayari/cierge/pkg/errcol
+module github.com/daylamtayari/cierge/errcol
 
 go 1.25.5
 
