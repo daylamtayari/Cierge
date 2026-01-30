@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
-var kmsClient *kms.Client
+var decrypter KMSDecrypter
 
 func init() {
 	cfg, err := config.LoadDefaultConfig(context.Background())
@@ -16,7 +16,10 @@ func init() {
 		panic("failed to load aws config: " + err.Error())
 	}
 
-	kmsClient = kms.NewFromConfig(cfg)
+	kmsClient := kms.NewFromConfig(cfg)
+	decrypter = KMSDecrypter{
+		client: kmsClient,
+	}
 }
 
 func main() {
