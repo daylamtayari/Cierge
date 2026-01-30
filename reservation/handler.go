@@ -115,6 +115,11 @@ func complete(ctx context.Context, event Event, output Output, decrypter Decrypt
 
 	marshalledOutput, _ := json.Marshal(output)
 
+	if !event.Callback {
+		fmt.Print(string(marshalledOutput))
+		return
+	}
+
 	callbackSecret, err := decryptToken(ctx, event.EncryptedCallbackSecret, decrypter)
 	if err != nil {
 		// Keep success as true if the reservation completed
