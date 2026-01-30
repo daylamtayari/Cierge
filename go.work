@@ -6,6 +6,6 @@ use (
 	./lambdas/reservation
 	./errcol
 	./opentable
-	./pkg/resy
+	./resy
 	./querycol
 )
