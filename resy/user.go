@@ -68,3 +68,22 @@ func (c *Client) GetUser() (*User, error) {
 
 	return &user, nil
 }
+
+// Returns the default payment method of a given user
+// If no payment methods are set or none of the payment
+// methods are default, an empty PaymentMethod will be returned
+// Current expected behaviour of the Resy API is that there
+// is always at least one of the payment methods that are marked as default
+func GetDefaultPaymentMethod(user *User) PaymentMethod {
+	if len(user.PaymentMethods) == 0 {
+		return PaymentMethod{}
+	}
+
+	for _, paymentMethod := range user.PaymentMethods {
+		if paymentMethod.IsDefault {
+			return paymentMethod
+		}
+	}
+
+	return PaymentMethod{}
+}
