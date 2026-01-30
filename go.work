@@ -1,11 +1,12 @@
 go 1.25.5
 
 use (
-	./server
 	./cli
-	./lambdas/reservation
 	./errcol
+	./lambdas/reservation
 	./opentable
-	./resy
 	./querycol
+	./reservation
+	./resy
+	./server
 )
