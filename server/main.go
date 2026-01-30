@@ -28,6 +28,20 @@ func main() {
 		return
 	}
 
+	// Register cloud providers
+	cloudProviders := []string{"aws"}
+	for _, providerName := range cloudProviders {
+		var err error
+		switch providerName {
+		case "aws":
+			err = cloud.Register("aws", aws.NewProvider, aws.ValidateConfig)
+		}
+
+		if err != nil {
+			logger.Error().Err(err).Msgf("failed to register cloud provider %q", providerName)
+		}
+	}
+
 	devMode := pflag.Bool("dev", false, "Run in development mode (overrides config)")
 	jsonOutput := pflag.Bool("json", false, "Force output logs to be JSON even during development mode")
 	pflag.Parse()
@@ -49,19 +63,6 @@ func main() {
 
 	logger = NewLogger(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", Version).Logger()
 	logger.Info().Msg("starting cierge server")
-
-	// Register cloud providers
-	cloudProviders := []string{"aws"}
-	for _, providerName := range cloudProviders {
-		switch providerName {
-		case "aws":
-			err = cloud.Register("aws", aws.NewProvider, aws.ValidateConfig)
-		}
-
-		if err != nil {
-			logger.Error().Err(err).Msgf("failed to register cloud provider %q", providerName)
-		}
-	}
 
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
 	if err != nil {
