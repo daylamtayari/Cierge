@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daylamtayari/cierge/pkg/resy"
+	"github.com/daylamtayari/cierge/resy"
 )
 
 var (

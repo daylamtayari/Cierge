@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.52.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
 	github.com/aws/aws-sdk-go-v2/service/kms v1.49.5
-	github.com/daylamtayari/cierge/pkg/resy v0.7.1
+	github.com/daylamtayari/cierge/resy v0.7.3
 	github.com/google/uuid v1.6.0
 )
 
