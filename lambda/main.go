@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -29,5 +31,10 @@ func main() {
 }
 
 func handle(ctx context.Context, event reservation.Event) error {
-	return reservation.HandleRequest(ctx, event, &decrypter)
+	output := reservation.Handle(ctx, event, &decrypter)
+
+	marshalledOutput, _ := json.Marshal(output)
+	fmt.Print(string(marshalledOutput))
+
+	return nil
 }
