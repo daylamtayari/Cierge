@@ -20,12 +20,6 @@ var (
 	ErrUnmarshalToken       = errors.New("failed to unmarshal token")
 )
 
-type bookingAttempt struct {
-	result   *BookingResult
-	err      error
-	slotTime time.Time
-}
-
 type ResyClient struct {
 	client *resy.Client
 	tokens resy.Tokens
@@ -108,8 +102,36 @@ func (c *ResyClient) Book(ctx context.Context, event Event) (*BookingResult, err
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	resultCh := make(chan bookingAttempt, len(matchingSlots))
+	resultCh := make(chan Attempt, len(matchingSlots))
+	doneCh := make(chan struct{})
 	var wg sync.WaitGroup
+
+	var finalResult *BookingResult
+	var finalError error
+
+	// Process results concurrently as they arrive
+	go func() {
+		defer close(doneCh)
+		var errors []error
+		for attempt := range resultCh {
+			if attempt.Error == "" {
+				// Cancel all other goroutines on success
+				cancel()
+				finalResult = attempt.Result
+				return
+			}
+
+			errors = append(errors, fmt.Errorf("slot at %s: %s",
+				attempt.SlotTime.Format("15:04"), attempt.Error))
+		}
+
+		// All attempts failed
+		if len(errors) > 0 {
+			finalError = fmt.Errorf("%w: %v", ErrFailedToBookSlots, errors)
+		} else {
+			finalError = ErrFailedToBookSlots
+		}
+	}()
 
 	// Launch goroutines with 1-second stagger to maintain soft preference
 launchLoop:
@@ -136,28 +158,12 @@ launchLoop:
 	}
 
 	// Close channel after all attempts complete
-	go func() {
-		wg.Wait()
-		close(resultCh)
-	}()
+	wg.Wait()
+	close(resultCh)
 
-	var errors []error
-	for attempt := range resultCh {
-		if attempt.err == nil {
-			// Cancel all other goroutines on success
-			cancel()
-			return attempt.result, nil
-		}
-
-		errors = append(errors, fmt.Errorf("slot at %s: %w",
-			attempt.slotTime.Format("15:04"), attempt.err))
-	}
-
-	// All attempts failed
-	if len(errors) > 0 {
-		return nil, fmt.Errorf("%w: %v", ErrFailedToBookSlots, errors)
-	}
-	return nil, ErrFailedToBookSlots
+	// Wait for result processing to complete
+	<-doneCh
+	return finalResult, finalError
 }
 
 // Books a given slot for a given party size
@@ -201,7 +207,7 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 func (c *ResyClient) bookSlotConcurrent(
 	ctx context.Context,
 	wg *sync.WaitGroup,
-	resultCh chan<- bookingAttempt,
+	resultCh chan<- Attempt,
 	slot resy.Slot,
 	partySize int,
 ) {
@@ -216,11 +222,11 @@ func (c *ResyClient) bookSlotConcurrent(
 
 	result, err := c.bookSlot(slot, partySize)
 
-	// Always send result back
-	resultCh <- bookingAttempt{
-		result:   result,
-		err:      err,
-		slotTime: slot.Date.Start.Time,
+	// Send result back
+	resultCh <- Attempt{
+		Result:   result,
+		Error:    err.Error(),
+		SlotTime: slot.Date.Start.Time,
 	}
 }
 

@@ -49,3 +49,11 @@ type Output struct {
 	DriftNs      int64         `json:"drift_ns"`
 	BookingResult
 }
+
+// Booking attempt
+// NOTE: Slot time is in a UTC timezone
+type Attempt struct {
+	Result   *BookingResult `json:"result"`
+	Error    string         `json:"error,omitempty"`
+	SlotTime time.Time      `json:"slot_time"`
+}
