@@ -13,8 +13,13 @@ type BookingClient interface {
 	// Handles any pre-booking checks such as token validity
 	PreBookingCheck(ctx context.Context, event Event) error
 
+	// Retrieve matching slots
+	// The slice of any represents slot types and should be
+	// type asserted in the respective methods
+	FetchSlot(ctx context.Context, event Event) (any, error)
+
 	// Attempts to perform a booking
-	Book(ctx context.Context, event Event) (*BookingResult, error)
+	Book(ctx context.Context, event Event, slots any) (*BookingResult, error)
 }
 
 // Returns a new booking client for the specified platform

@@ -54,11 +54,8 @@ func (c *ResyClient) PreBookingCheck(ctx context.Context, event Event) error {
 	return nil
 }
 
-// Handles the booking logic for Resy
-// - Retrieve slots
-// - Filter slots to matching slots
-// - Attempt to book slots in order of preference
-func (c *ResyClient) Book(ctx context.Context, event Event) (*BookingResult, error) {
+// Returns a slice of matching resy.Slot and an error that is nil if successful
+func (c *ResyClient) FetchSlot(ctx context.Context, event Event) (any, error) {
 	venueId, err := strconv.Atoi(event.PlatformVenueId)
 	if err != nil {
 		return nil, err
@@ -76,6 +73,16 @@ func (c *ResyClient) Book(ctx context.Context, event Event) (*BookingResult, err
 	if len(matchingSlots) == 0 {
 		return nil, ErrNoMatchingSlotsFound
 	}
+
+	return matchingSlots, nil
+}
+
+// Handles the booking logic for Resy
+// - Retrieve slots
+// - Filter slots to matching slots
+// - Attempt to book slots in order of preference
+func (c *ResyClient) Book(ctx context.Context, event Event, slots any) (*BookingResult, error) {
+	matchingSlots := slots.([]resy.Slot)
 
 	// If strict preference is set, attempt
 	// each reservation sequentially
