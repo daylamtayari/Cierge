@@ -264,7 +264,7 @@ func (c *Client) GetVenueCalendar(venueId int, numSeats int, startDate ResyDate,
 	}
 
 	// Required for some reason
-	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set("Accept-Encoding", "deflate, gzip")
 
 	type getVenueCalendarResponse struct {
 		Scheduled []CalendarSlot `json:"scheduled"`
