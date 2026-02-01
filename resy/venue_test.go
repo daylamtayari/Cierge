@@ -2,6 +2,8 @@ package resy
 
 import (
 	"errors"
+	"slices"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -51,7 +53,7 @@ func TestVenue_Search_WithPageLimit(t *testing.T) {
 	limits := []int{5, 10, 20}
 
 	for _, limit := range limits {
-		t.Run("limit="+string(rune(limit+'0')), func(t *testing.T) {
+		t.Run(strconv.Itoa(limit), func(t *testing.T) {
 			venues, err := client.SearchVenue("restaurant", &limit)
 			requireNoError(t, err, "SearchVenue failed")
 
@@ -119,8 +121,8 @@ func TestVenue_Get(t *testing.T) {
 		t.Log("Warning: Both PhoneNumber and Website are empty")
 	}
 
-	t.Logf("Venue: %s (ID: %d, Rating: %.1f, Location: %s)",
-		venue.Name, venue.Id.Resy, venue.Rating.Score, venue.Locality)
+	t.Logf("Venue: %s (ID: %d)",
+		venue.Name, venue.Id.Resy)
 }
 
 func TestVenue_Get_InvalidId(t *testing.T) {
@@ -231,7 +233,7 @@ func TestVenue_GetCalendar(t *testing.T) {
 
 			// Inventory status should be one of the expected values
 			validStatuses := []string{"available", "not available", "sold-out"}
-			if !contains(validStatuses, slot.Inventory.Reservation) {
+			if !slices.Contains(validStatuses, slot.Inventory.Reservation) {
 				t.Errorf("Slot %d: Unexpected Reservation status: %s", i, slot.Inventory.Reservation)
 			}
 
@@ -256,27 +258,19 @@ func TestVenue_GetCalendar_InvalidVenue(t *testing.T) {
 
 	slots, err := client.GetVenueCalendar(TestVenueInvalid, 2, startDate, endDate)
 
-	// Should get an error (likely 502 or 404)
+	// Should get a 404 error
 	if err == nil {
 		t.Error("expected error for invalid venue ID")
 	}
 
-	// Some error types are acceptable
-	if !errors.Is(err, ErrBadGateway) && !errors.Is(err, ErrNotFound) {
-		t.Logf("Got error: %v (acceptable)", err)
+	// Only ErrNotFound is considered acceptable
+	if errors.Is(err, ErrNotFound) {
+		t.Logf("Got expected error: %v (acceptable)", err)
+	} else {
+		t.Errorf("Got unexpected error: %v", err)
 	}
 
 	if slots != nil {
 		t.Logf("Warning: Got slots despite error: %v", slots)
 	}
-}
-
-// Helper function to check if a slice contains a string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
 }
