@@ -157,8 +157,8 @@ func (c *Client) SearchVenue(query string, pageLimit *int) ([]Venue, error) {
 
 	type searchVenueResponse struct {
 		Search struct {
-			Hits []Venue
-		}
+			Hits []Venue `json:"hits"`
+		} `json:"search"`
 	}
 
 	var searchVenueRes searchVenueResponse
@@ -171,7 +171,7 @@ func (c *Client) SearchVenue(query string, pageLimit *int) ([]Venue, error) {
 	// is unmarshalled into a slice of len 0, adding this nil
 	// check in case that behaviour ever changes to make sure
 	// that this method's behaviour is accurate
-	if searchVenueRes.Search.Hits != nil {
+	if searchVenueRes.Search.Hits == nil {
 		searchVenueRes.Search.Hits = make([]Venue, 0)
 	}
 
