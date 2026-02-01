@@ -2,6 +2,7 @@ package resy
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -118,6 +119,36 @@ func (t *Timezone) UnmarshalJSON(b []byte) error {
 type Rating struct {
 	Score float32 `json:"score"`
 	Count int     `json:"count"`
+}
+
+// Custom type for service types as Resy's API does not return
+// consistent types for the same exact field of a same type
+// why? I'd love to know...
+type ServiceTypes []KeyValueFilter
+
+// Custom unmarshaller as the service type field in a
+// venue response can be either a map of empty objects
+// or a slice of KeyValueFilters types
+func (s *ServiceTypes) UnmarshalJSON(data []byte) error {
+	var keyValueFilters []KeyValueFilter
+	if err := json.Unmarshal(data, &keyValueFilters); err == nil {
+		*s = keyValueFilters
+		return nil
+	}
+
+	var objectKeyMap map[string]struct{}
+	if err := json.Unmarshal(data, &objectKeyMap); err == nil {
+		for key := range objectKeyMap {
+			keyValueId, err := strconv.Atoi(key)
+			if err != nil {
+				return err
+			}
+			*s = append(*s, KeyValueFilter{KeyValue: KeyValue{Id: keyValueId}})
+		}
+	} else {
+		return err
+	}
+	return nil
 }
 
 // UnmarshalJSON handles both rating formats
