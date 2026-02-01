@@ -2,5 +2,7 @@ github.com/daylamtayari/cierge/resy v0.7.3 h1:2y8wojfWbSV/GqUioa9JKnVO08hHa7Nexs
 github.com/daylamtayari/cierge/resy v0.7.3/go.mod h1:67saRam8S3u17pt6akXmElTCnKmXZqW2xJRLzmZfOrc=
 github.com/daylamtayari/cierge/resy v0.7.4 h1:Aaf6RhV6u215Vwe4w9+iYuQbByYVQyvlT2YnLTR7diQ=
 github.com/daylamtayari/cierge/resy v0.7.4/go.mod h1:67saRam8S3u17pt6akXmElTCnKmXZqW2xJRLzmZfOrc=
+github.com/daylamtayari/cierge/resy v0.7.5 h1:hni1+I3qtkOKiwb6psLh1DEJgDeFy00215AOzeMOgNE=
+github.com/daylamtayari/cierge/resy v0.7.5/go.mod h1:67saRam8S3u17pt6akXmElTCnKmXZqW2xJRLzmZfOrc=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
