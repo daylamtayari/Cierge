@@ -1,6 +1,7 @@
 package resy
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -84,6 +85,27 @@ func NewClient(httpClient *http.Client, tokens Tokens, userAgent string) *Client
 	return &Client{
 		client: httpClient,
 	}
+}
+
+// Creates a new http request for a JSON payload
+// Marshals the provided jsonValue value, creates
+// a new request, and sets the content type to JSON
+// Error is only returned if the specified value
+// fails to be marshalled or the new request fails to be created
+func (c *Client) NewJsonRequest(method string, url string, jsonValue any) (*http.Request, error) {
+	reqBody, err := json.Marshal(jsonValue)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	return req, nil
 }
 
 // Do performs an API request, handles the response,

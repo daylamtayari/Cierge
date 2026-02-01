@@ -1,8 +1,6 @@
 package resy
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -151,12 +149,8 @@ func (c *Client) SearchVenue(query string, pageLimit *int) ([]Venue, error) {
 	if pageLimit != nil {
 		searchVenueReq.PageLimit = *pageLimit
 	}
-	reqBody, err := json.Marshal(searchVenueReq)
-	if err != nil {
-		return nil, err
-	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, searchVenueReq)
 	if err != nil {
 		return nil, err
 	}

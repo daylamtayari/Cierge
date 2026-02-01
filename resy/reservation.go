@@ -1,8 +1,6 @@
 package resy
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -176,12 +174,8 @@ func (c *Client) SetReservationOccasion(reservationToken string, occasion Reserv
 		ReservationOccasion: occasion,
 		ReservationToken:    reservationToken,
 	}
-	reqBody, err := json.Marshal(setReservationOccasionReq)
-	if err != nil {
-		return err
-	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, setReservationOccasionReq)
 	if err != nil {
 		return err
 	}
@@ -206,12 +200,8 @@ func (c *Client) SetReservationSpecialRequest(reservationToken string, specialRe
 		ReservationToken: reservationToken,
 		Description:      specialRequest,
 	}
-	reqBody, err := json.Marshal(setReservationSpecialRequestReq)
-	if err != nil {
-		return err
-	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, setReservationSpecialRequestReq)
 	if err != nil {
 		return err
 	}

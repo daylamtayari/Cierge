@@ -1,8 +1,6 @@
 package resy
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
@@ -108,12 +106,8 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 		Day:       day.Format("2006-01-02"),
 		PartySize: partySize,
 	}
-	reqBody, err := json.Marshal(getSlotsReq)
-	if err != nil {
-		return nil, nil, err
-	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, getSlotsReq)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -157,12 +151,8 @@ func (c *Client) GetSlotDetails(slotConfig string, day time.Time, partySize int)
 		Day:       day.Format("2006-01-02"),
 		PartySize: strconv.Itoa(partySize),
 	}
-	reqBody, err := json.Marshal(getSlotDetailsReq)
-	if err != nil {
-		return nil, err
-	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(reqBody))
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, getSlotDetailsReq)
 	if err != nil {
 		return nil, err
 	}
