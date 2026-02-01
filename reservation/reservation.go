@@ -67,7 +67,18 @@ func Handle(ctx context.Context, event Event, decrypter Decrypter) Output {
 	output.BookingStart = time.Now().UTC()
 	output.DriftNs = time.Since(event.DropTime).Nanoseconds()
 
-	bookingResult, err := bookingClient.Book(ctx, event)
+	slots, err := bookingClient.FetchSlots(ctx, event)
+	if err != nil {
+		output.Message = "failed to retrieve slots"
+		output.Success = false
+		output.Error = err.Error()
+		output.Level = "error"
+		return complete(ctx, event, output, decrypter)
+	}
+
+	bookingResult, attempts, err := bookingClient.BookSlots(ctx, event, slots)
+	output.BookingAttempts = attempts
+
 	if err != nil {
 		output.Message = "failed to perform booking"
 		output.Success = false

@@ -38,15 +38,16 @@ type BookingResult struct {
 // It is sent back to the server at completion
 // and logged to stdout
 type Output struct {
-	JobId        *uuid.UUID    `json:"job_id"`
-	Success      bool          `json:"success"`
-	Duration     time.Duration `json:"duration"`
-	Message      string        `json:"error_message"`
-	Error        string        `json:"error,omitempty"`
-	Level        string        `json:"level"`
-	StartTime    time.Time     `json:"start_time"`
-	BookingStart time.Time     `json:"booking_start"`
-	DriftNs      int64         `json:"drift_ns"`
+	JobId           *uuid.UUID    `json:"job_id"`
+	Success         bool          `json:"success"`
+	Duration        time.Duration `json:"duration"`
+	Message         string        `json:"error_message"`
+	Error           string        `json:"error,omitempty"`
+	Level           string        `json:"level"`
+	StartTime       time.Time     `json:"start_time"`
+	BookingStart    time.Time     `json:"booking_start"`
+	DriftNs         int64         `json:"drift_ns"`
+	BookingAttempts []Attempt     `json:"booking_attempts"`
 	BookingResult
 }
 

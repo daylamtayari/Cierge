@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/daylamtayari/cierge/resy"
@@ -16,7 +15,6 @@ import (
 var (
 	ErrNoMatchingSlotsFound = errors.New("no slots matching the preferred times found")
 	ErrNoSlotsFound         = errors.New("no reservation slots found")
-	ErrFailedToBookSlots    = errors.New("failed to book any of the slots")
 	ErrUnmarshalToken       = errors.New("failed to unmarshal token")
 )
 
@@ -55,7 +53,7 @@ func (c *ResyClient) PreBookingCheck(ctx context.Context, event Event) error {
 }
 
 // Returns a slice of matching resy.Slot and an error that is nil if successful
-func (c *ResyClient) FetchSlot(ctx context.Context, event Event) (any, error) {
+func (c *ResyClient) FetchSlots(ctx context.Context, event Event) (any, error) {
 	venueId, err := strconv.Atoi(event.PlatformVenueId)
 	if err != nil {
 		return nil, err
@@ -77,100 +75,30 @@ func (c *ResyClient) FetchSlot(ctx context.Context, event Event) (any, error) {
 	return matchingSlots, nil
 }
 
-// Handles the booking logic for Resy
-// - Retrieve slots
-// - Filter slots to matching slots
-// - Attempt to book slots in order of preference
-func (c *ResyClient) Book(ctx context.Context, event Event, slots any) (*BookingResult, error) {
-	matchingSlots := slots.([]resy.Slot)
+// Books a single slot and returns an Attempt
+// This method is called by the generic bookingHandler for each slot
+func (c *ResyClient) Book(ctx context.Context, event Event, slot any) (Attempt, error) {
+	resySlot := slot.(resy.Slot)
 
-	// If strict preference is set, attempt
-	// each reservation sequentially
-	// Otherwise, it will skip this if statement
-	// and use soft preference and book concurrently
-	if event.StrictPreference {
-		for _, slot := range matchingSlots {
-			bookingResult, err := c.bookSlot(slot, event.PartySize)
-			// Ignore 404 errors as that can be simply due to the reservation no longer being available
-			if err != nil && !errors.Is(err, resy.ErrNotFound) {
-				return nil, err
-			}
-			if err == nil {
-				// If no errors are returned, the reservation
-				// was successfully booked
-				return bookingResult, nil
-			}
-		}
+	bookingResult, err := c.bookSlot(resySlot, event.PartySize)
 
-		return nil, ErrFailedToBookSlots
+	attempt := Attempt{
+		Result:   bookingResult,
+		SlotTime: resySlot.Date.Start.Time,
 	}
 
-	// Create cancellable context (inherits parent cancellation)
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	resultCh := make(chan Attempt, len(matchingSlots))
-	doneCh := make(chan struct{})
-	var wg sync.WaitGroup
-
-	var finalResult *BookingResult
-	var finalError error
-
-	// Process results concurrently as they arrive
-	go func() {
-		defer close(doneCh)
-		var errors []error
-		for attempt := range resultCh {
-			if attempt.Error == "" {
-				// Cancel all other goroutines on success
-				cancel()
-				finalResult = attempt.Result
-				return
-			}
-
-			errors = append(errors, fmt.Errorf("slot at %s: %s",
-				attempt.SlotTime.Format("15:04"), attempt.Error))
-		}
-
-		// All attempts failed
-		if len(errors) > 0 {
-			finalError = fmt.Errorf("%w: %v", ErrFailedToBookSlots, errors)
-		} else {
-			finalError = ErrFailedToBookSlots
-		}
-	}()
-
-	// Launch goroutines with 1-second stagger to maintain soft preference
-launchLoop:
-	for i, slot := range matchingSlots {
-		// Stagger launches (except first one)
-		if i > 0 {
-			select {
-			case <-time.After(1 * time.Second):
-				// Continue to launch next goroutine
-			case <-ctx.Done():
-				// Context cancelled
-				break launchLoop
-			}
-		}
-
-		// Check if context was cancelled
-		select {
-		case <-ctx.Done():
-			break launchLoop
-		default:
-			wg.Add(1)
-			go c.bookSlotConcurrent(ctx, &wg, resultCh, slot, event.PartySize)
-		}
+	if err != nil {
+		attempt.Error = err.Error()
+		return attempt, err
 	}
 
-	// Close channel after all attempts complete
-	wg.Wait()
-	close(resultCh)
+	return attempt, nil
+}
 
-	// Wait for result processing to complete
-	<-doneCh
-	return finalResult, finalError
+// Book slots calls the generic booking handler after type asserting slots
+func (c *ResyClient) BookSlots(ctx context.Context, event Event, slots any) (*BookingResult, []Attempt, error) {
+	resySlots := slots.([]resy.Slot)
+	return bookingHandler(ctx, c, event, resySlots)
 }
 
 // Books a given slot for a given party size
@@ -208,33 +136,6 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 			"venue_opt_in":   bookingConfirmation.VenueOptIn,
 		},
 	}, nil
-}
-
-// Wraps bookSlot for goroutine execution with context cancellation support
-func (c *ResyClient) bookSlotConcurrent(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	resultCh chan<- Attempt,
-	slot resy.Slot,
-	partySize int,
-) {
-	defer wg.Done()
-
-	// Check if context already cancelled, skip if cancelled
-	select {
-	case <-ctx.Done():
-		return
-	default:
-	}
-
-	result, err := c.bookSlot(slot, partySize)
-
-	// Send result back
-	resultCh <- Attempt{
-		Result:   result,
-		Error:    err.Error(),
-		SlotTime: slot.Date.Start.Time,
-	}
 }
 
 // Retrieves slots with a 0.05s pause between requests until either slots are found or the deadline after the drop time is expired
