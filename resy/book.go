@@ -7,7 +7,7 @@ import (
 
 type BookingConfirmation struct {
 	ReservationToken string `json:"resy_token"`
-	ReservationId    string `json:"reservation_id"`
+	ReservationId    int    `json:"reservation_id"`
 	VenueOptIn       bool   `json:"venue_opt_in"`
 }
 
