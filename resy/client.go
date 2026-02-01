@@ -2,6 +2,7 @@ package resy
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -37,11 +38,11 @@ type transport struct {
 }
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req = req.Clone(req.Context())
-
+	// Add headers to the request
 	for key, value := range t.headers {
-		req.Header.Add(key, value)
+		req.Header.Set(key, value)
 	}
+
 	return t.base.RoundTrip(req)
 }
 
@@ -135,11 +136,22 @@ func (c *Client) Do(req *http.Request, v any) error {
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close() //nolint: errcheck
 
 	var body []byte
 	if res.ContentLength != 0 && (res.StatusCode == 200 || res.StatusCode == 201 || res.StatusCode == 400) {
-		defer res.Body.Close() //nolint: errcheck
-		body, err = io.ReadAll(res.Body)
+		// Handle gzip-compressed responses
+		reader := res.Body
+		if res.Header.Get("Content-Encoding") == "gzip" {
+			gzReader, err := gzip.NewReader(res.Body)
+			if err != nil {
+				return fmt.Errorf("failed to create gzip reader: %w", err)
+			}
+			defer gzReader.Close() //nolint: errcheck
+			reader = gzReader
+		}
+
+		body, err = io.ReadAll(reader)
 		if err != nil {
 			return err
 		}
