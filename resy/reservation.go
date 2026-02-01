@@ -164,18 +164,15 @@ func (c *Client) GetReservations(reservationType *ReservationType, onBehalf *boo
 
 // Sets the reservation occasion for a specified reservation
 func (c *Client) SetReservationOccasion(reservationToken string, occasion ReservationOccasion) error {
-	type setReservationOccasionRequest struct {
-		ReservationOccasion
-		ReservationToken string `json:"resy_token"`
-	}
-
 	reqUrl := Host + "/2/reservation/special_request"
-	setReservationOccasionReq := setReservationOccasionRequest{
-		ReservationOccasion: occasion,
-		ReservationToken:    reservationToken,
+
+	reqForm := url.Values{
+		"resy_token":  []string{reservationToken},
+		"occasion":    []string{occasion.Occasion},
+		"occasion_id": []string{occasion.OccasionId},
 	}
 
-	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, setReservationOccasionReq)
+	req, err := c.NewFormRequest(http.MethodPost, reqUrl, &reqForm)
 	if err != nil {
 		return err
 	}
@@ -190,18 +187,14 @@ func (c *Client) SetReservationOccasion(reservationToken string, occasion Reserv
 
 // Sets a special request for a specified reservation
 func (c *Client) SetReservationSpecialRequest(reservationToken string, specialRequest string) error {
-	type setReservationSpecialRequestRequest struct {
-		ReservationToken string `json:"resy_token"`
-		Description      string `json:"description"`
-	}
-
 	reqUrl := Host + "/2/reservation/special_request"
-	setReservationSpecialRequestReq := setReservationSpecialRequestRequest{
-		ReservationToken: reservationToken,
-		Description:      specialRequest,
+
+	reqForm := url.Values{
+		"resy_token":  []string{reservationToken},
+		"description": []string{specialRequest},
 	}
 
-	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, setReservationSpecialRequestReq)
+	req, err := c.NewFormRequest(http.MethodPost, reqUrl, &reqForm)
 	if err != nil {
 		return err
 	}
