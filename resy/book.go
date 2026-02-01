@@ -47,6 +47,8 @@ func (c *Client) BookReservation(bookingToken string, paymentMethodId *string) (
 // The response body usually only returns a nested refund field that has value
 // 1 to confirm that the refund will be issued, but uncertain if this response
 // structure is consistent so keeping this designed as is
+// NOTE: If the reservation token is invalid, it returns an Unauthorized error
+// one more of those 'why...'
 func (c *Client) CancelBooking(reservationToken string, body *[]byte) error {
 	reqUrl := Host + "/3/cancel"
 

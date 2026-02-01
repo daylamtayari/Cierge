@@ -119,8 +119,10 @@ func TestBooking_Cancel_InvalidToken(t *testing.T) {
 		t.Error("expected error for invalid reservation token")
 	}
 
-	if !errors.Is(err, ErrNotFound) && !errors.Is(err, ErrBadRequest) {
-		t.Logf("Got error: %v (acceptable)", err)
+	if errors.Is(err, ErrUnauthorized) {
+		t.Logf("Got error: %v (expected)", err)
+	} else {
+		t.Errorf("Got unexpected error: %v", err)
 	}
 }
 
