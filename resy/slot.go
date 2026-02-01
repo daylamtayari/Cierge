@@ -140,9 +140,9 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 // you will get a 404 Not Found when trying to book
 func (c *Client) GetSlotDetails(slotConfig string, day time.Time, partySize int) (*SlotDetails, error) {
 	type getSlotDetailsRequest struct {
-		ConfigId  string
-		Day       string
-		PartySize string
+		ConfigId  string `json:"config_id"`
+		Day       string `json:"day"`
+		PartySize string `json:"party_size"`
 	}
 
 	reqUrl := Host + "/3/details"

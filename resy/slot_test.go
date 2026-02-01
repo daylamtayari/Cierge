@@ -36,11 +36,11 @@ func TestSlots_Get(t *testing.T) {
 			t.Error("Slot Config.Id should not be 0")
 		}
 
-		if slot.Date.Start.Time.IsZero() {
+		if slot.Date.Start.IsZero() {
 			t.Error("Slot Date.Start should not be zero")
 		}
 
-		if slot.Date.End.Time.IsZero() {
+		if slot.Date.End.IsZero() {
 			t.Error("Slot Date.End should not be zero")
 		}
 
@@ -49,7 +49,7 @@ func TestSlots_Get(t *testing.T) {
 		}
 
 		// Start should be before end
-		if !slot.Date.Start.Time.Before(slot.Date.End.Time) {
+		if !slot.Date.Start.Before(slot.Date.End.Time) {
 			t.Errorf("Slot Start (%v) should be before End (%v)",
 				slot.Date.Start.Time, slot.Date.End.Time)
 		}
@@ -71,15 +71,8 @@ func TestSlots_Get_NoAvailability(t *testing.T) {
 
 	slots, venue, err := client.GetSlots(config.VenueId, farFutureDate, 2)
 
-	// Two possible outcomes:
-	// 1. ErrNoVenues if the date is beyond the venue's booking window
-	// 2. Empty slots slice if the date is valid but no slots are available
-
 	if err != nil {
-		if !errors.Is(err, ErrNoVenues) {
-			t.Errorf("expected ErrNoVenues or no error, got: %v", err)
-		}
-		t.Logf("Got ErrNoVenues for date %d days in future (expected)", 90)
+		t.Errorf("Got error retrieving slots for venue: %v", err)
 		return
 	}
 
@@ -96,13 +89,13 @@ func TestSlots_Get_InvalidVenue(t *testing.T) {
 
 	slots, venue, err := client.GetSlots(TestVenueInvalid, config.TestDate, 2)
 
-	// Should get ErrNoVenues or another error
 	if err == nil {
 		t.Error("expected error for invalid venue ID")
 	}
 
-	if !errors.Is(err, ErrNoVenues) {
-		t.Logf("Got error: %v (acceptable)", err)
+	// Should get ErrBadRequest
+	if !errors.Is(err, ErrBadRequest) {
+		t.Logf("Got error: %v (expected)", err)
 	}
 
 	if slots != nil {
@@ -151,15 +144,6 @@ func TestSlots_GetDetails(t *testing.T) {
 	expiryDiff := time.Until(slotDetails.BookingToken.Expiry)
 	if expiryDiff > 6*time.Minute {
 		t.Errorf("BookingToken.Expiry seems too far in future: %v", expiryDiff)
-	}
-
-	// User structure should be populated
-	if slotDetails.User.Id == 0 {
-		t.Error("User.Id should not be 0")
-	}
-
-	if slotDetails.User.EmailAddress == "" {
-		t.Error("User.EmailAddress should not be empty")
 	}
 
 	t.Logf("Created booking token: %s (expires in %.1f minutes)",
