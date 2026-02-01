@@ -151,7 +151,7 @@ func (c *Client) Do(req *http.Request, v any) error {
 		// and identified, as well as the body response that can be used for
 		// debugging and understanding the error.
 		if res.StatusCode == 400 {
-			return fmt.Errorf("%w: %v", ErrBadRequest, body)
+			return fmt.Errorf("%w: %v", ErrBadRequest, string(body))
 		}
 
 		if _, ok := v.(*[]byte); ok {
