@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 // Resy API host
@@ -104,6 +106,21 @@ func (c *Client) NewJsonRequest(method string, url string, jsonValue any) (*http
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+
+	return req, nil
+}
+
+// Creates a new http request for a form payload
+// Encodes the provided url values into the body,
+// creates a new request, and sets the content
+// type to url encoded form
+func (c *Client) NewFormRequest(method string, url string, form *url.Values) (*http.Request, error) {
+	req, err := http.NewRequest(method, url, strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	return req, nil
 }

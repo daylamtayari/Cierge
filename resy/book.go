@@ -3,7 +3,6 @@ package resy
 import (
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 type BookingConfirmation struct {
@@ -28,12 +27,10 @@ func (c *Client) BookReservation(bookingToken string, paymentMethodId *string) (
 		reqForm.Set("struct_payment_method", `{"id":"`+*paymentMethodId+`"}`)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(reqForm.Encode()))
+	req, err := c.NewFormRequest(http.MethodPost, reqUrl, &reqForm)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	var bookingConfirmation BookingConfirmation
 	err = c.Do(req, &bookingConfirmation)
@@ -57,12 +54,10 @@ func (c *Client) CancelBooking(reservationToken string, body *[]byte) error {
 		"resy_token": []string{reservationToken},
 	}
 
-	req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(reqForm.Encode()))
+	req, err := c.NewFormRequest(http.MethodPost, reqUrl, &reqForm)
 	if err != nil {
 		return err
 	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	if body == nil {
 		err = c.Do(req, nil)
