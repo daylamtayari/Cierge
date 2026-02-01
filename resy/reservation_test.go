@@ -60,7 +60,7 @@ func TestReservations_GetUpcoming(t *testing.T) {
 
 	// Validate all returned reservations are in the future
 	for i, res := range reservations {
-		if res.When.Time.Before(now) {
+		if res.When.Before(now) {
 			t.Errorf("Reservation %d: When (%v) should be in future",
 				i, res.When.Format(ResyDatetimeFormat))
 		}
@@ -90,7 +90,7 @@ func TestReservations_GetPast(t *testing.T) {
 
 	// Validate all returned reservations are in the past
 	for i, res := range reservations {
-		if res.When.Time.After(now) {
+		if res.When.After(now) {
 			t.Errorf("Reservation %d: When (%v) should be in past",
 				i, res.When.Format(ResyDatetimeFormat))
 		}
@@ -144,22 +144,11 @@ func TestReservations_SetOccasion(t *testing.T) {
 	// Check if a test reservation token is provided
 	testToken := os.Getenv("RESY_TEST_RESERVATION_TOKEN")
 	if testToken == "" {
-		// Try to get an upcoming reservation
-		resType := UpcomingReservation
-		limit := 1
-		reservations, err := client.GetReservations(&resType, nil, &limit, nil)
-		requireNoError(t, err, "GetReservations failed")
-
-		if len(reservations) == 0 {
-			t.Skip("No upcoming reservations available for SetReservationOccasion test")
-		}
-
-		testToken = reservations[0].ReservationToken
-		t.Logf("WARNING: Modifying real reservation ID=%d", reservations[0].ReservationId)
+		t.Skip("No reservation token set for SetReservationOccasion test")
 	}
 
 	// Set occasion to Birthday
-	err := client.SetReservationOccasion(testToken, BirthdayOccasion)
+	err := client.SetReservationOccasion(testToken, BusinessOccasion)
 	requireNoError(t, err, "SetReservationOccasion failed")
 
 	t.Log("Successfully set reservation occasion to Birthday")
@@ -187,18 +176,7 @@ func TestReservations_SetSpecialRequest(t *testing.T) {
 	// Check if a test reservation token is provided
 	testToken := os.Getenv("RESY_TEST_RESERVATION_TOKEN")
 	if testToken == "" {
-		// Try to get an upcoming reservation
-		resType := UpcomingReservation
-		limit := 1
-		reservations, err := client.GetReservations(&resType, nil, &limit, nil)
-		requireNoError(t, err, "GetReservations failed")
-
-		if len(reservations) == 0 {
-			t.Skip("No upcoming reservations available for SetReservationSpecialRequest test")
-		}
-
-		testToken = reservations[0].ReservationToken
-		t.Logf("WARNING: Modifying real reservation ID=%d", reservations[0].ReservationId)
+		t.Skip("No reservation token set for SetReservationSpecialRequest test")
 	}
 
 	// Set a test special request
@@ -215,17 +193,7 @@ func TestReservations_SetSpecialRequest_Empty(t *testing.T) {
 	// Check if a test reservation token is provided
 	testToken := os.Getenv("RESY_TEST_RESERVATION_TOKEN")
 	if testToken == "" {
-		// Try to get an upcoming reservation
-		resType := UpcomingReservation
-		limit := 1
-		reservations, err := client.GetReservations(&resType, nil, &limit, nil)
-		requireNoError(t, err, "GetReservations failed")
-
-		if len(reservations) == 0 {
-			t.Skip("No upcoming reservations available for SetReservationSpecialRequest test")
-		}
-
-		testToken = reservations[0].ReservationToken
+		t.Skip("No reservation token set for SetReservationSpecialRequest_Empty test")
 	}
 
 	// Set empty special request (clearing it)
