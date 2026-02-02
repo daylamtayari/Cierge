@@ -3,7 +3,6 @@ package reservation
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
@@ -80,7 +79,6 @@ func bookingHandler[T any](
 	// Process results concurrently as they arrive
 	go func() {
 		defer close(doneCh)
-		var errors []error
 		for attempt := range resultCh {
 			attempts = append(attempts, attempt)
 			if attempt.Error == "" {
@@ -89,17 +87,10 @@ func bookingHandler[T any](
 				finalResult = attempt.Result
 				return
 			}
-
-			errors = append(errors, fmt.Errorf("slot at %s: %s",
-				attempt.SlotTime.Format("15:04"), attempt.Error))
 		}
 
 		// All attempts failed
-		if len(errors) > 0 {
-			finalError = fmt.Errorf("%w: %v", ErrFailedToBookSlots, errors)
-		} else {
-			finalError = ErrFailedToBookSlots
-		}
+		finalError = ErrFailedToBookSlots
 	}()
 
 	// Launch goroutines with 1-second stagger to maintain soft preference
