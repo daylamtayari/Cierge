@@ -78,20 +78,24 @@ func (c *ResyClient) FetchSlots(ctx context.Context, event Event) (any, error) {
 // Books a single slot and returns an Attempt
 // This method is called by the generic bookingHandler for each slot
 func (c *ResyClient) Book(ctx context.Context, event Event, slot any) (Attempt, error) {
+	startTime := time.Now().UTC()
 	resySlot := slot.(resy.Slot)
 
 	bookingResult, err := c.bookSlot(resySlot, event.PartySize)
 
 	attempt := Attempt{
-		Result:   bookingResult,
-		SlotTime: resySlot.Date.Start.Time,
+		Result:    bookingResult,
+		SlotTime:  resySlot.Date.Start.Time,
+		StartTime: startTime,
 	}
 
 	if err != nil {
 		attempt.Error = err.Error()
+		attempt.Duration = time.Now().UTC().Sub(startTime)
 		return attempt, err
 	}
 
+	attempt.Duration = time.Now().UTC().Sub(startTime)
 	return attempt, nil
 }
 

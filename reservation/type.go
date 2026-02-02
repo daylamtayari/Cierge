@@ -54,7 +54,9 @@ type Output struct {
 // Booking attempt
 // NOTE: Slot time is in a UTC timezone
 type Attempt struct {
-	Result   *BookingResult `json:"result"`
-	Error    string         `json:"error,omitempty"`
-	SlotTime time.Time      `json:"slot_time"`
+	Result    *BookingResult `json:"result"`
+	Error     string         `json:"error,omitempty"`
+	SlotTime  time.Time      `json:"slot_time"`
+	StartTime time.Time      `json:"start_time"`
+	Duration  time.Duration  `json:"duration"`
 }
