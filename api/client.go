@@ -1,0 +1,51 @@
+package api
+
+import "net/http"
+
+type Client struct {
+	client *http.Client
+	host   string
+}
+
+type transport struct {
+	base    http.RoundTripper
+	headers map[string]string
+}
+
+func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
+	for key, value := range t.headers {
+		req.Header.Set(key, value)
+	}
+
+	return t.base.RoundTrip(req)
+}
+
+// Creates a new Cierge API client. It accepts an `http.Client` value that will
+// be used as the base HTTP client and will have the authentication added to. If
+// nil is provided, `http.DefaultClient` is used.
+// The host value represents the hostname of the Cierge instance to interact with.
+// The API key is the user's API key to use to create an authenticated client.
+// If no API key is provided, the client will not be authenticated.
+func NewClient(httpClient *http.Client, host string, apiKey string) *Client {
+	trans := http.DefaultTransport
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	} else if t := httpClient.Transport; t != nil {
+		trans = httpClient.Transport
+	}
+
+	headers := map[string]string{}
+	if apiKey != "" {
+		headers["Authorization"] = "api " + apiKey
+	}
+
+	httpClient.Transport = &transport{
+		base:    trans,
+		headers: headers,
+	}
+
+	return &Client{
+		client: httpClient,
+		host:   host,
+	}
+}
