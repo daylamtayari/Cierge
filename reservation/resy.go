@@ -81,7 +81,7 @@ func (c *ResyClient) Book(ctx context.Context, event Event, slot any) (Attempt, 
 	startTime := time.Now().UTC()
 	resySlot := slot.(resy.Slot)
 
-	bookingResult, err := c.bookSlot(resySlot, event.PartySize)
+	bookingResult, err := c.bookSlot(ctx, resySlot, event.PartySize)
 
 	attempt := Attempt{
 		Result:    bookingResult,
@@ -108,7 +108,7 @@ func (c *ResyClient) BookSlots(ctx context.Context, event Event, slots any) (*Bo
 // Books a given slot for a given party size
 // Returns a BookingResult if successful or an error if not
 // If an ErrNotFound is returned, that is due to the slot no longer being available
-func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, error) {
+func (c *ResyClient) bookSlot(ctx context.Context, slot resy.Slot, partySize int) (*BookingResult, error) {
 	// Get the slot details to get the booking token
 	slotDetails, err := c.client.GetSlotDetails(slot.Config.Token, slot.Date.Start.Time, partySize)
 	if err != nil {
@@ -122,6 +122,12 @@ func (c *ResyClient) bookSlot(slot resy.Slot, partySize int) (*BookingResult, er
 	// This will work fine if the restaurant does not require a deposit
 	// but if it does, a resy.ErrPaymentRequired error will be returned
 	paymentMethod := resy.GetDefaultPaymentMethod(&slotDetails.User)
+
+	// Check for context cancellation prior to executing booking
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
 	if (paymentMethod == resy.PaymentMethod{}) {
 		bookingConfirmation, err = c.client.BookReservation(slotDetails.BookingToken.Value, nil)
 	} else {
@@ -155,7 +161,6 @@ func (c *ResyClient) getSlotsUntilDeadline(ctx context.Context, event Event, ven
 		}
 
 		// Handle context cancellation
-		// (used by Lambda)
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}

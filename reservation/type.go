@@ -10,6 +10,7 @@ import (
 // NOTE: Reservation date must have UTC timezone
 // NOTE: Preferred times must have UTC timezone and in order of preference
 // NOTE: Callback signifies whether or not a callback should be made
+// NOTE: Drop time must have a UTC timezone
 // NOTE: Strict preference represents whether the preference should be
 // absolutely respected or not (not recommended for highly competitive reservations)
 type Event struct {
