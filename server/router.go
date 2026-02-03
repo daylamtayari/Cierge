@@ -32,8 +32,8 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	router.Use(middleware.Secure(cfg.IsDevelopment()))
 	router.Use(middleware.Recovery())
 
-	authMiddleware := middleware.NewAuthMiddleware(services.Token, services.User)
-	callbackAuthMiddleware := middleware.NewCallbackAuthMiddleware(services.Job)
+	authMiddleware := middleware.NewAuth(services.Token, services.User)
+	callbackAuthMiddleware := middleware.NewCallbackAuth(services.Job)
 
 	handlers := handler.New(services, cfg)
 

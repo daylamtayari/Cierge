@@ -29,15 +29,15 @@ type AuthCookie struct {
 	MaxAge time.Duration
 }
 
-type AuthService struct {
-	userService  *UserService
-	tokenService *TokenService
+type Auth struct {
+	userService  *User
+	tokenService *Token
 	authConfig   *config.Auth
 	argonParams  *util.Argon2Params
 }
 
-func NewAuthService(userService *UserService, tokenService *TokenService, authConfig *config.Auth) *AuthService {
-	return &AuthService{
+func NewAuth(userService *User, tokenService *Token, authConfig *config.Auth) *Auth {
+	return &Auth{
 		userService:  userService,
 		tokenService: tokenService,
 		authConfig:   authConfig,
@@ -52,7 +52,7 @@ func NewAuthService(userService *UserService, tokenService *TokenService, authCo
 }
 
 // Authenticates a user with email and password and returns a slice of AuthCookie
-func (s *AuthService) Login(ctx context.Context, email string, password string) ([]AuthCookie, error) {
+func (s *Auth) Login(ctx context.Context, email string, password string) ([]AuthCookie, error) {
 	email = strings.TrimSpace(strings.ToLower(email))
 	user, err := s.userService.GetByEmail(ctx, email)
 	if err != nil {
@@ -92,12 +92,12 @@ func (s *AuthService) Login(ctx context.Context, email string, password string) 
 }
 
 // Hashes a given password and returns the argon2id hash
-func (s *AuthService) HashPassword(password string) string {
+func (s *Auth) HashPassword(password string) string {
 	return util.HashSaltString(password, s.argonParams)
 }
 
 // Generate a set of AuthCookie's containing tokens
-func (s *AuthService) generateTokenSet(ctx context.Context, userID uuid.UUID) ([]AuthCookie, error) {
+func (s *Auth) generateTokenSet(ctx context.Context, userID uuid.UUID) ([]AuthCookie, error) {
 	authCookies := make([]AuthCookie, 0)
 	// Access token
 	accessToken, err := s.tokenService.GenerateAccessToken(ctx, userID)

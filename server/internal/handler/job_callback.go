@@ -12,11 +12,11 @@ import (
 )
 
 type JobCallback struct {
-	jobService         *service.JobService
-	reservationService *service.ReservationService
+	jobService         *service.Job
+	reservationService *service.Reservation
 }
 
-func NewJobCallback(jobService *service.JobService, reservationService *service.ReservationService) *JobCallback {
+func NewJobCallback(jobService *service.Job, reservationService *service.Reservation) *JobCallback {
 	return &JobCallback{
 		jobService:         jobService,
 		reservationService: reservationService,

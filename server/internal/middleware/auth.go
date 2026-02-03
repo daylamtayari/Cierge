@@ -14,11 +14,11 @@ import (
 )
 
 type Auth struct {
-	tokenService *service.TokenService
-	userService  *service.UserService
+	tokenService *service.Token
+	userService  *service.User
 }
 
-func NewAuth(tokenService *service.TokenService, userService *service.UserService) *Auth {
+func NewAuth(tokenService *service.Token, userService *service.User) *Auth {
 	return &Auth{
 		tokenService: tokenService,
 		userService:  userService,

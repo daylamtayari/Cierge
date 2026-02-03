@@ -60,8 +60,8 @@ type RefreshTokenClaims struct {
 	jwt.RegisteredClaims
 }
 
-type TokenService struct {
-	userService        *UserService
+type Token struct {
+	userService        *User
 	revocationRepo     *repository.Revocation
 	jwtSecret          string
 	jwtIssuer          string
@@ -69,8 +69,8 @@ type TokenService struct {
 	refreshTokenExpiry time.Duration
 }
 
-func NewTokenService(userService *UserService, authConfig config.Auth, revocationRepo *repository.Revocation) *TokenService {
-	return &TokenService{
+func NewToken(userService *User, authConfig config.Auth, revocationRepo *repository.Revocation) *Token {
+	return &Token{
 		userService:        userService,
 		revocationRepo:     revocationRepo,
 		jwtSecret:          authConfig.JWTSecret,
@@ -81,7 +81,7 @@ func NewTokenService(userService *UserService, authConfig config.Auth, revocatio
 }
 
 // Identifies the token type and extracts the token from a given auth header
-func (s *TokenService) ExtractToken(ctx context.Context, authHeader string) (TokenType, string, error) {
+func (s *Token) ExtractToken(ctx context.Context, authHeader string) (TokenType, string, error) {
 	parts := strings.SplitN(authHeader, " ", 2)
 	if len(parts) != 2 {
 		return TokenType("invalid"), "", ErrInvalidHeaderFormat
@@ -104,7 +104,7 @@ func (s *TokenService) ExtractToken(ctx context.Context, authHeader string) (Tok
 }
 
 // Validates an API key token and returns the corresponding user
-func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*model.User, error) {
+func (s *Token) ValidateApiToken(ctx context.Context, apiToken string) (*model.User, error) {
 	// Perform a light validation check that the token is only alphanumerics
 	// Length should already be equal to 30 as checked by the ExtractToken method
 	for _, r := range apiToken {
@@ -122,7 +122,7 @@ func (s *TokenService) ValidateApiToken(ctx context.Context, apiToken string) (*
 }
 
 // Validates a bearer token wrapping the ValidateJWTToken method
-func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
+func (s *Token) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
 	claims, err := s.validateJWTToken(ctx, bearerToken)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (s *TokenService) ValidateBearerToken(ctx context.Context, bearerToken stri
 }
 
 // Validates a refresh token wrapping the ValidateJWTToken method
-func (s *TokenService) ValidateRefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenClaims, error) {
+func (s *Token) ValidateRefreshToken(ctx context.Context, refreshToken string) (*RefreshTokenClaims, error) {
 	claims, err := s.validateJWTToken(ctx, refreshToken)
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (s *TokenService) ValidateRefreshToken(ctx context.Context, refreshToken st
 }
 
 // Validates a JWT token and returns the corresponding access token claims
-func (s *TokenService) validateJWTToken(ctx context.Context, jwtToken string) (*jwt.RegisteredClaims, error) {
+func (s *Token) validateJWTToken(ctx context.Context, jwtToken string) (*jwt.RegisteredClaims, error) {
 	token, err := jwt.ParseWithClaims(jwtToken, &jwt.RegisteredClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("%w: %v", ErrInvalidSigningMethod, token.Header["alg"])
@@ -186,17 +186,17 @@ func (s *TokenService) validateJWTToken(ctx context.Context, jwtToken string) (*
 }
 
 // Generates an access token for a given user ID and returns the token and an optional error
-func (s *TokenService) GenerateAccessToken(ctx context.Context, userID uuid.UUID) (string, error) {
+func (s *Token) GenerateAccessToken(ctx context.Context, userID uuid.UUID) (string, error) {
 	return s.generateJWTToken(ctx, userID, s.accessTokenExpiry)
 }
 
 // Generates a refresh token for a given user ID and returns the token and an optional error
-func (s *TokenService) GenerateRefreshToken(ctx context.Context, userID uuid.UUID) (string, error) {
+func (s *Token) GenerateRefreshToken(ctx context.Context, userID uuid.UUID) (string, error) {
 	return s.generateJWTToken(ctx, userID, s.refreshTokenExpiry)
 }
 
 // Generates a JWT for a given user ID and with a given expiry and returns the token and an optional error
-func (s *TokenService) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry time.Duration) (string, error) {
+func (s *Token) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry time.Duration) (string, error) {
 	jti := uuid.New().String()
 	now := time.Now().UTC()
 
@@ -217,7 +217,7 @@ func (s *TokenService) generateJWTToken(ctx context.Context, userID uuid.UUID, e
 }
 
 // Revokes a token for a given JTI
-func (s *TokenService) RevokeToken(ctx context.Context, jti string, userId uuid.UUID, revokedBy string) error {
+func (s *Token) RevokeToken(ctx context.Context, jti string, userId uuid.UUID, revokedBy string) error {
 	return s.revocationRepo.Create(ctx, &model.Revocation{
 		UserID:    userId,
 		JTI:       jti,

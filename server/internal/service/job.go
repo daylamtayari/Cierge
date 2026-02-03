@@ -16,18 +16,18 @@ var (
 	ErrJobDNE = errors.New("job does not exist")
 )
 
-type JobService struct {
+type Job struct {
 	jobRepo *repository.Job
 }
 
-func NewJobService(jobRepo *repository.Job) *JobService {
-	return &JobService{
+func NewJob(jobRepo *repository.Job) *Job {
+	return &Job{
 		jobRepo: jobRepo,
 	}
 }
 
 // Retrieves a job from a given UUID
-func (s *JobService) GetByID(ctx context.Context, jobID uuid.UUID) (*model.Job, error) {
+func (s *Job) GetByID(ctx context.Context, jobID uuid.UUID) (*model.Job, error) {
 	job, err := s.jobRepo.GetByID(ctx, jobID)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrJobDNE
@@ -40,7 +40,7 @@ func (s *JobService) GetByID(ctx context.Context, jobID uuid.UUID) (*model.Job, 
 
 // Updates a job record from a callback request. Updates the various fields of the Job object
 // and if successful, stores the success output and creates a reservation.
-func (s *JobService) UpdateFromCallback(ctx context.Context, job *model.Job, callback reservation.Output) (*model.Job, error) {
+func (s *Job) UpdateFromCallback(ctx context.Context, job *model.Job, callback reservation.Output) (*model.Job, error) {
 	job.Callbacked = true
 	completedAt := callback.StartTime.Add(callback.Duration)
 	job.StartedAt = &callback.StartTime

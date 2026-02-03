@@ -18,18 +18,18 @@ var (
 	ErrInvalidEmail = errors.New("invalid email address")
 )
 
-type UserService struct {
+type User struct {
 	userRepo *repository.User
 }
 
-func NewUserService(userRepo *repository.User) *UserService {
-	return &UserService{
+func NewUser(userRepo *repository.User) *User {
+	return &User{
 		userRepo: userRepo,
 	}
 }
 
 // Get user from a given UUID
-func (s *UserService) GetByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
+func (s *User) GetByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
 	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrUserDNE
@@ -40,7 +40,7 @@ func (s *UserService) GetByID(ctx context.Context, userID uuid.UUID) (*model.Use
 }
 
 // Get a user from a given UUID
-func (s *UserService) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (s *User) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrUserDNE
@@ -51,7 +51,7 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (*model.User
 }
 
 // Gets a user from a given API key
-func (s *UserService) GetByApiKey(ctx context.Context, apiKey string) (*model.User, error) {
+func (s *User) GetByApiKey(ctx context.Context, apiKey string) (*model.User, error) {
 	user, err := s.userRepo.GetByApiKey(ctx, apiKey)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrUserDNE
@@ -62,12 +62,12 @@ func (s *UserService) GetByApiKey(ctx context.Context, apiKey string) (*model.Us
 }
 
 // Retrieves all users
-func (s *UserService) GetUsers(ctx context.Context) ([]model.User, error) {
+func (s *User) GetUsers(ctx context.Context) ([]model.User, error) {
 	return s.userRepo.List(ctx)
 }
 
 // Retrieves user count
-func (s *UserService) GetUserCount(ctx context.Context) (int, error) {
+func (s *User) GetUserCount(ctx context.Context) (int, error) {
 	users, err := s.GetUsers(ctx)
 	if err != nil {
 		return 0, err
@@ -76,18 +76,18 @@ func (s *UserService) GetUserCount(ctx context.Context) (int, error) {
 }
 
 // Records a successful login
-func (s *UserService) RecordSuccessfulLogin(ctx context.Context, userId uuid.UUID) error {
+func (s *User) RecordSuccessfulLogin(ctx context.Context, userId uuid.UUID) error {
 	return s.userRepo.RecordSuccessfulLogin(ctx, userId)
 }
 
 // Records a failed login
-func (s *UserService) RecordFailedLogin(ctx context.Context, userID uuid.UUID, lockUntil *time.Time) error {
+func (s *User) RecordFailedLogin(ctx context.Context, userID uuid.UUID, lockUntil *time.Time) error {
 	return s.userRepo.RecordFailedLogin(ctx, userID, lockUntil)
 }
 
 // Create a user from their email (that is then validated), password hash, and isAdmin boolean value
 // Returns a user object pointer and an error which is nil if successful
-func (s *UserService) Create(ctx context.Context, email string, hashedPassword string, isAdmin bool) (*model.User, error) {
+func (s *User) Create(ctx context.Context, email string, hashedPassword string, isAdmin bool) (*model.User, error) {
 	// Email validation
 	if len(email) > 254 {
 		return nil, ErrInvalidEmail

@@ -11,7 +11,7 @@ import (
 )
 
 type Auth struct {
-	authService   *service.AuthService
+	authService   *service.Auth
 	isDevelopment bool
 }
 
@@ -20,7 +20,7 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func NewAuth(authService *service.AuthService, isDevelopment bool) *Auth {
+func NewAuth(authService *service.Auth, isDevelopment bool) *Auth {
 	return &Auth{
 		authService:   authService,
 		isDevelopment: isDevelopment,

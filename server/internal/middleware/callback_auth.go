@@ -23,10 +23,10 @@ var (
 )
 
 type CallbackAuth struct {
-	jobService *service.JobService
+	jobService *service.Job
 }
 
-func NewCallbackAuth(jobService *service.JobService) *CallbackAuth {
+func NewCallbackAuth(jobService *service.Job) *CallbackAuth {
 	return &CallbackAuth{
 		jobService: jobService,
 	}

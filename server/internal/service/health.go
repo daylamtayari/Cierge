@@ -13,19 +13,19 @@ var (
 	ErrDBPingFail       = errors.New("failed to ping the database")
 )
 
-type HealthService struct {
+type Health struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewHealthService(db *gorm.DB, timeout time.Duration) *HealthService {
-	return &HealthService{
+func NewHealth(db *gorm.DB, timeout time.Duration) *Health {
+	return &Health{
 		db:      db,
 		timeout: timeout,
 	}
 }
 
-func (s *HealthService) GetDBConnectivity(ctx context.Context) error {
+func (s *Health) GetDBConnectivity(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 

@@ -10,7 +10,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/service"
 )
 
-func Health(healthService *service.HealthService) gin.HandlerFunc {
+func Health(healthService *service.Health) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		errorCol := appctx.ErrorCollector(c.Request.Context())
 

@@ -15,18 +15,18 @@ var (
 	ErrReservationDNE = errors.New("reservation does not exist")
 )
 
-type ReservationService struct {
+type Reservation struct {
 	reservationRepo *repository.Reservation
 }
 
-func NewReservationService(reservationRepo *repository.Reservation) *ReservationService {
-	return &ReservationService{
+func NewReservation(reservationRepo *repository.Reservation) *Reservation {
+	return &Reservation{
 		reservationRepo: reservationRepo,
 	}
 }
 
 // Retrieve a reservation from a given UUID
-func (s *ReservationService) GetByID(ctx context.Context, reservationID uuid.UUID) (*model.Reservation, error) {
+func (s *Reservation) GetByID(ctx context.Context, reservationID uuid.UUID) (*model.Reservation, error) {
 	reservation, err := s.reservationRepo.GetByID(ctx, reservationID)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrReservationDNE
@@ -37,7 +37,7 @@ func (s *ReservationService) GetByID(ctx context.Context, reservationID uuid.UUI
 }
 
 // Retrieve all reservations for a given user
-func (s *ReservationService) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
+func (s *Reservation) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
 	reservations, err := s.reservationRepo.GetByUser(ctx, userID)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrReservationDNE
@@ -48,7 +48,7 @@ func (s *ReservationService) GetByUser(ctx context.Context, userID uuid.UUID) ([
 }
 
 // Retrieve all upcoming reservations for a given user
-func (s *ReservationService) GetByUserUpcoming(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
+func (s *Reservation) GetByUserUpcoming(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
 	reservations, err := s.reservationRepo.GetByUserUpcoming(ctx, userID)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrReservationDNE
@@ -59,7 +59,7 @@ func (s *ReservationService) GetByUserUpcoming(ctx context.Context, userID uuid.
 }
 
 // Create a reservation from a provided job
-func (s *ReservationService) CreateFromJob(ctx context.Context, job *model.Job) (*model.Reservation, error) {
+func (s *Reservation) CreateFromJob(ctx context.Context, job *model.Job) (*model.Reservation, error) {
 	timezone := time.UTC
 	if job.Restaurant.Timezone != nil {
 		timezone = job.Restaurant.Timezone.Location
