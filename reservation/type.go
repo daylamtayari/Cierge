@@ -42,7 +42,7 @@ type Output struct {
 	JobId           *uuid.UUID    `json:"job_id"`
 	Success         bool          `json:"success"`
 	Duration        time.Duration `json:"duration"`
-	Message         string        `json:"error_message"`
+	Message         string        `json:"message"`
 	Error           string        `json:"error,omitempty"`
 	Level           string        `json:"level"`
 	StartTime       time.Time     `json:"start_time"`
