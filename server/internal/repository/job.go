@@ -32,3 +32,11 @@ func (r *JobRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Job, 
 	}
 	return &job, nil
 }
+
+// Updates a job
+func (r *JobRepository) Update(ctx context.Context, job *model.Job) error {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	return r.db.WithContext(ctx).Save(job).Error
+}

@@ -25,7 +25,7 @@ type Job struct {
 
 	ReservationDate string         `gorm:"type:date;not null"`
 	PartySize       int16          `gorm:"type:smallint;not null"`
-	PreferredTimes  pq.StringArray `gorm:"type:varchar(10)[];not null"`
+	PreferredTimes  pq.StringArray `gorm:"type:varchar(10)[];not null"` // "18:30:00"
 
 	ScheduledAt        time.Time  `gorm:"not null;index:idx_jobs_scheduled,where:status = 'scheduled'"`
 	DropConfigID       *uuid.UUID `gorm:"type:uuid"`
@@ -36,10 +36,10 @@ type Job struct {
 	StartedAt   *time.Time
 	CompletedAt *time.Time
 
-	ReservedTime     *string `gorm:"type:varchar(10)"`
-	ConfirmationCode *string `gorm:"type:varchar(255)"`
-	ErrorMessage     *string `gorm:"type:text"`
-	Logs             *string `gorm:"type:text"`
+	ReservedTime *time.Time `gorm:"type:varchar(10)"`
+	Confirmation *string    `gorm:"type:varchar(255)"`
+	ErrorMessage *string    `gorm:"type:text"`
+	Logs         *string    `gorm:"type:text"`
 
 	// Relations
 	User       *User       `gorm:"foreignKey:UserID"`
