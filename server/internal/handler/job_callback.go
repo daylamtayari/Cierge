@@ -22,7 +22,7 @@ func NewJobCallbackHandler(jobService *service.JobService) *JobCallbackHandler {
 }
 
 // Handles a callback request from a job output and updates the
-// job value, creates a reservation, and sends a notification
+// job value, creates a reservation, and send a notification
 func (h *JobCallbackHandler) HandleJobCallback(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
@@ -45,9 +45,17 @@ func (h *JobCallbackHandler) HandleJobCallback(c *gin.Context) {
 		})
 		return
 	}
-	job, _ := contextJob.(model.Job)
+	job, ok := contextJob.(*model.Job)
+	if !ok {
+		errorCol.Add(nil, zerolog.ErrorLevel, false, map[string]any{"job": contextJob}, "job object in context is not a pointer to a Job type")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error":      "Internal server error",
+			"request_id": appctx.RequestID(c.Request.Context()),
+		})
+		return
+	}
 
-	updatedJob, err := h.jobService.UpdateFromCallback(c.Request.Context(), &job, callbackReq)
+	updatedJob, err := h.jobService.UpdateFromCallback(c.Request.Context(), job, callbackReq)
 	if err != nil {
 		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"job": updatedJob}, "failed to update job from callback")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
