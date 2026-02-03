@@ -13,20 +13,20 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type AuthMiddleware struct {
+type Auth struct {
 	tokenService *service.TokenService
 	userService  *service.UserService
 }
 
-func NewAuthMiddleware(tokenService *service.TokenService, userService *service.UserService) *AuthMiddleware {
-	return &AuthMiddleware{
+func NewAuth(tokenService *service.TokenService, userService *service.UserService) *Auth {
+	return &Auth{
 		tokenService: tokenService,
 		userService:  userService,
 	}
 }
 
 // Checks user authentication
-func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
+func (m *Auth) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := appctx.Logger(c.Request.Context())
 		errorCol := appctx.ErrorCollector(c.Request.Context())
@@ -141,7 +141,7 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 // Ensures that an authenticated user that is required to change their
 // password on next login, is not allowed to proceed
 // NOTE: Must be chained after RequireAuth()
-func (m *AuthMiddleware) RequirePasswordChange() gin.HandlerFunc {
+func (m *Auth) RequirePasswordChange() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		errorCol := appctx.ErrorCollector(c.Request.Context())
 
@@ -173,7 +173,7 @@ func (m *AuthMiddleware) RequirePasswordChange() gin.HandlerFunc {
 
 // Ensures that the authenticated user has administrator privileges
 // NOTE: Must be chained after RequireAuth()
-func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
+func (m *Auth) RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := appctx.Logger(c.Request.Context())
 		errorCol := appctx.ErrorCollector(c.Request.Context())

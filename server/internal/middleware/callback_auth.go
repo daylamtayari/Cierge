@@ -22,17 +22,17 @@ var (
 	ErrNoJobID           = errors.New("no job ID was specified in request")
 )
 
-type CallbackAuthMiddleware struct {
+type CallbackAuth struct {
 	jobService *service.JobService
 }
 
-func NewCallbackAuthMiddleware(jobService *service.JobService) *CallbackAuthMiddleware {
-	return &CallbackAuthMiddleware{
+func NewCallbackAuth(jobService *service.JobService) *CallbackAuth {
+	return &CallbackAuth{
 		jobService: jobService,
 	}
 }
 
-func (m *CallbackAuthMiddleware) RequireCallbackAuth() gin.HandlerFunc {
+func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := appctx.Logger(c.Request.Context())
 		errorCol := appctx.ErrorCollector(c.Request.Context())
