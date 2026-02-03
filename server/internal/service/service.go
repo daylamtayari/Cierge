@@ -6,11 +6,12 @@ import (
 )
 
 type Services struct {
-	Token  *TokenService
-	User   *UserService
-	Health *HealthService
-	Auth   *AuthService
-	Job    *JobService
+	Token       *TokenService
+	User        *UserService
+	Health      *HealthService
+	Auth        *AuthService
+	Job         *JobService
+	Reservation *ReservationService
 }
 
 func New(repos *repository.Repositories, cfg *config.Config) *Services {
@@ -18,10 +19,11 @@ func New(repos *repository.Repositories, cfg *config.Config) *Services {
 	tokenService := NewTokenService(userService, cfg.Auth, repos.Revocation)
 
 	return &Services{
-		User:   userService,
-		Token:  tokenService,
-		Health: NewHealthService(repos.DB(), repos.Timeout()),
-		Auth:   NewAuthService(userService, tokenService, &cfg.Auth),
-		Job:    NewJobService(repos.Job),
+		User:        userService,
+		Token:       tokenService,
+		Health:      NewHealthService(repos.DB(), repos.Timeout()),
+		Auth:        NewAuthService(userService, tokenService, &cfg.Auth),
+		Job:         NewJobService(repos.Job),
+		Reservation: NewReservationService(repos.Reservation),
 	}
 }
