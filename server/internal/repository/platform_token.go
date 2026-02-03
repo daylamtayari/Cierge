@@ -75,7 +75,7 @@ func (r *PlatformTokenRepository) GetExpiringWithin(ctx context.Context, duratio
 	defer cancel()
 
 	var platformTokens []*model.PlatformToken
-	if err := r.db.WithContext(ctx).Where("expires at < ?", (time.Now().UTC()).Add(duration)).Find(&platformTokens).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("expires_at < ?", (time.Now().UTC()).Add(duration)).Find(&platformTokens).Error; err != nil {
 		return nil, err
 	}
 	return platformTokens, nil
