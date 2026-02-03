@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type FavouriteRepository struct {
+type Favourite struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewFavouriteRepository(db *gorm.DB, timeout time.Duration) *FavouriteRepository {
-	return &FavouriteRepository{
+func NewFavourite(db *gorm.DB, timeout time.Duration) *Favourite {
+	return &Favourite{
 		db:      db,
 		timeout: timeout,
 	}

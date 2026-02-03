@@ -8,20 +8,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type RevocationRepository struct {
+type Revocation struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewRevocationRepository(db *gorm.DB, timeout time.Duration) *RevocationRepository {
-	return &RevocationRepository{
+func NewRevocation(db *gorm.DB, timeout time.Duration) *Revocation {
+	return &Revocation{
 		db:      db,
 		timeout: timeout,
 	}
 }
 
 // Get a revocation for a given JTI
-func (r *RevocationRepository) GetByJTI(ctx context.Context, jti string) (*model.Revocation, error) {
+func (r *Revocation) GetByJTI(ctx context.Context, jti string) (*model.Revocation, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -33,7 +33,7 @@ func (r *RevocationRepository) GetByJTI(ctx context.Context, jti string) (*model
 }
 
 // Create a revocation
-func (r *RevocationRepository) Create(ctx context.Context, revocation *model.Revocation) error {
+func (r *Revocation) Create(ctx context.Context, revocation *model.Revocation) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

@@ -16,10 +16,10 @@ var (
 )
 
 type ReservationService struct {
-	reservationRepo *repository.ReservationRepository
+	reservationRepo *repository.Reservation
 }
 
-func NewReservationService(reservationRepo *repository.ReservationRepository) *ReservationService {
+func NewReservationService(reservationRepo *repository.Reservation) *ReservationService {
 	return &ReservationService{
 		reservationRepo: reservationRepo,
 	}

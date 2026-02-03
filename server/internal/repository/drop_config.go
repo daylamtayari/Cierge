@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type DropConfigRepository struct {
+type DropConfig struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewDropConfigRepository(db *gorm.DB, timeout time.Duration) *DropConfigRepository {
-	return &DropConfigRepository{
+func NewDropConfig(db *gorm.DB, timeout time.Duration) *DropConfig {
+	return &DropConfig{
 		db:      db,
 		timeout: timeout,
 	}

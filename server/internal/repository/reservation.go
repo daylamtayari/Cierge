@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type ReservationRepository struct {
+type Reservation struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewReservationRepository(db *gorm.DB, timeout time.Duration) *ReservationRepository {
-	return &ReservationRepository{
+func NewReservation(db *gorm.DB, timeout time.Duration) *Reservation {
+	return &Reservation{
 		db:      db,
 		timeout: timeout,
 	}
 }
 
 // Gets a reservation from a given ID
-func (r *ReservationRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Reservation, error) {
+func (r *Reservation) GetByID(ctx context.Context, id uuid.UUID) (*model.Reservation, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -34,7 +34,7 @@ func (r *ReservationRepository) GetByID(ctx context.Context, id uuid.UUID) (*mod
 }
 
 // Gets all reservations for a given user
-func (r *ReservationRepository) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
+func (r *Reservation) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -46,7 +46,7 @@ func (r *ReservationRepository) GetByUser(ctx context.Context, userID uuid.UUID)
 }
 
 // Get all upcoming reservations for a given user
-func (r *ReservationRepository) GetByUserUpcoming(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
+func (r *Reservation) GetByUserUpcoming(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -58,7 +58,7 @@ func (r *ReservationRepository) GetByUserUpcoming(ctx context.Context, userID uu
 }
 
 // Create a reservation
-func (r *ReservationRepository) Create(ctx context.Context, reservation *model.Reservation) error {
+func (r *Reservation) Create(ctx context.Context, reservation *model.Reservation) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -66,7 +66,7 @@ func (r *ReservationRepository) Create(ctx context.Context, reservation *model.R
 }
 
 // Update a reservation
-func (r *ReservationRepository) Update(ctx context.Context, reservation *model.Reservation) error {
+func (r *Reservation) Update(ctx context.Context, reservation *model.Reservation) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -74,7 +74,7 @@ func (r *ReservationRepository) Update(ctx context.Context, reservation *model.R
 }
 
 // Delete a reservation
-func (r *ReservationRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *Reservation) Delete(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

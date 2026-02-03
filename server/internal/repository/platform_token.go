@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type PlatformTokenRepository struct {
+type PlatformToken struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewPlatformTokenRepository(db *gorm.DB, timeout time.Duration) *PlatformTokenRepository {
-	return &PlatformTokenRepository{
+func NewPlatformToken(db *gorm.DB, timeout time.Duration) *PlatformToken {
+	return &PlatformToken{
 		db:      db,
 		timeout: timeout,
 	}
 }
 
 // Get a platform token from its ID
-func (r *PlatformTokenRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.PlatformToken, error) {
+func (r *PlatformToken) GetByID(ctx context.Context, id uuid.UUID) (*model.PlatformToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -34,7 +34,7 @@ func (r *PlatformTokenRepository) GetByID(ctx context.Context, id uuid.UUID) (*m
 }
 
 // Get all platform tokens for a given user
-func (r *PlatformTokenRepository) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.PlatformToken, error) {
+func (r *PlatformToken) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.PlatformToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -46,7 +46,7 @@ func (r *PlatformTokenRepository) GetByUser(ctx context.Context, userID uuid.UUI
 }
 
 // Get platform token for a given user and a given platform
-func (r *PlatformTokenRepository) GetByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) (*model.PlatformToken, error) {
+func (r *PlatformToken) GetByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) (*model.PlatformToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -58,7 +58,7 @@ func (r *PlatformTokenRepository) GetByUserAndPlatform(ctx context.Context, user
 }
 
 // Get all tokens that are expired
-func (r *PlatformTokenRepository) GetExpired(ctx context.Context) ([]*model.PlatformToken, error) {
+func (r *PlatformToken) GetExpired(ctx context.Context) ([]*model.PlatformToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -70,7 +70,7 @@ func (r *PlatformTokenRepository) GetExpired(ctx context.Context) ([]*model.Plat
 }
 
 // Get all tokens expiring within a given duration
-func (r *PlatformTokenRepository) GetExpiringWithin(ctx context.Context, duration time.Duration) ([]*model.PlatformToken, error) {
+func (r *PlatformToken) GetExpiringWithin(ctx context.Context, duration time.Duration) ([]*model.PlatformToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -82,7 +82,7 @@ func (r *PlatformTokenRepository) GetExpiringWithin(ctx context.Context, duratio
 }
 
 // Create platform token
-func (r *PlatformTokenRepository) Create(ctx context.Context, platformToken *model.PlatformToken) error {
+func (r *PlatformToken) Create(ctx context.Context, platformToken *model.PlatformToken) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -90,7 +90,7 @@ func (r *PlatformTokenRepository) Create(ctx context.Context, platformToken *mod
 }
 
 // Delete platform token
-func (r *PlatformTokenRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *PlatformToken) Delete(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -98,7 +98,7 @@ func (r *PlatformTokenRepository) Delete(ctx context.Context, id uuid.UUID) erro
 }
 
 // Delete tokens for a given user and platform
-func (r *PlatformTokenRepository) DeleteByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) error {
+func (r *PlatformToken) DeleteByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

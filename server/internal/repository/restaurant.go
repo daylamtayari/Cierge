@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type RestaurantRepository struct {
+type Restaurant struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewRestaurantRepository(db *gorm.DB, timeout time.Duration) *RestaurantRepository {
-	return &RestaurantRepository{
+func NewRestaurant(db *gorm.DB, timeout time.Duration) *Restaurant {
+	return &Restaurant{
 		db:      db,
 		timeout: timeout,
 	}
 }
 
 // Get restaurant by ID
-func (r *RestaurantRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Restaurant, error) {
+func (r *Restaurant) GetByID(ctx context.Context, id uuid.UUID) (*model.Restaurant, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -34,7 +34,7 @@ func (r *RestaurantRepository) GetByID(ctx context.Context, id uuid.UUID) (*mode
 }
 
 // Get restaurants from a given platform by their platform specific ID
-func (r *RestaurantRepository) GetByPlatformID(ctx context.Context, platform string, platformID string) (*model.Restaurant, error) {
+func (r *Restaurant) GetByPlatformID(ctx context.Context, platform string, platformID string) (*model.Restaurant, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -46,7 +46,7 @@ func (r *RestaurantRepository) GetByPlatformID(ctx context.Context, platform str
 }
 
 // Create restaurant
-func (r *RestaurantRepository) Create(ctx context.Context, restaurant *model.Restaurant) error {
+func (r *Restaurant) Create(ctx context.Context, restaurant *model.Restaurant) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -54,7 +54,7 @@ func (r *RestaurantRepository) Create(ctx context.Context, restaurant *model.Res
 }
 
 // Update restuarant
-func (r *RestaurantRepository) Update(ctx context.Context, restaurant *model.Restaurant) error {
+func (r *Restaurant) Update(ctx context.Context, restaurant *model.Restaurant) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -62,7 +62,7 @@ func (r *RestaurantRepository) Update(ctx context.Context, restaurant *model.Res
 }
 
 // Delete restaurant
-func (r *RestaurantRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *Restaurant) Delete(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

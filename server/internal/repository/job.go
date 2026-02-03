@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type JobRepository struct {
+type Job struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewJobRepository(db *gorm.DB, timeout time.Duration) *JobRepository {
-	return &JobRepository{
+func NewJob(db *gorm.DB, timeout time.Duration) *Job {
+	return &Job{
 		db:      db,
 		timeout: timeout,
 	}
 }
 
 // Gets a job with a given ID
-func (r *JobRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Job, error) {
+func (r *Job) GetByID(ctx context.Context, id uuid.UUID) (*model.Job, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -34,7 +34,7 @@ func (r *JobRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Job, 
 }
 
 // Updates a job
-func (r *JobRepository) Update(ctx context.Context, job *model.Job) error {
+func (r *Job) Update(ctx context.Context, job *model.Job) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

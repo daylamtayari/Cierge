@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+type User struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewUserRepository(db *gorm.DB, timeout time.Duration) *UserRepository {
-	return &UserRepository{
+func NewUser(db *gorm.DB, timeout time.Duration) *User {
+	return &User{
 		db:      db,
 		timeout: timeout,
 	}
@@ -26,7 +26,7 @@ func NewUserRepository(db *gorm.DB, timeout time.Duration) *UserRepository {
 // -----------------
 
 // Gets a user with a given ID
-func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+func (r *User) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -38,7 +38,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 }
 
 // Gets a user with a given email
-func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *User) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -50,7 +50,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 }
 
 // Gets a user with a given API key
-func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey string) (*model.User, error) {
+func (r *User) GetByApiKey(ctx context.Context, apiKey string) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -62,7 +62,7 @@ func (r *UserRepository) GetByApiKey(ctx context.Context, apiKey string) (*model
 }
 
 // Checks if a user exists with a given email
-func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
+func (r *User) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -72,7 +72,7 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 }
 
 // Checks if a user exists with a given API key
-func (r *UserRepository) ExistsByApiKey(ctx context.Context, apiKey string) (bool, error) {
+func (r *User) ExistsByApiKey(ctx context.Context, apiKey string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -82,7 +82,7 @@ func (r *UserRepository) ExistsByApiKey(ctx context.Context, apiKey string) (boo
 }
 
 // List all users
-func (r *UserRepository) List(ctx context.Context) ([]model.User, error) {
+func (r *User) List(ctx context.Context) ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -92,7 +92,7 @@ func (r *UserRepository) List(ctx context.Context) ([]model.User, error) {
 }
 
 // Get all admin users
-func (r *UserRepository) GetAdmins(ctx context.Context) ([]model.User, error) {
+func (r *User) GetAdmins(ctx context.Context) ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -102,7 +102,7 @@ func (r *UserRepository) GetAdmins(ctx context.Context) ([]model.User, error) {
 }
 
 // Get user notification preferences
-func (r *UserRepository) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (*model.UserNotificationPreferences, error) {
+func (r *User) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (*model.UserNotificationPreferences, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -118,7 +118,7 @@ func (r *UserRepository) GetNotificationPreferences(ctx context.Context, userID 
 // -----------------
 
 // Create user
-func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
+func (r *User) Create(ctx context.Context, user *model.User) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -126,7 +126,7 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 }
 
 // Update user
-func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
+func (r *User) Update(ctx context.Context, user *model.User) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -134,7 +134,7 @@ func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
 }
 
 // Update user password, including the password changed timestamp
-func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passwordHash string) error {
+func (r *User) UpdatePassword(ctx context.Context, id uuid.UUID, passwordHash string) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -147,7 +147,7 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passw
 }
 
 // Update a user's email
-func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) error {
+func (r *User) UpdateEmail(ctx context.Context, id uuid.UUID, email string) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -155,7 +155,7 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 }
 
 // Update an API key value
-func (r *UserRepository) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey string) error {
+func (r *User) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey string) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -164,7 +164,7 @@ func (r *UserRepository) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey 
 
 // Account lockout handling
 // Updates the failed login attempts counter and if lockUntil is provided, updates the locked until value
-func (r *UserRepository) RecordFailedLogin(ctx context.Context, id uuid.UUID, lockUntil *time.Time) error {
+func (r *User) RecordFailedLogin(ctx context.Context, id uuid.UUID, lockUntil *time.Time) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -180,7 +180,7 @@ func (r *UserRepository) RecordFailedLogin(ctx context.Context, id uuid.UUID, lo
 	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Updates(updates).Error
 }
 
-func (r *UserRepository) RecordSuccessfulLogin(ctx context.Context, id uuid.UUID) error {
+func (r *User) RecordSuccessfulLogin(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -193,7 +193,7 @@ func (r *UserRepository) RecordSuccessfulLogin(ctx context.Context, id uuid.UUID
 		Error
 }
 
-func (r *UserRepository) UpdateAdminStatus(ctx context.Context, id uuid.UUID, isAdmin bool) error {
+func (r *User) UpdateAdminStatus(ctx context.Context, id uuid.UUID, isAdmin bool) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -201,14 +201,14 @@ func (r *UserRepository) UpdateAdminStatus(ctx context.Context, id uuid.UUID, is
 }
 
 // User notification preferences
-func (r *UserRepository) CreateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
+func (r *User) CreateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
 	return r.db.WithContext(ctx).Create(prefs).Error
 }
 
-func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
+func (r *User) UpdateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -216,7 +216,7 @@ func (r *UserRepository) UpdateNotificationPreferences(ctx context.Context, pref
 }
 
 // Delete user
-func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *User) Delete(ctx context.Context, id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

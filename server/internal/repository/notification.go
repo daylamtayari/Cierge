@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type NotificationRepository struct {
+type Notification struct {
 	db      *gorm.DB
 	timeout time.Duration
 }
 
-func NewNotificationRepository(db *gorm.DB, timeout time.Duration) *NotificationRepository {
-	return &NotificationRepository{
+func NewNotification(db *gorm.DB, timeout time.Duration) *Notification {
+	return &Notification{
 		db:      db,
 		timeout: timeout,
 	}
