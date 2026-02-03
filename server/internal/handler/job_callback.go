@@ -55,6 +55,15 @@ func (h *JobCallbackHandler) HandleJobCallback(c *gin.Context) {
 		return
 	}
 
+	if callbackReq.JobId != job.ID {
+		errorCol.Add(nil, zerolog.ErrorLevel, false, map[string]any{"callback_job_id": callbackReq.JobId, "retrieved_job_id": job.ID}, "job ID in the callback is different than the retrieved job")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error":      "Internal server error",
+			"request_id": appctx.RequestID(c.Request.Context()),
+		})
+		return
+	}
+
 	updatedJob, err := h.jobService.UpdateFromCallback(c.Request.Context(), job, callbackReq)
 	if err != nil {
 		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"job": updatedJob}, "failed to update job from callback")
