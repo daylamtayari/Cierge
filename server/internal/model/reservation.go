@@ -14,7 +14,7 @@ type Reservation struct {
 
 	Platform      Platform `gorm:"type:varchar(50);not null"`
 	Confirmation  *string  `gorm:"type:varchar(255)"`
-	ReservationAt string   `gorm:"type:timestamptz;not null;index:idx_reservation_user_at"`
+	ReservationAt string   `gorm:"type:timestamptz;not null;index:idx_reservations_user_at"`
 	PartySize     int16    `gorm:"type:smallint;not null"`
 
 	// Relations
