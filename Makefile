@@ -21,12 +21,14 @@ run: ## Run server
 .PHONY: tidy
 tidy: ## Tidy all modules
 	go work sync
-	go mod tidy
-	cd cmd/cli && go mod tidy
-	cd lambdas/reservation && go mod tidy
-	cd pkg/errcol && go mod tidy
-	cd pkg/resy && go mod tidy
-	cd pkg/opentable && go mod tidy
+	cd api && go mod tidy
+	cd cli && go mod tidy
+	cd errcol && go mod tidy
+	cd lambda && go mod tidy
+	cd opentable && go mod tidy
+	cd reservation && go mod tidy
+	cd resy && go mod tidy
+	cd server && go mod tidy
 
 .PHONY: clean
 clean: ## Clean bin directory

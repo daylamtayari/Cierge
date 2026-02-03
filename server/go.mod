@@ -5,6 +5,7 @@ go 1.25.5
 require (
 	github.com/daylamtayari/cierge/errcol v0.9.3
 	github.com/daylamtayari/cierge/querycol v0.8.3
+	github.com/daylamtayari/cierge/reservation v0.8.5
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-viper/mapstructure/v2 v2.4.0
@@ -23,7 +24,6 @@ require (
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
-	github.com/daylamtayari/cierge/reservation v0.8.5 // indirect
 	github.com/daylamtayari/cierge/resy v0.8.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
