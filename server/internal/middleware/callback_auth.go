@@ -119,6 +119,7 @@ func (m *CallbackAuthMiddleware) RequireCallbackAuth() gin.HandlerFunc {
 			return
 		}
 
+		c.Set("job", job)
 		c.Next()
 	}
 }

@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
+	"github.com/daylamtayari/cierge/reservation"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	"github.com/google/uuid"
@@ -34,4 +36,45 @@ func (s *JobService) GetByID(ctx context.Context, jobID uuid.UUID) (*model.Job, 
 	}
 
 	return job, nil
+}
+
+// Updates a job record from a callback request. Updates the various fields of the Job object
+// and if successful, stores the success output and creates a reservation.
+func (s *JobService) UpdateFromCallback(ctx context.Context, job *model.Job, callback reservation.Output) (*model.Job, error) {
+	job.Callbacked = true
+	completedAt := callback.StartTime.Add(callback.Duration)
+	job.StartedAt = &callback.StartTime
+	job.CompletedAt = &completedAt
+	job.ErrorMessage = &callback.Error
+
+	callbackJson, err := json.Marshal(callback)
+	if err != nil {
+		dbErr := s.jobRepo.Update(ctx, job)
+		if dbErr != nil {
+			return nil, dbErr
+		}
+		return nil, err
+	}
+	callbackLog := string(callbackJson)
+	job.Logs = &callbackLog
+
+	if callback.Success {
+		job.Status = model.JobStatusSuccess
+		job.ReservedTime = &callback.ReservationTime
+
+		platformConfirmation, err := json.Marshal(callback.PlatformConfirmation)
+		if err != nil {
+			dbErr := s.jobRepo.Update(ctx, job)
+			if dbErr != nil {
+				return nil, dbErr
+			}
+			return nil, err
+		}
+		confirmation := string(platformConfirmation)
+		job.Confirmation = &confirmation
+	} else {
+		job.Status = model.JobStatusFailed
+	}
+
+	return job, s.jobRepo.Update(ctx, job)
 }
