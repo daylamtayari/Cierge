@@ -24,7 +24,7 @@ type Job struct {
 	RestaurantID uuid.UUID `gorm:"type:uuid;not null;index:idx_jobs_restaurant"`
 	Platform     Platform  `gorm:"type:varchar(50);not null;index:idx_jobs_platform"`
 
-	ReservationDate string         `gorm:"type:date;not null"`
+	ReservationDate time.Time      `gorm:"type:date;not null"`
 	PartySize       int16          `gorm:"type:smallint;not null"`
 	PreferredTimes  pq.StringArray `gorm:"type:varchar(10)[];not null"` // "18:30:00"
 
