@@ -53,7 +53,7 @@ func AutoMigrate(db *gorm.DB) error {
 func createCustomTypes(db *gorm.DB) error {
 	types := []string{
 		`DO $$ BEGIN
-			CREATE TYPE job_status AS ENUM ('scheduled', 'running', 'success', 'failed', 'cancelled');
+			CREATE TYPE job_status AS ENUM ('created', 'scheduled', 'running', 'success', 'failed', 'cancelled');
 		EXCEPTION
 			WHEN duplicate_object THEN null;
 		END $$`,
