@@ -46,7 +46,7 @@ func (r *PlatformTokenRepository) GetByUser(ctx context.Context, userID uuid.UUI
 }
 
 // Get platform token for a given user and a given platform
-func (r *PlatformTokenRepository) GetByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform model.Platform) (*model.PlatformToken, error) {
+func (r *PlatformTokenRepository) GetByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) (*model.PlatformToken, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
@@ -98,7 +98,7 @@ func (r *PlatformTokenRepository) Delete(ctx context.Context, id uuid.UUID) erro
 }
 
 // Delete tokens for a given user and platform
-func (r *PlatformTokenRepository) DeleteByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform model.Platform) error {
+func (r *PlatformTokenRepository) DeleteByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

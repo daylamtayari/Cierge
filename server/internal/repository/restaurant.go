@@ -34,7 +34,7 @@ func (r *RestaurantRepository) GetByID(ctx context.Context, id uuid.UUID) (*mode
 }
 
 // Get restaurants from a given platform by their platform specific ID
-func (r *RestaurantRepository) GetByPlatformID(ctx context.Context, platform model.Platform, platformID string) (*model.Restaurant, error) {
+func (r *RestaurantRepository) GetByPlatformID(ctx context.Context, platform string, platformID string) (*model.Restaurant, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

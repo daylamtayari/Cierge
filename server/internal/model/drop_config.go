@@ -8,7 +8,7 @@ import (
 
 type DropConfig struct {
 	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	Platform     Platform  `gorm:"type:varchar(50);not null;index:idx_drop_config_platform"`
+	Platform     string    `gorm:"type:platform;not null;index:idx_drop_config_platform"`
 	RestaurantID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_drop_configs_restaurant_days"`
 
 	DaysInAdvance  int16      `gorm:"type:smallint;not null;uniqueIndex:idx_drop_configs_restaurant_days"`

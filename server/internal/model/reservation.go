@@ -12,7 +12,7 @@ type Reservation struct {
 	JobID        *uuid.UUID `gorm:"type:uuid"`
 	RestaurantID uuid.UUID  `gorm:"type:uuid;not null;index:idx_reservations_restaurant"`
 
-	Platform      Platform  `gorm:"type:varchar(50);not null"`
+	Platform      string    `gorm:"type:platform;not null"`
 	Confirmation  *string   `gorm:"type:varchar(255)"`
 	ReservationAt time.Time `gorm:"type:timestamptz;not null;index:idx_reservations_user_at"`
 	PartySize     int16     `gorm:"type:smallint;not null"`

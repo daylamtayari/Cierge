@@ -22,7 +22,7 @@ type Job struct {
 	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	UserID       uuid.UUID `gorm:"type:uuid;not null;index:idx_jobs_user;index:idx_jobs_user_status"`
 	RestaurantID uuid.UUID `gorm:"type:uuid;not null;index:idx_jobs_restaurant"`
-	Platform     Platform  `gorm:"type:varchar(50);not null;index:idx_jobs_platform"`
+	Platform     string    `gorm:"type:platform;not null;index:idx_jobs_platform"`
 
 	ReservationDate time.Time      `gorm:"type:date;not null"`
 	PartySize       int16          `gorm:"type:smallint;not null"`

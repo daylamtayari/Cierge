@@ -62,6 +62,11 @@ func createCustomTypes(db *gorm.DB) error {
 		EXCEPTION
 			WHEN duplicate_object THEN null;
 		END $$`,
+		`DO $$ BEGIN
+			CREATE TYPE platform AS ENUM ('resy', 'opentable');
+		EXCEPTION
+			WHEN duplicate_object THEN null;
+		END $$`,
 	}
 
 	for _, t := range types {
