@@ -10,6 +10,7 @@ import (
 type JobStatus string
 
 const (
+	JobStatusCreated   JobStatus = "created"
 	JobStatusScheduled JobStatus = "scheduled"
 	JobStatusRunning   JobStatus = "running"
 	JobStatusSuccess   JobStatus = "success"
@@ -32,12 +33,12 @@ type Job struct {
 	CallbackSecretHash *string    `gorm:"type:varchar(255)"`
 	Callbacked         bool       `gorm:"not null;default:false"`
 
-	Status      JobStatus `gorm:"type:job_status;not null;default:'scheduled';index:idx_jobs_status;index:idx_jobs_user_status"`
-	StartedAt   *time.Time
-	CompletedAt *time.Time
+	Status      JobStatus  `gorm:"type:job_status;not null;default:'scheduled';index:idx_jobs_status;index:idx_jobs_user_status"`
+	StartedAt   *time.Time `gorm:"type:timestamptz"`
+	CompletedAt *time.Time `gorm:"type:timestamptz"`
 
-	ReservedTime *time.Time `gorm:"type:varchar(10)"`
-	Confirmation *string    `gorm:"type:varchar(255)"`
+	ReservedTime *time.Time `gorm:"type:timestamptz"`
+	Confirmation *string    `gorm:"type:text"`
 	ErrorMessage *string    `gorm:"type:text"`
 	Logs         *string    `gorm:"type:text"`
 
