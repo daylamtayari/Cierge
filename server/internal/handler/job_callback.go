@@ -11,13 +11,13 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type JobCallbackHandler struct {
+type JobCallback struct {
 	jobService         *service.JobService
 	reservationService *service.ReservationService
 }
 
-func NewJobCallbackHandler(jobService *service.JobService, reservationService *service.ReservationService) *JobCallbackHandler {
-	return &JobCallbackHandler{
+func NewJobCallback(jobService *service.JobService, reservationService *service.ReservationService) *JobCallback {
+	return &JobCallback{
 		jobService:         jobService,
 		reservationService: reservationService,
 	}
@@ -25,7 +25,7 @@ func NewJobCallbackHandler(jobService *service.JobService, reservationService *s
 
 // Handles a callback request from a job output and updates the
 // job value, creates a reservation, and send a notification
-func (h *JobCallbackHandler) HandleJobCallback(c *gin.Context) {
+func (h *JobCallback) HandleJobCallback(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
 	var callbackReq reservation.Output

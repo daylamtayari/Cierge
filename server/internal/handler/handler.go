@@ -6,13 +6,13 @@ import (
 )
 
 type Handlers struct {
-	Auth        *AuthHandler
-	JobCallback *JobCallbackHandler
+	Auth        *Auth
+	JobCallback *JobCallback
 }
 
 func New(services *service.Services, cfg *config.Config) *Handlers {
 	return &Handlers{
-		Auth:        NewAuthHandler(services.Auth, cfg.IsDevelopment()),
-		JobCallback: NewJobCallbackHandler(services.Job, services.Reservation),
+		Auth:        NewAuth(services.Auth, cfg.IsDevelopment()),
+		JobCallback: NewJobCallback(services.Job, services.Reservation),
 	}
 }

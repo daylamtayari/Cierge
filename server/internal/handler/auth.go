@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type AuthHandler struct {
+type Auth struct {
 	authService   *service.AuthService
 	isDevelopment bool
 }
@@ -20,15 +20,15 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func NewAuthHandler(authService *service.AuthService, isDevelopment bool) *AuthHandler {
-	return &AuthHandler{
+func NewAuth(authService *service.AuthService, isDevelopment bool) *Auth {
+	return &Auth{
 		authService:   authService,
 		isDevelopment: isDevelopment,
 	}
 }
 
 // POST /auth/login
-func (h *AuthHandler) Login(c *gin.Context) {
+func (h *Auth) Login(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
