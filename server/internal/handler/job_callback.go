@@ -12,12 +12,14 @@ import (
 )
 
 type JobCallbackHandler struct {
-	jobService *service.JobService
+	jobService         *service.JobService
+	reservationService *service.ReservationService
 }
 
-func NewJobCallbackHandler(jobService *service.JobService) *JobCallbackHandler {
+func NewJobCallbackHandler(jobService *service.JobService, reservationService *service.ReservationService) *JobCallbackHandler {
 	return &JobCallbackHandler{
-		jobService: jobService,
+		jobService:         jobService,
+		reservationService: reservationService,
 	}
 }
 
@@ -74,7 +76,11 @@ func (h *JobCallbackHandler) HandleJobCallback(c *gin.Context) {
 		return
 	}
 
-	// TODO: Create reservation
+	_, err = h.reservationService.CreateFromJob(c.Request.Context(), updatedJob)
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"job": updatedJob}, "failed to create reservation from job")
+	}
+
 	// TODO: Send notification
 
 	c.JSON(http.StatusOK, gin.H{
