@@ -14,7 +14,7 @@ import (
 // NOTE: Strict preference represents whether the preference should be
 // absolutely respected or not (not recommended for highly competitive reservations)
 type Event struct {
-	JobID                   *uuid.UUID  `json:"job_id"`
+	JobID                   uuid.UUID   `json:"job_id"`
 	Platform                string      `json:"platform"`
 	PlatformVenueId         string      `json:"platform_venue_id"`
 	EncryptedToken          string      `json:"encrypted_token"`
@@ -39,7 +39,7 @@ type BookingResult struct {
 // It is sent back to the server at completion
 // and logged to stdout
 type Output struct {
-	JobId           *uuid.UUID    `json:"job_id"`
+	JobId           uuid.UUID     `json:"job_id"`
 	Success         bool          `json:"success"`
 	Duration        time.Duration `json:"duration"`
 	Message         string        `json:"message"`
