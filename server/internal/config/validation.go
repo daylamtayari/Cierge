@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/daylamtayari/cierge/server/cloud"
-	"github.com/daylamtayari/cierge/server/internal/notification"
+	"github.com/daylamtayari/cierge/server/notification"
 )
 
 type ValidationError struct {
