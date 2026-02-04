@@ -10,7 +10,6 @@ import (
 
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/model"
-	"github.com/daylamtayari/cierge/server/internal/repository"
 	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -38,6 +37,7 @@ var (
 	ErrRevokedTokenNoAt      = errors.New("no revoked_at value in revoked token")
 	ErrRevokedTokenNoBy      = errors.New("no revoked_by value in revoked token")
 	ErrSignatureFail         = errors.New("failed to sign token")
+	ErrTokenStoreFail        = errors.New("failed to store token in the token store")
 	ErrUnknownApiKey         = errors.New("unknown API key")
 )
 
@@ -74,7 +74,7 @@ type Token struct {
 	refreshTokenExpiry time.Duration
 }
 
-func NewToken(userService *User, authConfig config.Auth, revocationRepo *repository.Revocation, tokenStore *tokenstore.Store) *Token {
+func NewToken(userService *User, authConfig config.Auth, tokenStore *tokenstore.Store) *Token {
 	return &Token{
 		userService:        userService,
 		tokenStore:         tokenStore,
@@ -179,6 +179,8 @@ func (s *Token) validateJWTToken(ctx context.Context, jwtToken string) (*jwt.Reg
 	revocation, err := s.tokenStore.GetToken(ctx, claims.ID)
 	if err != nil && !errors.Is(err, tokenstore.ErrTokenNotFound) {
 		return nil, fmt.Errorf("%w: %w", ErrRevocationCheckFail, err)
+	} else if errors.Is(err, tokenstore.ErrTokenNotFound) {
+		return nil, err
 	} else if revocation.Revoked {
 		if revocation.RevokedAt == nil {
 			return nil, ErrRevokedTokenNoAt
@@ -211,6 +213,7 @@ func (s *Token) GenerateRefreshToken(ctx context.Context, userID uuid.UUID) (str
 }
 
 // Generates a JWT for a given user ID and with a given expiry and returns the token and an optional error
+// Also stores the JTI in the token store
 func (s *Token) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry time.Duration) (string, error) {
 	jti := uuid.New().String()
 	now := time.Now().UTC()
@@ -228,6 +231,12 @@ func (s *Token) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry t
 	if err != nil {
 		return "", ErrSignatureFail
 	}
+
+	err = s.tokenStore.StoreToken(ctx, jti, userID, expiry)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrTokenStoreFail, err)
+	}
+
 	return tokenString, nil
 }
 
