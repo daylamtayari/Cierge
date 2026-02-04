@@ -11,9 +11,9 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/repository"
+	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type TokenType string
@@ -35,17 +35,22 @@ var (
 	ErrInvalidTokenType      = errors.New("invalid token type")
 	ErrRevocationCheckFail   = errors.New("revocation check failed")
 	ErrRevokedToken          = errors.New("revoked token")
+	ErrRevokedTokenNoAt      = errors.New("no revoked_at value in revoked token")
+	ErrRevokedTokenNoBy      = errors.New("no revoked_by value in revoked token")
 	ErrSignatureFail         = errors.New("failed to sign token")
 	ErrUnknownApiKey         = errors.New("unknown API key")
 )
 
 type TokenRevocationError struct {
-	Err error
-	model.Revocation
+	Err       error
+	JTI       string
+	UserID    uuid.UUID
+	RevokedBy string
+	RevokedAt time.Time
 }
 
 func (e *TokenRevocationError) Error() string {
-	return fmt.Sprintf("%v revocation_id: %s user_id: %s revoked_at: %v", e.Err, e.ID, e.UserID, e.RevokedAt)
+	return fmt.Sprintf("%v jti: %s user_id: %v revoked_at: %v revoked_by: %s", e.Err, e.JTI, e.UserID, e.RevokedAt, e.RevokedBy)
 }
 
 func (e *TokenRevocationError) Unwrap() error {
@@ -62,17 +67,17 @@ type RefreshTokenClaims struct {
 
 type Token struct {
 	userService        *User
-	revocationRepo     *repository.Revocation
+	tokenStore         *tokenstore.Store
 	jwtSecret          string
 	jwtIssuer          string
 	accessTokenExpiry  time.Duration
 	refreshTokenExpiry time.Duration
 }
 
-func NewToken(userService *User, authConfig config.Auth, revocationRepo *repository.Revocation) *Token {
+func NewToken(userService *User, authConfig config.Auth, revocationRepo *repository.Revocation, tokenStore *tokenstore.Store) *Token {
 	return &Token{
 		userService:        userService,
-		revocationRepo:     revocationRepo,
+		tokenStore:         tokenStore,
 		jwtSecret:          authConfig.JWTSecret,
 		jwtIssuer:          authConfig.JWTIssuer,
 		accessTokenExpiry:  authConfig.AccessTokenExpiry.Duration(),
@@ -171,13 +176,23 @@ func (s *Token) validateJWTToken(ctx context.Context, jwtToken string) (*jwt.Reg
 	}
 
 	// Check if the token has been revoked
-	revocation, err := s.revocationRepo.GetByJTI(ctx, claims.ID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	revocation, err := s.tokenStore.GetToken(ctx, claims.ID)
+	if err != nil && !errors.Is(err, tokenstore.ErrTokenNotFound) {
 		return nil, fmt.Errorf("%w: %w", ErrRevocationCheckFail, err)
-	} else if revocation != nil {
+	} else if revocation.Revoked {
+		if revocation.RevokedAt == nil {
+			return nil, ErrRevokedTokenNoAt
+		}
+		if revocation.RevokedBy == nil {
+			return nil, ErrRevokedTokenNoBy
+		}
+
 		revokedTokenErr := TokenRevocationError{
-			Err:        err,
-			Revocation: *revocation,
+			Err:       err,
+			JTI:       claims.ID,
+			UserID:    revocation.UserID,
+			RevokedBy: *revocation.RevokedBy,
+			RevokedAt: *revocation.RevokedAt,
 		}
 		return nil, &revokedTokenErr
 	}
@@ -217,10 +232,16 @@ func (s *Token) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry t
 }
 
 // Revokes a token for a given JTI
-func (s *Token) RevokeToken(ctx context.Context, jti string, userId uuid.UUID, revokedBy string) error {
-	return s.revocationRepo.Create(ctx, &model.Revocation{
-		UserID:    userId,
-		JTI:       jti,
-		RevokedBy: revokedBy,
-	})
+func (s *Token) RevokeToken(ctx context.Context, jti string, revokedBy string) error {
+	data, err := s.tokenStore.GetToken(ctx, jti)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC()
+	data.Revoked = true
+	data.RevokedBy = &revokedBy
+	data.RevokedAt = &now
+
+	return s.tokenStore.UpdateToken(ctx, jti, data)
 }

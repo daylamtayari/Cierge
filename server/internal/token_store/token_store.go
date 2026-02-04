@@ -100,7 +100,7 @@ func (s *Store) StoreToken(ctx context.Context, jti string, userID uuid.UUID, ex
 }
 
 // Updates a token value
-func (s *Store) UpdateToken(ctx context.Context, jti string, data Data) error {
+func (s *Store) UpdateToken(ctx context.Context, jti string, data *Data) error {
 	val, err := json.Marshal(data)
 	if err != nil {
 		return err
