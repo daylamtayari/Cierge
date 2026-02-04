@@ -15,7 +15,6 @@ type Repositories struct {
 	Job           *Job
 	Reservation   *Reservation
 	Notification  *Notification
-	Revocation    *Revocation
 
 	// For handlers that are not tied to any repository such as the health handler
 	db      *gorm.DB
@@ -32,7 +31,6 @@ func New(db *gorm.DB, timeout time.Duration) *Repositories {
 		Job:           NewJob(db, timeout),
 		Reservation:   NewReservation(db, timeout),
 		Notification:  NewNotification(db, timeout),
-		Revocation:    NewRevocation(db, timeout),
 
 		db:      db,
 		timeout: timeout,

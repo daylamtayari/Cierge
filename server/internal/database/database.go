@@ -42,7 +42,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&model.Reservation{},
 		&model.Favourite{},
 		&model.Notification{},
-		&model.Revocation{},
 	); err != nil {
 		return fmt.Errorf("failed to automigrate: %w", err)
 	}

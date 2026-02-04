@@ -17,6 +17,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/database"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	"github.com/daylamtayari/cierge/server/internal/service"
+	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 )
@@ -80,8 +81,14 @@ func main() {
 		logger.Info().Msg("database migrations completed successfully")
 	}
 
+	tokenStore, err := tokenstore.NewStore(cfg.TokenStorePath, logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to initialise token store")
+	}
+	defer tokenStore.Close()
+
 	repos := repository.New(db, cfg.Database.Timeout.Duration())
-	services := service.New(repos, cfg)
+	services := service.New(repos, cfg, tokenStore)
 
 	// Handle default admin user creation if no users exist
 	userCount, err := services.User.GetUserCount(context.Background())
