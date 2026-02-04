@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/repository"
+	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 )
 
 type Services struct {
@@ -14,9 +15,9 @@ type Services struct {
 	Reservation *Reservation
 }
 
-func New(repos *repository.Repositories, cfg *config.Config) *Services {
+func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenstore.Store) *Services {
 	userService := NewUser(repos.User)
-	tokenService := NewToken(userService, cfg.Auth, repos.Revocation)
+	tokenService := NewToken(userService, cfg.Auth, tokenStore)
 
 	return &Services{
 		User:        userService,

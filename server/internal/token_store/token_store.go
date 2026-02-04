@@ -19,7 +19,6 @@ const (
 var (
 	ErrFailedToOpenTokenStore = errors.New("failed to open token store")
 	ErrTokenNotFound          = errors.New("token not found")
-	ErrTtlInPast              = errors.New("TTL specified is in the past")
 )
 
 // Represents the data for a token
@@ -39,14 +38,14 @@ type Store struct {
 }
 
 // Create a new token store
-func NewStore(ctx context.Context, dataPath string, zLog zerolog.Logger) (*Store, error) {
+func NewStore(dataPath string, zLog zerolog.Logger) (*Store, error) {
 	opts := badger.DefaultOptions(dataPath).WithLogger(&logger{log: zLog})
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrFailedToOpenTokenStore, err)
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	store := &Store{
 		db:     db,
 		cancel: cancel,
