@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/daylamtayari/cierge/server/internal/cloud"
-	"github.com/daylamtayari/cierge/server/internal/cloud/aws"
-	"github.com/daylamtayari/cierge/server/internal/cloud/local"
+	"github.com/daylamtayari/cierge/server/cloud"
+	"github.com/daylamtayari/cierge/server/cloud/aws"
+	"github.com/daylamtayari/cierge/server/cloud/local"
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/database"
 	"github.com/daylamtayari/cierge/server/internal/repository"

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/daylamtayari/cierge/server/internal/cloud"
+	"github.com/daylamtayari/cierge/server/cloud"
 	"github.com/daylamtayari/cierge/server/internal/notification"
 )
 

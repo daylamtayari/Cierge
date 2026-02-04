@@ -1,15 +1,14 @@
-package aws
+package local
 
 import (
 	"context"
 
-	"github.com/daylamtayari/cierge/server/internal/cloud"
+	"github.com/daylamtayari/cierge/server/cloud"
 )
 
 type Provider struct {
 }
 
-// Returns a new AWS provider
 func NewProvider(config map[string]any) (cloud.Provider, error) {
 	return &Provider{}, nil
 }
