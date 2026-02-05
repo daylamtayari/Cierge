@@ -3,6 +3,8 @@ FROM golang:1.25-alpine AS builder
 
 WORKDIR /build/server
 
+RUN apk add --no-cache git
+
 COPY server/go.mod server/go.sum ./
 RUN go mod download
 
@@ -11,7 +13,7 @@ RUN go build -o /build/bin/server .
 
 # Runtime
 FROM alpine:3.23
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata git
 COPY --from=builder /build/bin/server /cierge
 
 EXPOSE 8080
