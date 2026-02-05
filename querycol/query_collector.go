@@ -110,7 +110,7 @@ func (q *QueryCollector) ApplyToEvent(event *zerolog.Event) *zerolog.Event {
 	queryOutput := struct {
 		TotalQueries  int               `json:"total_queries"`
 		TotalDuration time.Duration     `json:"total_duration"`
-		Versions      map[string]string `json:"version,omitempty"`
+		Versions      map[string]string `json:"versions,omitempty"`
 		Queries       []QueryInfo       `json:"queries"`
 	}{
 		TotalQueries:  len(q.queries),
