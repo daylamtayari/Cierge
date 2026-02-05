@@ -19,6 +19,8 @@ var (
 type Provider interface {
 	ScheduleJob(ctx context.Context) error
 
+	UpdateJobCredentials(ctx context.Context) error
+
 	CancelJob(ctx context.Context) error
 
 	EncryptData(ctx context.Context) error

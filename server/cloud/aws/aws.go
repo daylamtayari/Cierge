@@ -18,6 +18,10 @@ func (p *Provider) ScheduleJob(ctx context.Context) error {
 	return nil
 }
 
+func (p *Provider) UpdateJobCredentials(ctx context.Context) error {
+	return nil
+}
+
 func (p *Provider) CancelJob(ctx context.Context) error {
 	return nil
 }
