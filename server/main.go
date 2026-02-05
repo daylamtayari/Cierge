@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/daylamtayari/cierge/querycol"
 	"github.com/daylamtayari/cierge/server/cloud"
 	"github.com/daylamtayari/cierge/server/cloud/aws"
 	"github.com/daylamtayari/cierge/server/cloud/local"
@@ -80,6 +81,28 @@ func main() {
 		}
 		logger.Info().Msg("database migrations completed successfully")
 	}
+
+	// Get DB and DB driver version info
+	dbVersions := map[string]string{
+		"server": db.Name(),
+	}
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, dep := range info.Deps {
+			switch dep.Path {
+			case "gorm.io/gorm":
+				dbVersions["gorm"] = dep.Version
+			case "gorm.io/driver/postgres":
+				dbVersions["postgres_driver"] = dep.Version
+			}
+		}
+	}
+	var dbServerVersion string
+	if err := db.Raw("SHOW server_version").Scan(&dbServerVersion).Error; err != nil {
+		logger.Error().Err(err).Msg("failed to retrieve database server version")
+	} else {
+		dbVersions["server"] += " " + dbServerVersion
+	}
+	querycol.SetVersions(dbVersions)
 
 	tokenStore, err := tokenstore.NewStore(cfg.TokenStorePath, logger, cfg.IsDevelopment())
 	if err != nil {

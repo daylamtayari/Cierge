@@ -12,8 +12,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/daylamtayari/cierge/errcol v0.9.3 h1:xqrIaxgfsxCY/sDT3t3bWD75IB10poJX6WWcyV/Zl6A=
 github.com/daylamtayari/cierge/errcol v0.9.3/go.mod h1:ulHFyy4a/WPfMwiOxCQPCYXaVUExXHOCi/amsk/V1CE=
-github.com/daylamtayari/cierge/querycol v0.8.3 h1:HjH5GI+sKUGn14jayku3pzoEJUr1k2LV4qRvipkmyNU=
-github.com/daylamtayari/cierge/querycol v0.8.3/go.mod h1:8m9qagdZii1u2oo27ndfu+2Wwb9e6YfYRIV5oxRlpI4=
+github.com/daylamtayari/cierge/querycol v0.8.5 h1:wX7Y9MYRTHR2PSedD5nA6wg7Z6MfddCTtWlNeenT6hw=
+github.com/daylamtayari/cierge/querycol v0.8.5/go.mod h1:8m9qagdZii1u2oo27ndfu+2Wwb9e6YfYRIV5oxRlpI4=
 github.com/daylamtayari/cierge/reservation v0.8.5 h1:8yAzUtTezG+CIXyy+mYcnkHkY0ovA8vnjvb1p209Me4=
 github.com/daylamtayari/cierge/reservation v0.8.5/go.mod h1:Vbd064Qjl9ICCgM2i8bYcaK1tLltDWPmb2sFEs5DeZ0=
 github.com/daylamtayari/cierge/resy v0.8.1 h1:VGcVf+GnLWzIAJsuJV1O9WwVMAqLoJq/fqb6yCNVePw=

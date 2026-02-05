@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/daylamtayari/cierge/errcol v0.9.3
-	github.com/daylamtayari/cierge/querycol v0.8.3
+	github.com/daylamtayari/cierge/querycol v0.8.5
 	github.com/daylamtayari/cierge/reservation v0.8.5
 	github.com/dgraph-io/badger/v4 v4.9.1
 	github.com/gin-contrib/cors v1.7.6
