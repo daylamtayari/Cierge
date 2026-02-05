@@ -39,7 +39,10 @@ type Store struct {
 
 // Create a new token store
 func NewStore(dataPath string, zLog zerolog.Logger) (*Store, error) {
-	opts := badger.DefaultOptions(dataPath).WithLogger(&logger{log: zLog})
+	opts := badger.DefaultOptions(dataPath).WithLogger(&logger{log: zLog}).
+		WithValueLogFileSize(1 << 20). // 1MB
+		WithMemTableSize(1 << 20).     // 1MB
+		WithValueThreshold(1 << 10)    // 1KB
 	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrFailedToOpenTokenStore, err)
