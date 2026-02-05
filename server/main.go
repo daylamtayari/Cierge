@@ -81,11 +81,11 @@ func main() {
 		logger.Info().Msg("database migrations completed successfully")
 	}
 
-	tokenStore, err := tokenstore.NewStore(cfg.TokenStorePath, logger)
+	tokenStore, err := tokenstore.NewStore(cfg.TokenStorePath, logger, cfg.IsDevelopment())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialise token store")
 	}
-	defer tokenStore.Close()
+	defer tokenStore.Close() // nolint:errcheck
 
 	repos := repository.New(db, cfg.Database.Timeout.Duration())
 	services := service.New(repos, cfg, tokenStore)

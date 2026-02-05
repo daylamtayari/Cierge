@@ -38,8 +38,8 @@ type Store struct {
 }
 
 // Create a new token store
-func NewStore(dataPath string, zLog zerolog.Logger) (*Store, error) {
-	opts := badger.DefaultOptions(dataPath).WithLogger(&logger{log: zLog}).
+func NewStore(dataPath string, zLog zerolog.Logger, isDevelopment bool) (*Store, error) {
+	opts := badger.DefaultOptions(dataPath).WithLogger(newLogger(zLog, isDevelopment)).
 		WithValueLogFileSize(1 << 20). // 1MB
 		WithMemTableSize(1 << 20).     // 1MB
 		WithValueThreshold(1 << 10)    // 1KB
