@@ -7,6 +7,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var (
+	versionInfo map[string]string
+)
+
 // Stores information about a
 // database query
 type QueryInfo struct {
@@ -21,6 +25,15 @@ type QueryCollector struct {
 	queries    []QueryInfo
 	mu         sync.RWMutex
 	includeSql bool
+}
+
+// Set version information that you care to track
+// e.g. database version, sql driver version, gorm version
+// Allows to have greater insight and analysis towards
+// DB performance and identify anomalies that can be
+// related to version changes.
+func SetVersions(versions map[string]string) {
+	versionInfo = versions
 }
 
 // Creates a new query collector
@@ -95,12 +108,14 @@ func (q *QueryCollector) ApplyToEvent(event *zerolog.Event) *zerolog.Event {
 	}
 
 	queryOutput := struct {
-		TotalQueries  int           `json:"total_queries"`
-		TotalDuration time.Duration `json:"total_duration"`
-		Queries       []QueryInfo   `json:"queries"`
+		TotalQueries  int               `json:"total_queries"`
+		TotalDuration time.Duration     `json:"total_duration"`
+		Versions      map[string]string `json:"version,omitempty"`
+		Queries       []QueryInfo       `json:"queries"`
 	}{
 		TotalQueries:  len(q.queries),
 		TotalDuration: q.TotalDuration(),
+		Versions:      versionInfo,
 		Queries:       q.queries,
 	}
 
