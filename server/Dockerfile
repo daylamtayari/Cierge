@@ -7,7 +7,7 @@ COPY server/go.mod server/go.sum ./
 RUN go mod download
 
 COPY server/ ./
-RUN go build -o /build/bin/server
+RUN go build -o /build/bin/server .
 
 # Runtime
 FROM alpine:3.23
