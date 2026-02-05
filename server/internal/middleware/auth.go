@@ -8,6 +8,7 @@ import (
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/service"
+	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
@@ -83,6 +84,8 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 					errorCol.Add(err, zerolog.WarnLevel, true, nil, "failed authentication attempt due to a valid bearer token but from an invalid issuer")
 				case errors.Is(err, service.ErrInvalidTokenSignature):
 					errorCol.Add(err, zerolog.WarnLevel, true, nil, "failed authentication attempt due to an invalid token signature")
+				case errors.Is(err, tokenstore.ErrTokenNotFound):
+					errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed authentication attempt due to the token not being present in the token store")
 				case errors.As(err, &revocationError):
 					errorCol.Add(err, zerolog.WarnLevel, true, map[string]any{
 						"user_id":     revocationError.UserID.String(),

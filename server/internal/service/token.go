@@ -9,10 +9,12 @@ import (
 	"unicode"
 
 	"github.com/daylamtayari/cierge/server/internal/config"
+	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 )
 
 type TokenType string
@@ -236,6 +238,11 @@ func (s *Token) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry t
 	if err != nil {
 		return "", fmt.Errorf("%w: %w", ErrTokenStoreFail, err)
 	}
+
+	// Adding logging of the JTI
+	appctx.Logger(ctx).UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Str("jti", jti)
+	})
 
 	return tokenString, nil
 }
