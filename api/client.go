@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 var (
@@ -38,10 +40,18 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 // Creates a new Cierge API client. It accepts an `http.Client` value that will
 // be used as the base HTTP client and will have the authentication added to. If
 // nil is provided, `http.DefaultClient` is used.
-// The host value represents the hostname of the Cierge instance to interact with.
+// The host value represents the hostname and optionally scheme, of the Cierge
+// instance to interact with. If no scheme is provided, HTTPS will be assumed
 // The API key is the user's API key to use to create an authenticated client.
 // If no API key is provided, the client will not be authenticated.
-func NewClient(httpClient *http.Client, host string, apiKey string) *Client {
+func NewClient(httpClient *http.Client, host string, apiKey string) (*Client, error) {
+	hostUrl, err := url.Parse(host)
+	if err != nil {
+		return nil, err
+	}
+	hostUrl.Path = ""
+	clientHost := strings.TrimRight(hostUrl.String(), "/") // Remove trailing slash
+
 	trans := http.DefaultTransport
 	if httpClient == nil {
 		httpClient = http.DefaultClient
@@ -61,8 +71,8 @@ func NewClient(httpClient *http.Client, host string, apiKey string) *Client {
 
 	return &Client{
 		client: httpClient,
-		host:   host,
-	}
+		host:   clientHost,
+	}, nil
 }
 
 // Do performs an API request, handles the response,
