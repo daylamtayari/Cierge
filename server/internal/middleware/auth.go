@@ -9,6 +9,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/service"
 	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
+	"github.com/daylamtayari/cierge/server/internal/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
@@ -49,7 +50,7 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 				} else {
 					errorCol.Add(err, zerolog.InfoLevel, true, nil, fmt.Sprintf("failed authentication attempt due to an invalid %v token", tokenType))
 				}
-				respondUnauthorized(c)
+				util.RespondUnauthorized(c)
 				return
 			}
 		}
@@ -65,11 +66,11 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 			if err != nil {
 				if errors.Is(err, service.ErrApiKeyCheckFail) {
 					errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed authentication attempt due to an error checking the API key")
-					respondInternalServerError(c)
+					util.RespondInternalServerError(c)
 					return
 				} else {
 					errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed authentication attempt due to an incorrect API key")
-					respondUnauthorized(c)
+					util.RespondUnauthorized(c)
 					return
 				}
 			}
@@ -96,7 +97,7 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 				default:
 					errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed authentication attempt with a bearer token")
 				}
-				respondUnauthorized(c)
+				util.RespondUnauthorized(c)
 				return
 			}
 
@@ -106,7 +107,7 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 				// Return an internal server error if the user ID value failed to parse
 				// due to either not actually being a UUID which is very problematic
 				// or due to an issue with the parsing, also problematic
-				respondInternalServerError(c)
+				util.RespondInternalServerError(c)
 				return
 			}
 
@@ -114,11 +115,11 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 			if err != nil {
 				if errors.Is(err, service.ErrUserDNE) {
 					errorCol.Add(err, zerolog.WarnLevel, true, map[string]any{"user_id": userID.String()}, "user with valid bearer token no longer exists")
-					respondUnauthorized(c)
+					util.RespondUnauthorized(c)
 					return
 				}
 				errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"user_id": userID.String()}, "failed to retrieve user during auth flow")
-				respondInternalServerError(c)
+				util.RespondInternalServerError(c)
 				return
 			}
 
@@ -152,11 +153,11 @@ func (m *Auth) RequirePasswordChange() gin.HandlerFunc {
 		var user *model.User
 		if !ok {
 			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
-			respondForbidden(c)
+			util.RespondForbidden(c)
 			return
 		} else if user, ok = gUser.(*model.User); !ok {
 			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user value from gin context failed to cast to a User type")
-			respondForbidden(c)
+			util.RespondForbidden(c)
 			return
 		}
 
@@ -184,7 +185,7 @@ func (m *Auth) RequireAdmin() gin.HandlerFunc {
 		isAdmin := c.GetBool("is_admin")
 		if !isAdmin {
 			errorCol.Add(nil, zerolog.WarnLevel, true, nil, "user attempted to access an administrative endpoint")
-			respondForbidden(c)
+			util.RespondForbidden(c)
 			return
 		}
 

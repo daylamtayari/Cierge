@@ -40,7 +40,7 @@ func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			errorCol.Add(ErrInvalidAuthHeader, zerolog.InfoLevel, true, nil, "callback request did not contain an authorization header")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		}
 
@@ -48,7 +48,7 @@ func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 		if authToken == authHeader {
 			// No Bearer prefix present
 			errorCol.Add(ErrInvalidAuthHeader, zerolog.InfoLevel, true, nil, "callback request did not contain a 'Bearer' prefix in the authorization header")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		}
 
@@ -59,7 +59,7 @@ func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed to read the body of a callback request")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		}
 		_ = c.Request.Body.Close()
@@ -72,34 +72,34 @@ func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 		}
 		if err := json.Unmarshal(body, &response); err != nil {
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed to unmarshal the body of a callback request to retrieve job ID")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		}
 		if response.JobID == nil {
 			errorCol.Add(ErrNoJobID, zerolog.InfoLevel, true, nil, "callback request body did not contain job ID field")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		}
 
 		job, err := m.jobService.GetByID(c, *response.JobID)
 		if err != nil && errors.Is(err, service.ErrJobDNE) {
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "job ID specified in callback request does not exist")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		} else if err != nil {
 			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to retrieve job from job ID for callback request")
-			respondInternalServerError(c)
+			util.RespondInternalServerError(c)
 			return
 		}
 
 		validToken, err := util.SecureVerifyHash(*job.CallbackSecretHash, authToken)
 		if err != nil {
 			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to verify hash during callback request auth")
-			respondInternalServerError(c)
+			util.RespondInternalServerError(c)
 			return
 		} else if !validToken {
 			errorCol.Add(ErrInvalidSecret, zerolog.InfoLevel, true, nil, "invalid secret provided as token of callback request")
-			respondUnauthorized(c)
+			util.RespondUnauthorized(c)
 			return
 		}
 
@@ -115,7 +115,7 @@ func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 		// makes a single callback request
 		if job.Callbacked {
 			errorCol.Add(ErrAlreadyCallbacked, zerolog.InfoLevel, true, nil, "callback request has already been received for this job")
-			respondForbidden(c)
+			util.RespondForbidden(c)
 			return
 		}
 
