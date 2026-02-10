@@ -15,6 +15,6 @@ func New(services *service.Services, cfg *config.Config) *Handlers {
 	return &Handlers{
 		Auth:        NewAuth(services.Auth, cfg.IsDevelopment()),
 		JobCallback: NewJobCallback(services.Job, services.Reservation),
-		User:        NewUser(services.User),
+		User:        NewUser(services.User, services.Token),
 	}
 }
