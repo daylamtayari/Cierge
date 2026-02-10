@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 )
 
@@ -45,4 +46,19 @@ func (u *User) IsAccountLocked() bool {
 
 func (u *User) NeedsPasswordChange() bool {
 	return u.PasswordChangedAt == nil
+}
+
+// ToAPI converts the internal User model to the public API representation.
+func (u *User) ToAPI() *api.User {
+	authMethod := api.LocalAuthMethod
+	// TODO: Add check if OIDC or even social auth is enabled for the user
+	return &api.User{
+		ID:          u.ID,
+		Email:       u.Email,
+		HasApiKey:   u.ApiKey != nil && *u.ApiKey != "",
+		IsAdmin:     u.IsAdmin,
+		AuthMethod:  authMethod,
+		LastLoginAt: u.LastLoginAt,
+		CreatedAt:   u.CreatedAt,
+	}
 }
