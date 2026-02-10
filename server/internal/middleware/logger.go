@@ -2,15 +2,21 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 
-	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/errcol"
 	"github.com/daylamtayari/cierge/querycol"
+	appctx "github.com/daylamtayari/cierge/server/internal/context"
 )
+
+type logCookie struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
 
 func Logger(baseLogger zerolog.Logger, isDevelopment bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -105,23 +111,34 @@ func sanitizeHeaders(headers http.Header) http.Header {
 	if _, ok := headers["Authorization"]; ok {
 		headers["Authorization"] = []string{"*****"}
 	}
+
+	if cookieHeader, ok := headers["Cookie"]; ok {
+		for i, cookie := range cookieHeader {
+			if strings.Contains(cookie, "access_token") || strings.Contains(cookie, "refresh_token") {
+				cookieHeader[i] = "*****"
+			}
+		}
+	}
+
 	return headers
 }
 
-// Sanitizes the access token and refresh token cookies for logging
-func sanitizeCookies(cookies []*http.Cookie) []*http.Cookie {
-	sanitized := make([]*http.Cookie, len(cookies))
+// Sanitizes the access token and refresh token cookies for logging and returns string
+func sanitizeCookies(cookies []*http.Cookie) []logCookie {
+	sanitized := make([]logCookie, len(cookies))
 
 	for i, cookie := range cookies {
-		cookieCopy := *cookie
-		switch cookieCopy.Name {
-		case "access_token":
-			cookieCopy.Value = "*****"
-		case "refresh_token":
-			cookieCopy.Value = "*****"
+		if cookie.Name == "access_token" || cookie.Name == "refresh_token" {
+			sanitized[i] = logCookie{
+				Name:  cookie.Name,
+				Value: "*****",
+			}
+		} else {
+			sanitized[i] = logCookie{
+				Name:  cookie.Name,
+				Value: cookie.Value,
+			}
 		}
-
-		sanitized[i] = &cookieCopy
 	}
 
 	return sanitized
