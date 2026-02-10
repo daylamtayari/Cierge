@@ -15,7 +15,7 @@ type Auth struct {
 	isDevelopment bool
 }
 
-type LoginRequest struct {
+type loginRequest struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
@@ -30,7 +30,7 @@ func NewAuth(authService *service.Auth, isDevelopment bool) *Auth {
 // POST /auth/login
 func (h *Auth) Login(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
-	var req LoginRequest
+	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errorCol.Add(err, zerolog.InfoLevel, true, nil, "improper login request format")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
