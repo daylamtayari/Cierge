@@ -49,6 +49,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug logging")
+	rootCmd.AddCommand(versionCmd)
 }
 
 func getConfig(cmd *cobra.Command) *config {
