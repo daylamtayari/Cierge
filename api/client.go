@@ -1,6 +1,21 @@
 package api
 
-import "net/http"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+var (
+	ErrBadRequest      = errors.New("bad or malformed request")
+	ErrNotFound        = errors.New("not found")
+	ErrServerError     = errors.New("server encountered internal error")
+	ErrUnauthenticated = errors.New("unauthenticated")
+	ErrUnauthorized    = errors.New("unauthorized")
+	ErrUnhandledStatus = errors.New("unhandled status code returned")
+)
 
 type Client struct {
 	client *http.Client
@@ -47,5 +62,52 @@ func NewClient(httpClient *http.Client, host string, apiKey string) *Client {
 	return &Client{
 		client: httpClient,
 		host:   host,
+	}
+}
+
+// Do performs an API request, handles the response,
+// and unmarshals the response into a given interface.
+// The value to unmarshal must be a pointer to an interface.
+// If a pointer to a byte array is provided, the returned value
+// will be the value of the body.
+func (c *Client) Do(req *http.Request, v any) error {
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close() //nolint: errcheck
+
+	var body []byte
+	if res.ContentLength != 0 && res.StatusCode == 200 {
+		body, err = io.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+
+		if _, ok := v.(*[]byte); ok {
+			// If a byte array is provided, the body value
+			// is returned directly and not unmarshalled
+			*v.(*[]byte) = body
+		} else if v != nil {
+			err = json.Unmarshal(body, &v)
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	switch res.StatusCode {
+	case 200:
+		return nil
+	case 401:
+		return ErrUnauthenticated
+	case 403:
+		return ErrUnauthorized
+	case 404:
+		return ErrNotFound
+	case 500:
+		return ErrServerError
+	default:
+		return fmt.Errorf("%w: %d", ErrUnhandledStatus, res.StatusCode)
 	}
 }
