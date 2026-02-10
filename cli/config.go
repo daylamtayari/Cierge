@@ -11,8 +11,8 @@ import (
 )
 
 type config struct {
-	Host_url string `json:"host_url" mapstructure:"host_url"`
-	ApiKey   string `json:"api_key" mapstructure:"api_key"`
+	HostURL string `json:"host_url" mapstructure:"host_url"`
+	ApiKey  string `json:"api_key" mapstructure:"api_key"`
 }
 
 // Initializes the configuration using Viper

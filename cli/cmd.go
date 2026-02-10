@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -43,6 +44,10 @@ var rootCmd = &cobra.Command{
 			zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		}
 		cmd.SetContext(context.WithValue(cmd.Context(), loggerContextKey, &logger))
+
+		if config.HostURL == "" {
+			return fmt.Errorf("no Cierge host specified")
+		}
 		return nil
 	},
 }
