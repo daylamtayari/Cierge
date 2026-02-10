@@ -154,12 +154,17 @@ func (r *User) UpdateEmail(ctx context.Context, id uuid.UUID, email string) erro
 	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Update("email", email).Error
 }
 
-// Update an API key value
+// Update an API key value and timestamp
 func (r *User) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey string) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Update("api_key", apiKey).Error
+	return r.db.WithContext(ctx).Model(&model.User{}).
+		Where("id = ?", id).
+		Updates(map[string]any{
+			"api_key":              apiKey,
+			"api_key_last_created": time.Now().UTC(),
+		}).Error
 }
 
 // Account lockout handling

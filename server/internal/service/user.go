@@ -75,6 +75,11 @@ func (s *User) GetUserCount(ctx context.Context) (int, error) {
 	return len(users), nil
 }
 
+// Checks if an API key string exists
+func (s *User) ExistsByApiKey(ctx context.Context, apiKey string) (bool, error) {
+	return s.userRepo.ExistsByApiKey(ctx, apiKey)
+}
+
 // Records a successful login
 func (s *User) RecordSuccessfulLogin(ctx context.Context, userId uuid.UUID) error {
 	return s.userRepo.RecordSuccessfulLogin(ctx, userId)
@@ -83,6 +88,11 @@ func (s *User) RecordSuccessfulLogin(ctx context.Context, userId uuid.UUID) erro
 // Records a failed login
 func (s *User) RecordFailedLogin(ctx context.Context, userID uuid.UUID, lockUntil *time.Time) error {
 	return s.userRepo.RecordFailedLogin(ctx, userID, lockUntil)
+}
+
+// Creates or updates a user's API key
+func (s *User) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey string) error {
+	return s.userRepo.UpdateAPIKey(ctx, id, apiKey)
 }
 
 // Create a user from their email (that is then validated), password hash, and isAdmin boolean value

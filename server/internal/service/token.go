@@ -2,8 +2,12 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 	"unicode"
@@ -27,6 +31,7 @@ const (
 
 var (
 	ErrApiKeyCheckFail       = errors.New("failed to check API keys")
+	ErrApiKeyGenerationFail  = errors.New("failed to generate API key")
 	ErrExpiredToken          = errors.New("expired token")
 	ErrInvalidHeaderFormat   = errors.New("invalid authorization header format")
 	ErrInvalidIssuer         = errors.New("invalid issuer")
@@ -110,6 +115,12 @@ func (s *Token) ExtractToken(ctx context.Context, authHeader string) (TokenType,
 	}
 }
 
+// Creates a SHA-256 hash of an API key
+func (s *Token) hashApiKey(apiKey string) string {
+	hash := sha256.Sum256([]byte(apiKey))
+	return hex.EncodeToString(hash[:])
+}
+
 // Validates an API key token and returns the corresponding user
 func (s *Token) ValidateApiToken(ctx context.Context, apiToken string) (*model.User, error) {
 	// Perform a light validation check that the token is only alphanumerics
@@ -119,7 +130,10 @@ func (s *Token) ValidateApiToken(ctx context.Context, apiToken string) (*model.U
 			return nil, ErrInvalidToken
 		}
 	}
-	user, err := s.userService.GetByApiKey(ctx, apiToken)
+
+	hashedToken := s.hashApiKey(apiToken)
+
+	user, err := s.userService.GetByApiKey(ctx, hashedToken)
 	if err != nil && errors.Is(err, ErrUserDNE) {
 		return nil, ErrUnknownApiKey
 	} else if err != nil {
@@ -260,4 +274,54 @@ func (s *Token) RevokeToken(ctx context.Context, jti string, revokedBy string) e
 	data.RevokedAt = &now
 
 	return s.tokenStore.UpdateToken(ctx, jti, data)
+}
+
+// GenerateAPIKey creates or replaces a user's API key
+// Returns the plaintext API key and an error that is nil if successful
+func (s *Token) GenerateAPIKey(ctx context.Context, userID uuid.UUID) (string, error) {
+	const (
+		apiKeyLength = 30
+		charset      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+		maxRetries   = 10
+	)
+
+	var apiKey string
+	var hashedKey string
+	charsetLen := big.NewInt(int64(len(charset)))
+
+	// Generate a unique API key with collision checking
+	for i := range maxRetries {
+		// Generate random alphanumeric string
+		key := make([]byte, apiKeyLength)
+		for j := range key {
+			num, err := rand.Int(rand.Reader, charsetLen)
+			if err != nil {
+				return "", fmt.Errorf("%w: %w", ErrApiKeyGenerationFail, err)
+			}
+			key[j] = charset[num.Int64()]
+		}
+		apiKey = string(key)
+		hashedKey = s.hashApiKey(apiKey)
+
+		// Check if the key already exists
+		exists, err := s.userService.ExistsByApiKey(ctx, hashedKey)
+		if err != nil {
+			return "", fmt.Errorf("%w: failed to check key uniqueness: %w", ErrApiKeyGenerationFail, err)
+		}
+		if !exists {
+			break
+		}
+
+		// If all retries are exhausted
+		if i == maxRetries-1 {
+			return "", fmt.Errorf("%w: failed to generate unique key after %d attempts", ErrApiKeyGenerationFail, maxRetries)
+		}
+	}
+
+	err := s.userService.userRepo.UpdateAPIKey(ctx, userID, hashedKey)
+	if err != nil {
+		return "", fmt.Errorf("%w: failed to update user API key: %w", ErrApiKeyGenerationFail, err)
+	}
+
+	return apiKey, nil
 }

@@ -11,7 +11,7 @@ type User struct {
 	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 	Email        string    `gorm:"type:varchar(255);not null;uniqueIndex"`
 	PasswordHash *string   `gorm:"type:varchar(255)"`
-	ApiKey       *string   `gorm:"type:varchar(255);uniqueIndex"`
+	ApiKey       *string   `gorm:"type:varchar(64);uniqueIndex"`
 
 	// User management
 	IsAdmin             bool       `gorm:"not null;default:false"`
@@ -20,6 +20,7 @@ type User struct {
 	FailedLoginAttempts int        `gorm:"type:int;not null;default:0"`
 	LastFailedLogin     *time.Time `gorm:"type:timestamptz"`
 	LockedUntil         *time.Time `gorm:"type:timestamptz"`
+	ApiKeyLastCreated   *time.Time `gorm:"type:timestamptz"`
 
 	// OIDC fields
 	OIDCProvider *string `gorm:"column:oidc_provider;type:varchar(50);index:idx_users_oidc,where:oidc_provider IS NOT NULL"`
