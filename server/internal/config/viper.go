@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -24,12 +26,17 @@ func V() *viper.Viper {
 func Load() (*Config, error) {
 	v := V()
 
-	v.SetConfigName("config")
+	v.SetConfigName("server")
 	v.SetConfigType("json")
 
 	// Config paths supporting same dir and ~/.config dir
+	userConfigDir, err := os.UserConfigDir()
+	if err != nil {
+		return nil, err
+	}
+
 	v.AddConfigPath(".")
-	v.AddConfigPath("~/.config/cierge")
+	v.AddConfigPath(filepath.Join(userConfigDir, "cierge"))
 	v.AddConfigPath("/etc/cierge")
 
 	// Environment variables
