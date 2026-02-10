@@ -62,10 +62,14 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		internalRoutes.POST("/job/status", callbackAuthMiddleware.RequireCallbackAuth(), handlers.JobCallback.HandleJobCallback)
 	}
 
-	authenticated := router.Group("/api")
-	authenticated.Use(authMiddleware.RequireAuth())
+	api := router.Group("/api")
+	api.Use(authMiddleware.RequireAuth())
 	{
-		authenticated.GET("/health", handler.Health(services.Health))
+		// User routes
+		users := api.Group("/user")
+		{
+			users.GET("/me", handlers.User.Me)
+		}
 	}
 
 	return router

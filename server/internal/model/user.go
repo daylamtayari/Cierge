@@ -52,13 +52,20 @@ func (u *User) NeedsPasswordChange() bool {
 func (u *User) ToAPI() *api.User {
 	authMethod := api.LocalAuthMethod
 	// TODO: Add check if OIDC or even social auth is enabled for the user
+
+	lastLoginAt := u.LastLoginAt
+	if u.LastLoginAt != nil {
+		lastLoginAtUTC := u.LastLoginAt.UTC()
+		lastLoginAt = &lastLoginAtUTC
+	}
+
 	return &api.User{
 		ID:          u.ID,
 		Email:       u.Email,
 		HasApiKey:   u.ApiKey != nil && *u.ApiKey != "",
 		IsAdmin:     u.IsAdmin,
 		AuthMethod:  authMethod,
-		LastLoginAt: u.LastLoginAt,
-		CreatedAt:   u.CreatedAt,
+		LastLoginAt: lastLoginAt,
+		CreatedAt:   u.CreatedAt.UTC(),
 	}
 }
