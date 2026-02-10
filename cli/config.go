@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,11 +42,16 @@ func initConfig() (*config, error) {
 	// Read config file if it exists
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Create with defaults if it does not exist
-			if err := saveConfig(); err != nil {
+			// Create if it does not exist
+			if err := saveConfig(&config{}); err != nil {
 				return nil, err
 			}
 		} else {
+			return nil, err
+		}
+	} else {
+		// Enforce secure permissions on config file
+		if err := checkConfigPermissions(viper.ConfigFileUsed()); err != nil {
 			return nil, err
 		}
 	}
@@ -61,15 +68,22 @@ func setDefaults() {
 	viper.SetDefault("host_url", "http://localhost:8080")
 }
 
-func saveConfig() error {
+func saveConfig(cfg *config) error {
 	configDir, err := getConfigDir()
 	if err != nil {
 		return err
 	}
+	configPath := filepath.Join(configDir, "cli.json")
 
-	if err := viper.WriteConfigAs(filepath.Join(configDir, "cli.json")); err != nil {
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
 		return err
 	}
+
+	if err := os.WriteFile(configPath, data, 0600); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -80,4 +94,20 @@ func getConfigDir() (string, error) {
 	}
 
 	return filepath.Join(userConfigDir, "cierge"), nil
+}
+
+// checkConfigPermissions validates that the config file has secure permissions (0600)
+func checkConfigPermissions(configPath string) error {
+	info, err := os.Stat(configPath)
+	if err != nil {
+		return err
+	}
+
+	// Require 0600 permissions
+	if info.Mode().Perm() != 0600 {
+		return fmt.Errorf("insecure config file permissions (%v). Run: chmod 0600 %s",
+			info.Mode().Perm(), configPath)
+	}
+
+	return nil
 }
