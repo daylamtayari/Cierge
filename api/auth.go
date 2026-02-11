@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	ErrNoAPIKey      = errors.New("no API key was returned by the server")
 	ErrNoAuthCookies = errors.New("no auth cookies were found")
 )
 
@@ -15,7 +16,10 @@ type AuthCookies struct {
 	RefreshToken string
 }
 
-// Login
+// Login and get a user's authentication cookies if successful
+// This is designed to be used for providing a smooth way of
+// retrieving a user's API key if they don't already have it
+// NOTE: Only supports username:password auth at this time
 func (c *Client) Login(email string, password string) (*AuthCookies, error) {
 	reqUrl := c.host + "/auth/login"
 	loginReq := struct {
@@ -63,4 +67,32 @@ func (c *Client) Login(email string, password string) (*AuthCookies, error) {
 	default:
 		return nil, fmt.Errorf("%w: %d", ErrUnhandledStatus, res.StatusCode)
 	}
+}
+
+// Generates a new API key for a user
+// NOTE: Requires authentication (if using cookie auth
+// it must be set separately)
+// NOTE: This will replace the existing API key and as such
+// will invalidate any past API keys. Highly recommend fetching
+// the user and checking if they have an active API key first and
+// if so, getting explicit confirmation.
+func (c *Client) GenerateAPIKey() (string, error) {
+	reqUrl := c.host + "/api/user/api-key"
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return "", err
+	}
+
+	var apiKey struct {
+		ApiKey string `json:"api_key"`
+	}
+	err = c.Do(req, &apiKey)
+	if err != nil {
+		return "", err
+	}
+
+	if apiKey.ApiKey == "" {
+		return "", ErrNoAPIKey
+	}
+	return apiKey.ApiKey, nil
 }
