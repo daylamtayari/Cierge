@@ -71,6 +71,12 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 			users.GET("/me", handlers.User.Me)
 			users.POST("/api-key", handlers.User.APIKey)
 		}
+
+		// Job routes
+		jobs := api.Group("/job")
+		{
+			jobs.GET("/list", handlers.Job.List)
+		}
 	}
 
 	return router

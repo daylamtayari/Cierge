@@ -7,6 +7,7 @@ import (
 
 type Handlers struct {
 	Auth        *Auth
+	Job         *Job
 	JobCallback *JobCallback
 	User        *User
 }
@@ -14,6 +15,7 @@ type Handlers struct {
 func New(services *service.Services, cfg *config.Config) *Handlers {
 	return &Handlers{
 		Auth:        NewAuth(services.Auth, cfg.IsDevelopment()),
+		Job:         NewJob(services.Job),
 		JobCallback: NewJobCallback(services.Job, services.Reservation),
 		User:        NewUser(services.User, services.Token),
 	}
