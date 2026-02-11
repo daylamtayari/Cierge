@@ -35,7 +35,7 @@ func (h *User) Me(c *gin.Context) {
 	apiUser := modelUser.ToAPI()
 
 	c.JSON(200, apiUser)
-	c.Set("message", "returned user")
+	c.Set("message", "retrieved own user")
 }
 
 // Generates a new API key for a user
