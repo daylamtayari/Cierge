@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -73,6 +74,24 @@ func NewClient(httpClient *http.Client, host string, apiKey string) (*Client, er
 		client: httpClient,
 		host:   clientHost,
 	}, nil
+}
+
+// Wraps the http.NewRequest function to marshal a provided JSON value and set it
+// as the request body. Also sets the content type to JSON.
+func (c *Client) NewJsonRequest(method string, url string, jsonValue any) (*http.Request, error) {
+	reqBody, err := json.Marshal(jsonValue)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	return req, nil
 }
 
 // Do performs an API request, handles the response,
