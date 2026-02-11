@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -12,7 +13,6 @@ type JobStatus string
 const (
 	JobStatusCreated   JobStatus = "created"
 	JobStatusScheduled JobStatus = "scheduled"
-	JobStatusRunning   JobStatus = "running"
 	JobStatusSuccess   JobStatus = "success"
 	JobStatusFailed    JobStatus = "failed"
 	JobStatusCancelled JobStatus = "cancelled"
@@ -48,4 +48,33 @@ type Job struct {
 
 	CreatedAt time.Time `gorm:"not null;default:now()"`
 	UpdatedAt time.Time `gorm:"not null;default:now()"`
+}
+
+func (m *Job) ToAPI() *api.Job {
+	return &api.Job{
+		ID:           m.ID,
+		UserID:       m.UserID,
+		RestaurantID: m.RestaurantID,
+		Platform:     m.Platform,
+
+		ReservationDate: m.ReservationDate,
+		PartySize:       m.PartySize,
+		PreferredTimes:  m.PreferredTimes,
+
+		ScheduledAt:  m.ScheduledAt,
+		DropConfigID: m.DropConfigID,
+		Callbacked:   m.Callbacked,
+
+		Status:      api.JobStatus(m.Status),
+		StartedAt:   m.StartedAt,
+		CompletedAt: m.CompletedAt,
+
+		ReservedTime: m.ReservedTime,
+		Confirmation: m.Confirmation,
+		ErrorMessage: m.ErrorMessage,
+		Logs:         m.Logs,
+
+		CreatedAt: m.CreatedAt.UTC(),
+		UpdatedAt: m.UpdatedAt.UTC(),
+	}
 }
