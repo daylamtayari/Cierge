@@ -16,10 +16,7 @@ var (
 		Use:   "list",
 		Short: "List jobs",
 		Run: func(cmd *cobra.Command, args []string) {
-			client, err := api.NewClient(nil, cfg.HostURL, cfg.ApiKey)
-			if err != nil {
-				logger.Fatal().Err(err).Msg("Failed to create API client")
-			}
+			client := newClient()
 
 			jobs, err := client.GetJobs(upcomingOnly)
 			if err != nil {

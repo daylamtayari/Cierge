@@ -21,10 +21,7 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Get status",
 	Run: func(cmd *cobra.Command, args []string) {
-		client, err := api.NewClient(nil, cfg.HostURL, cfg.ApiKey)
-		if err != nil {
-			logger.Fatal().Err(err).Msg("Failed to create API client")
-		}
+		client := newClient()
 
 		var serverStatus string
 		health, err := client.GetHealth()
