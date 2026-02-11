@@ -78,7 +78,7 @@ func (c *Client) Login(email string, password string) (*AuthCookies, error) {
 // if so, getting explicit confirmation.
 func (c *Client) GenerateAPIKey() (string, error) {
 	reqUrl := c.host + "/api/user/api-key"
-	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	req, err := http.NewRequest(http.MethodPost, reqUrl, nil)
 	if err != nil {
 		return "", err
 	}
