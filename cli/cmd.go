@@ -48,5 +48,6 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug logging")
 	rootCmd.AddCommand(initLoginCmd())
+	rootCmd.AddCommand(statusCmd)
 	rootCmd.AddCommand(versionCmd)
 }

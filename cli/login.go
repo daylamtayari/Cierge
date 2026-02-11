@@ -44,7 +44,7 @@ var (
 			switch loginMethod {
 			case "api":
 				if apiKey == "" {
-					err := huh.NewInput().Title("Enter API key:").Value(&apiKey).Run()
+					err := huh.NewInput().Title("Enter API key:").EchoMode(huh.EchoModePassword).Value(&apiKey).Run()
 					if err != nil {
 						logger.Fatal().Err(err).Msg("Failed to prompt user for API key")
 					}
