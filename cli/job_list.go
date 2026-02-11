@@ -24,6 +24,7 @@ var (
 			}
 
 			jt := table.NewWriter()
+			jt.SetStyle(table.StyleRounded)
 			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled Date", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time", "Confirmation"})
 
 			for _, job := range jobs {
@@ -64,10 +65,9 @@ var (
 					reservedTime,
 					confirmation,
 				})
-				jt.SetStyle(table.StyleRounded)
-
-				fmt.Print(jt.Render())
 			}
+
+			fmt.Print(jt.Render() + "\n")
 		},
 	}
 )

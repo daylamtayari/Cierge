@@ -66,6 +66,6 @@ var statusCmd = &cobra.Command{
 		st.Style().Options.DrawBorder = false
 		st.Style().Options.SeparateColumns = false
 
-		fmt.Print(st.Render())
+		fmt.Print(st.Render() + "\n")
 	},
 }
