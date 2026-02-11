@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"time"
@@ -10,12 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type contextKey string
-
-var (
-	configContextKey = contextKey("config")
-	loggerContextKey = contextKey("logger")
-)
+var logger zerolog.Logger
 
 var rootCmd = &cobra.Command{
 	Use:   "cierge",
@@ -27,13 +21,13 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
-		config, err := initConfig()
+		var err error
+		cfg, err = initConfig()
 		if err != nil {
 			return err
 		}
-		cmd.SetContext(context.WithValue(cmd.Context(), configContextKey, config))
 
-		logger := zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).With().Timestamp().Logger()
+		logger = zerolog.New(os.Stderr).Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).With().Timestamp().Logger()
 		debug, err := cmd.Flags().GetBool("debug")
 		if err != nil {
 			return err
@@ -43,9 +37,8 @@ var rootCmd = &cobra.Command{
 		} else {
 			zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		}
-		cmd.SetContext(context.WithValue(cmd.Context(), loggerContextKey, &logger))
 
-		if config.HostURL == "" {
+		if cfg.HostURL == "" {
 			return fmt.Errorf("no Cierge host specified")
 		}
 		return nil
@@ -54,13 +47,6 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug logging")
+	rootCmd.AddCommand(initLoginCmd())
 	rootCmd.AddCommand(versionCmd)
-}
-
-func getConfig(cmd *cobra.Command) *config {
-	return cmd.Context().Value(configContextKey).(*config)
-}
-
-func getLogger(cmd *cobra.Command) *zerolog.Logger {
-	return cmd.Context().Value(loggerContextKey).(*zerolog.Logger)
 }

@@ -10,21 +10,23 @@ import (
 	"github.com/spf13/viper"
 )
 
+var cfg config
+
 type config struct {
 	HostURL string `json:"host_url" mapstructure:"host_url"`
 	ApiKey  string `json:"api_key" mapstructure:"api_key"`
 }
 
 // Initializes the configuration using Viper
-func initConfig() (*config, error) {
+func initConfig() (config, error) {
 	configDir, err := getConfigDir()
 	if err != nil {
-		return nil, err
+		return config{}, err
 	}
 
 	// Create config directory if it doesn't exist
 	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return nil, err
+		return config{}, err
 	}
 
 	viper.SetConfigName("cli")
@@ -44,24 +46,24 @@ func initConfig() (*config, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Create if it does not exist
 			if err := saveConfig(&config{}); err != nil {
-				return nil, err
+				return config{}, err
 			}
 		} else {
-			return nil, err
+			return config{}, err
 		}
 	} else {
 		// Enforce secure permissions on config file
 		if err := checkConfigPermissions(viper.ConfigFileUsed()); err != nil {
-			return nil, err
+			return config{}, err
 		}
 	}
 
 	var cfg config
 	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, err
+		return config{}, err
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 func setDefaults() {
