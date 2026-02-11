@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -41,4 +43,22 @@ type Job struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// Retrieve jobs for the user
+// If upcomingOnly is set to true, only upcoming jobs are returned
+func (c *Client) GetJobs(upcomingOnly bool) ([]Job, error) {
+	reqUrl := c.host + "/api/job/list?upcoming=" + strconv.FormatBool(upcomingOnly)
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var jobs []Job
+	err = c.Do(req, &jobs)
+	if err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
 }
