@@ -52,6 +52,12 @@ func (c *Client) RefreshToken(refreshToken string) (AuthTokens, error) {
 		return AuthTokens{}, err
 	}
 
+	// Add refresh token as a cookie
+	req.AddCookie(&http.Cookie{
+		Name:  "production_refresh_token",
+		Value: refreshToken,
+	})
+
 	return c.makeAuthRequest(req)
 }
 
