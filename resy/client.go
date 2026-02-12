@@ -48,7 +48,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 // Creates a new Resy API client. It accepts an `http.Client` value
 // that will be used as the base HTTP client and will have the
-// authorization added to. If nil is provided, `http.DefaultClient`
+// authentication added to. If nil is provided, `http.DefaultClient`
 // is used.
 // Tokens include the generic Resy API key and the user's token.
 // A user agent value to be added to requests is also accepted and if
@@ -126,15 +126,23 @@ func (c *Client) NewFormRequest(method string, url string, form *url.Values) (*h
 	return req, nil
 }
 
-// Do performs an API request, handles the response,
+// Wraps DoWithCookies but does not return response cookies,
+// only the error that is nil if successful
+func (c *Client) Do(req *http.Request, v any) error {
+	_, err := c.DoWithCookies(req, v)
+	return err
+}
+
+// Performs an API request, handles the response,
 // and unmarshals the response into a given interface.
 // The value to unmarshal must be a pointer to an interface.
 // If a pointer to a byte array is provided, the returned value
 // will be the value of the body.
-func (c *Client) Do(req *http.Request, v any) error {
+// Returns response cookies and an error that is nil if successful
+func (c *Client) DoWithCookies(req *http.Request, v any) ([]*http.Cookie, error) {
 	res, err := c.client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer res.Body.Close() //nolint: errcheck
 
@@ -145,7 +153,7 @@ func (c *Client) Do(req *http.Request, v any) error {
 		if res.Header.Get("Content-Encoding") == "gzip" {
 			gzReader, err := gzip.NewReader(res.Body)
 			if err != nil {
-				return fmt.Errorf("failed to create gzip reader: %w", err)
+				return nil, err
 			}
 			defer gzReader.Close() //nolint: errcheck
 			reader = gzReader
@@ -153,7 +161,7 @@ func (c *Client) Do(req *http.Request, v any) error {
 
 		body, err = io.ReadAll(reader)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// Handle 400s differently as opposed to other error status
@@ -163,7 +171,7 @@ func (c *Client) Do(req *http.Request, v any) error {
 		// and identified, as well as the body response that can be used for
 		// debugging and understanding the error.
 		if res.StatusCode == 400 {
-			return fmt.Errorf("%w: %v", ErrBadRequest, string(body))
+			return nil, fmt.Errorf("%w: %v", ErrBadRequest, string(body))
 		}
 
 		if _, ok := v.(*[]byte); ok {
@@ -174,28 +182,28 @@ func (c *Client) Do(req *http.Request, v any) error {
 			err = json.Unmarshal(body, &v)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	switch res.StatusCode {
 	case 200:
-		return nil
+		return res.Cookies(), nil
 	case 201:
-		return nil
+		return res.Cookies(), nil
 	case 402:
-		return ErrPaymentRequired
+		return nil, ErrPaymentRequired
 	case 404:
-		return ErrNotFound
+		return nil, ErrNotFound
 	case 419:
 		// Resy returns the 419 status code for 'Unauthorized' error messages
 		// why not a 401 or 403? don't ask me...
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	case 502:
 		// Identified that Resy will return 502s on various errors related to
 		// malformed or unexpected input values
-		return ErrBadGateway
+		return nil, ErrBadGateway
 	default:
-		return fmt.Errorf("%w: %d", ErrUnhandledStatus, res.StatusCode)
+		return nil, fmt.Errorf("%w: %d", ErrUnhandledStatus, res.StatusCode)
 	}
 }
