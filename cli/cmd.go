@@ -53,6 +53,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&debugLog, "debug", false, "Enable debug logging")
 	rootCmd.PersistentFlags().StringVar(&host, "host", "", "Override the server host")
+	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(initLoginCmd())
 	rootCmd.AddCommand(initJobCmd())
 	rootCmd.AddCommand(statusCmd)
