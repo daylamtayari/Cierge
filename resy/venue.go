@@ -17,32 +17,33 @@ var (
 // inconsistent across endpoints and will
 // not always include all the same fields
 type Venue struct {
-	Id              VenueId       `json:"id"`
-	Group           VenueGroup    `json:"group"`
-	Name            string        `json:"name"`
-	Type            string        `json:"type"`
-	UrlSlug         string        `json:"url_slug"`
-	PriceRange      int           `json:"price_range"`
-	AverageBillSize *float32      `json:"average_bill_size"`
-	TaxIncluded     bool          `json:"tax_included"`
-	Rating          Rating        `json:"rating"`
-	TotalRatings    int           `json:"total_ratings"`
-	Favorite        bool          `json:"favorite"`
-	CurrencyCode    string        `json:"currency_code"`
-	CurrencySymbol  string        `json:"currency_symbol"`
-	Locale          VenueLocale   `json:"locale"`
-	Location        VenueLocation `json:"location"`
-	Country         string        `json:"country"`
-	Region          string        `json:"region"`
-	Locality        string        `json:"locality"`
-	Neighborhood    string        `json:"neighborhood"`
-	Contact         VenueContact  `json:"contact"`
-	Reopen          VenueReopen   `json:"reopen"`
-	LastUpdatedAt   int           `json:"last_updated_at"`
-	LeadTimeInDays  int           `json:"lead_time_in_days"`
-	ServiceTypes    ServiceTypes  `json:"service_types"`
-	MinPartySize    int           `json:"min_party_size"`
-	MaxPartySize    int           `json:"max_party_size"`
+	Id              VenueId        `json:"id"`
+	Group           VenueGroup     `json:"group"`
+	Name            string         `json:"name"`
+	Type            string         `json:"type"`
+	UrlSlug         string         `json:"url_slug"`
+	PriceRange      int            `json:"price_range"`
+	AverageBillSize *float32       `json:"average_bill_size"`
+	TaxIncluded     bool           `json:"tax_included"`
+	Rating          Rating         `json:"rating"`
+	TotalRatings    int            `json:"total_ratings"`
+	Favorite        bool           `json:"favorite"`
+	CurrencyCode    string         `json:"currency_code"`
+	CurrencySymbol  string         `json:"currency_symbol"`
+	Locale          VenueLocale    `json:"locale"`
+	Location        VenueLocation  `json:"location"`
+	Country         string         `json:"country"`
+	Region          string         `json:"region"`
+	Locality        string         `json:"locality"`
+	Neighborhood    string         `json:"neighborhood"`
+	Contact         VenueContact   `json:"contact"`
+	Reopen          VenueReopen    `json:"reopen"`
+	LastUpdatedAt   int            `json:"last_updated_at"`
+	LeadTimeInDays  int            `json:"lead_time_in_days"`
+	ServiceTypes    ServiceTypes   `json:"service_types"`
+	MinPartySize    int            `json:"min_party_size"`
+	MaxPartySize    int            `json:"max_party_size"`
+	NotifiyOptions  []NotifyOption `json:"notify_options"`
 }
 
 // Represents a venue's IDs
@@ -129,6 +130,20 @@ type SlotInventory struct {
 	Reservation string `json:"reservation"`
 	Event       string `json:"event"`
 	WalkIn      string `json:"walk-in"`
+}
+
+// Represents each service that the venue is
+// having on a given day and the start and end
+// time of the service (i.e. min and max)
+// The step minutes appears to want to represent
+// the gap between reservation slots but it does
+// not... They are almost always 15 mins irrespective
+// of the step minutes value
+type NotifyOption struct {
+	ServiceTypeId int          `json:"service_type_id"`
+	MinRequest    ResyDatetime `json:"min_request_datetime"`
+	MaxRequest    ResyDatetime `json:"max_request_datetime"`
+	StepMinutes   int          `json:"step_minutes"`
 }
 
 // Default page limit for a venue search request
