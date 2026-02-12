@@ -16,7 +16,9 @@ var (
 	ErrNoRefreshToken    = errors.New("no refresh token cookie was included in the response")
 )
 
-type AuthTokens struct {
+type Tokens struct {
+	// Generic API key used for all requests and not tied to a specific user
+	ApiKey string
 	// Authentication token for the user to be used in requests - 45 day expiration
 	Token string
 	// Refresh token that can be used to get an updated refresh and auth token - 90 day expiration
@@ -25,7 +27,7 @@ type AuthTokens struct {
 
 // Performs authentication using username and password auth, returning
 // the user's auth JWT token and an error that is nil if successful
-func (c *Client) Login(email string, password string) (AuthTokens, error) {
+func (c *Client) Login(email string, password string) (Tokens, error) {
 	reqUrl := Host + "/4/auth/password"
 
 	reqForm := url.Values{
@@ -35,7 +37,7 @@ func (c *Client) Login(email string, password string) (AuthTokens, error) {
 
 	req, err := c.NewFormRequest(http.MethodPost, reqUrl, &reqForm)
 	if err != nil {
-		return AuthTokens{}, err
+		return Tokens{}, err
 	}
 
 	return c.makeAuthRequest(req)
@@ -44,12 +46,12 @@ func (c *Client) Login(email string, password string) (AuthTokens, error) {
 // Uses a provided refresh token to retrieve a new auth token (45 day expiration)
 // and a new refresh token (additional 90 day expiration)
 // Returns an error that is nil if successful
-func (c *Client) RefreshToken(refreshToken string) (AuthTokens, error) {
+func (c *Client) RefreshToken(refreshToken string) (Tokens, error) {
 	reqUrl := Host + "/3/auth/refresh"
 
 	req, err := http.NewRequest(http.MethodPost, reqUrl, nil)
 	if err != nil {
-		return AuthTokens{}, err
+		return Tokens{}, err
 	}
 
 	// Add refresh token as a cookie
@@ -62,7 +64,7 @@ func (c *Client) RefreshToken(refreshToken string) (AuthTokens, error) {
 }
 
 // Handles an authentication request and retrieves the auth and refresh tokens
-func (c *Client) makeAuthRequest(req *http.Request) (AuthTokens, error) {
+func (c *Client) makeAuthRequest(req *http.Request) (Tokens, error) {
 	type loginResponse struct {
 		Token string `json:"token"`
 	}
@@ -70,11 +72,11 @@ func (c *Client) makeAuthRequest(req *http.Request) (AuthTokens, error) {
 
 	cookies, err := c.DoWithCookies(req, &loginRes)
 	if err != nil {
-		return AuthTokens{}, err
+		return Tokens{}, err
 	}
 
 	if loginRes.Token == "" {
-		return AuthTokens{}, ErrNoAuthToken
+		return Tokens{}, ErrNoAuthToken
 	}
 
 	refreshToken := ""
@@ -84,10 +86,10 @@ func (c *Client) makeAuthRequest(req *http.Request) (AuthTokens, error) {
 		}
 	}
 	if refreshToken == "" {
-		return AuthTokens{}, ErrNoRefreshToken
+		return Tokens{}, ErrNoRefreshToken
 	}
 
-	return AuthTokens{Token: loginRes.Token, Refresh: refreshToken}, nil
+	return Tokens{Token: loginRes.Token, Refresh: refreshToken}, nil
 }
 
 // Retrieves the expiration time of a JWT token

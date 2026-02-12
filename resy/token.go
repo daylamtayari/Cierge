@@ -26,11 +26,6 @@ var (
 	ErrModuleSuffixNotFound = errors.New("unable to find filetype suffix for module")
 )
 
-type Tokens struct {
-	ApiKey string
-	Token  string
-}
-
 // Retrieves the Resy API key using a provided http client
 // If nil is passed, the default http client is used
 func FetchApiKey(httpClient *http.Client) (string, error) {
