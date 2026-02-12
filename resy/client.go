@@ -69,6 +69,11 @@ func NewClient(httpClient *http.Client, tokens Tokens, userAgent string) *Client
 		userAgent = defaultUserAgent
 	}
 
+	// If no API key is specified, use the default
+	if tokens.ApiKey == "" {
+		tokens.ApiKey = DefaultApiKey
+	}
+
 	headers := map[string]string{
 		"Authorization": "ResyAPI api_key=\"" + tokens.ApiKey + "\"",
 		// User Agent requires as Resy will throw 500s if not included
