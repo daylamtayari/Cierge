@@ -35,6 +35,9 @@ var initCmd = &cobra.Command{
 
 		// Log user in
 		loginCmd.Run(cmd, args)
+
+		// Display status
+		statusCmd.Run(cmd, args)
 	},
 }
 
