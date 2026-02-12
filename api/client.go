@@ -18,6 +18,7 @@ var (
 	ErrUnauthenticated = errors.New("unauthenticated")
 	ErrUnauthorized    = errors.New("unauthorized")
 	ErrUnhandledStatus = errors.New("unhandled status code returned")
+	ErrInvalidHost     = errors.New("invalid host value provided")
 )
 
 type Client struct {
@@ -46,11 +47,19 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 // The API key is the user's API key to use to create an authenticated client.
 // If no API key is provided, the client will not be authenticated.
 func NewClient(httpClient *http.Client, host string, apiKey string) (*Client, error) {
+	if !strings.Contains(host, "https://") && !strings.Contains(host, "http://") {
+		host = "https://" + host
+	}
 	hostUrl, err := url.Parse(host)
 	if err != nil {
 		return nil, err
 	}
 	hostUrl.Path = ""
+	hostUrl.RawQuery = ""
+	hostUrl.Fragment = ""
+	if hostUrl.Host == "" {
+		return nil, ErrInvalidHost
+	}
 	clientHost := strings.TrimRight(hostUrl.String(), "/") // Remove trailing slash
 
 	trans := http.DefaultTransport
