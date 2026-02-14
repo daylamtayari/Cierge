@@ -96,6 +96,33 @@ func (s *Auth) HashPassword(password string) string {
 	return util.HashSaltString(password, s.argonParams)
 }
 
+// Performs a logout by validating the tokens and if valid, revoking them
+func (s *Auth) Logout(ctx context.Context, accessToken string, refreshToken string) error {
+	if accessToken != "" {
+		accessTokenClaims, err := s.tokenService.ValidateBearerToken(ctx, accessToken)
+		if err != nil {
+			return err
+		}
+		err = s.tokenService.RevokeToken(ctx, accessTokenClaims.ID, "logout")
+		if err != nil {
+			return err
+		}
+	}
+
+	if refreshToken != "" {
+		refreshTokenClaims, err := s.tokenService.ValidateRefreshToken(ctx, refreshToken)
+		if err != nil {
+			return err
+		}
+		err = s.tokenService.RevokeToken(ctx, refreshTokenClaims.ID, "logout")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Generate a set of AuthCookie's containing tokens
 func (s *Auth) generateTokenSet(ctx context.Context, userID uuid.UUID) ([]AuthCookie, error) {
 	authCookies := make([]AuthCookie, 0)

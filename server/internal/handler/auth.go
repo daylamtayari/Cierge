@@ -6,6 +6,8 @@ import (
 
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/service"
+	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
+	"github.com/daylamtayari/cierge/server/internal/util"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -82,11 +84,49 @@ func (h *Auth) Login(c *gin.Context) {
 			int(cookie.MaxAge.Seconds()),
 			"/",
 			"",
-			h.isDevelopment,
+			!h.isDevelopment,
 			true,
 		)
 	}
 
 	c.JSON(200, gin.H{"message": "login successful"})
 	c.Set("message", "successful login")
+}
+
+// POST /auth/logout
+func (h *Auth) Logout(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	accessToken, err := c.Cookie(service.AccessTokenCookieName)
+	if err != nil && !errors.Is(err, http.ErrNoCookie) {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to retrieve access token from cookies")
+		util.RespondInternalServerError(c)
+		return
+	}
+	refreshToken, err := c.Cookie(service.RefreshTokenCookieName)
+	if err != nil && !errors.Is(err, http.ErrNoCookie) {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to retrieve refresh token from cookies")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	err = h.authService.Logout(c.Request.Context(), accessToken, refreshToken)
+	if err != nil {
+		if errors.Is(err, tokenstore.ErrFailedToOpenTokenStore) {
+			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to logout due token store error")
+			util.RespondInternalServerError(c)
+			return
+		} else {
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "failed logout due to invalid token")
+			util.RespondUnauthorized(c)
+			return
+		}
+	}
+
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(service.AccessTokenCookieName, "", -1, "/", "", !h.isDevelopment, true)
+	c.SetCookie(service.RefreshTokenCookieName, "", -1, "/", "", !h.isDevelopment, true)
+
+	c.JSON(200, gin.H{"message": "logout successful"})
+	c.Set("message", "successful logout")
 }

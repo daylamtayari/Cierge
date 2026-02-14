@@ -54,6 +54,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	authRoutes := router.Group("/auth")
 	{
 		authRoutes.POST("/login", handlers.Auth.Login)
+		authRoutes.POST("/logout", authMiddleware.RequireAuth(), handlers.Auth.Logout)
 	}
 
 	// Internal callback routes
