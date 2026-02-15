@@ -17,7 +17,6 @@ type PlatformToken struct {
 	RefreshExpiresAt *time.Time `gorm:"type:timestamptz"`
 
 	CreatedAt time.Time `gorm:"not null;default:now()"`
-	UpdatedAt time.Time `gorm:"not null;default:now()"`
 }
 
 func (t *PlatformToken) IsExpired() bool {
