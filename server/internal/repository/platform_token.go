@@ -81,6 +81,18 @@ func (r *PlatformToken) GetExpiringWithin(ctx context.Context, duration time.Dur
 	return platformTokens, nil
 }
 
+// Get all tokens expirigin with a given duration that have a refresh token
+func (r *PlatformToken) GetExpiringWithinWithRefresh(ctx context.Context, duration time.Duration) ([]*model.PlatformToken, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	var platformTokens []*model.PlatformToken
+	if err := r.db.WithContext(ctx).Where("expires_at < ?", (time.Now().UTC()).Add(duration)).Where("has_refresh = true").Find(&platformTokens).Error; err != nil {
+		return nil, err
+	}
+	return platformTokens, nil
+}
+
 // Create platform token
 func (r *PlatformToken) Create(ctx context.Context, platformToken *model.PlatformToken) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
