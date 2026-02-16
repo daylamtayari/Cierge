@@ -86,7 +86,11 @@ var statusCmd = &cobra.Command{
 			{"OpenTable", openTableStatus},
 		})
 
-		st.AppendRow(table.Row{"Version", getVersion()})
+		versionStatus := getVersion()
+		if latestTag, updateAvailable := checkForUpdate(); updateAvailable {
+			versionStatus += " " + color.YellowString(warnsign+" Update available: "+latestTag)
+		}
+		st.AppendRow(table.Row{"Version", versionStatus})
 
 		configDir, err := getConfigDir()
 		if err != nil {
