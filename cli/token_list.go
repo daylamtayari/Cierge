@@ -36,9 +36,9 @@ var (
 					token.ID,
 					token.Platform,
 					token.HasRefresh,
-					token.ExpiresAt.Local(),
-					token.RefreshExpiresAt.Local(),
-					token.CreatedAt.Local(),
+					token.ExpiresAt.Local().Format("2006-01-02 15:04:05"),
+					token.RefreshExpiresAt.Local().Format("2006-01-02 15:04:05"),
+					token.CreatedAt.Local().Format("2006-01-02 15:04:05"),
 				})
 			}
 

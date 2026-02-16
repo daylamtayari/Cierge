@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/charmbracelet/huh v0.8.0
 	github.com/daylamtayari/cierge/api v0.0.0-20260216154009-fd95ed205b53
-	github.com/daylamtayari/cierge/resy v0.8.5
+	github.com/daylamtayari/cierge/resy v0.8.6
 	github.com/fatih/color v1.18.0
 	github.com/jedib0t/go-pretty/v6 v6.7.8
 	github.com/rs/zerolog v1.34.0
