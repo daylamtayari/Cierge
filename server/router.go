@@ -70,6 +70,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		users := api.Group("/user")
 		{
 			users.GET("/me", handlers.User.Me)
+			users.POST("/token", handlers.PlatformToken.Create)
 			users.POST("/api-key", handlers.User.APIKey)
 		}
 

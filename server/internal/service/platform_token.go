@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	ErrTokenDNE          = errors.New("token does not exist")
-	ErrIncorrectPlatform = errors.New("specified platform is incorrect")
+	ErrTokenDNE            = errors.New("token does not exist")
+	ErrIncorrectPlatform   = errors.New("specified platform is incorrect")
+	ErrUnsupportedPlatform = errors.New("unsupported platform was provided")
 )
 
 type PlatformToken struct {
@@ -75,13 +76,11 @@ func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform s
 		return err
 	}
 
+	var existingTokenId *uuid.UUID
 	existingToken, err := s.ptRepo.GetByUserAndPlatform(ctx, userID, platform)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
-	}
-
-	var existingTokenId *uuid.UUID
-	if existingToken != nil {
+	} else if err == nil {
 		existingTokenId = &existingToken.ID
 	}
 
@@ -113,22 +112,11 @@ func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform s
 
 	case "opentable":
 		// TODO: Implement opentable
+	default:
+		return ErrUnsupportedPlatform
 	}
 
 	return s.ptRepo.Replace(ctx, existingTokenId, newToken)
-}
-
-// Replaces the token for a specific user and platform with a new one
-func (s *PlatformToken) Replace(ctx context.Context, newToken *model.PlatformToken) error {
-	userId := newToken.UserID
-	platform := newToken.Platform
-
-	oldToken, err := s.ptRepo.GetByUserAndPlatform(ctx, userId, platform)
-	if err != nil {
-		return err
-	}
-
-	return s.ptRepo.Replace(ctx, &oldToken.ID, newToken)
 }
 
 // Delete's a specified token
