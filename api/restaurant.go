@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,4 +19,21 @@ type Restaurant struct {
 	Rating     *float32       `json:"rating,omitempty"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
+}
+
+// Retrieves a restaurant with a given platform ID for a specified platform
+func (c *Client) GetByPlatform(platform string, platformId string) (Restaurant, error) {
+	reqUrl := c.host + "/api/restaurant?platform=" + platform + "&platform-id=" + platformId
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return Restaurant{}, err
+	}
+
+	var restaurant Restaurant
+	err = c.Do(req, &restaurant)
+	if err != nil {
+		return Restaurant{}, err
+	}
+
+	return restaurant, nil
 }

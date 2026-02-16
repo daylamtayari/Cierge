@@ -31,7 +31,7 @@ func (h *Restaurant) Get(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
 	platform := strings.ToLower(c.Query("platform"))
-	platformId := strings.ToLower(c.Query("platformId"))
+	platformId := strings.ToLower(c.Query("platform-id"))
 
 	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
 		return c.
