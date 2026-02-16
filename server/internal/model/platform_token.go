@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 )
 
@@ -31,4 +32,16 @@ func (t *PlatformToken) ExpiresIn() time.Duration {
 		return 0
 	}
 	return time.Until(*t.ExpiresAt)
+}
+
+func (t *PlatformToken) ToAPI() *api.PlatformToken {
+	return &api.PlatformToken{
+		ID:               t.ID,
+		UserID:           t.UserID,
+		Platform:         t.Platform,
+		ExpiresAt:        t.ExpiresAt,
+		HasRefresh:       t.HasRefresh,
+		RefreshExpiresAt: t.RefreshExpiresAt,
+		CreatedAt:        t.CreatedAt,
+	}
 }
