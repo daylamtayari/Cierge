@@ -110,8 +110,13 @@ func main() {
 	}
 	defer tokenStore.Close() // nolint:errcheck
 
+	cloudProvider, err := cloud.NewProvider(cfg.Cloud.Provider, cfg.Cloud.Config)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to create cloud provider")
+	}
+
 	repos := repository.New(db, cfg.Database.Timeout.Duration())
-	services := service.New(repos, cfg, tokenStore)
+	services := service.New(repos, cfg, tokenStore, cloudProvider)
 
 	// Handle default admin user creation if no users exist
 	userCount, err := services.User.GetUserCount(context.Background())

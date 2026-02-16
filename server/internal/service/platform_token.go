@@ -19,12 +19,14 @@ var (
 )
 
 type PlatformToken struct {
-	ptRepo *repository.PlatformToken
+	ptRepo        *repository.PlatformToken
+	cloudProvider cloud.Provider
 }
 
-func NewPlatformToken(platformTokenRepo *repository.PlatformToken) *PlatformToken {
+func NewPlatformToken(platformTokenRepo *repository.PlatformToken, cloudProvider cloud.Provider) *PlatformToken {
 	return &PlatformToken{
-		ptRepo: platformTokenRepo,
+		ptRepo:        platformTokenRepo,
+		cloudProvider: cloudProvider,
 	}
 }
 
@@ -63,12 +65,12 @@ func (s *PlatformToken) GetByUserAndPlatform(ctx context.Context, userID uuid.UU
 
 // Creates a new token, replacing any existing one
 // Encrypts the token string and adds expiry and refresh values
-func (s *PlatformToken) Create(ctx context.Context, cloudProvider cloud.Provider, userID uuid.UUID, platform string, token any) error {
+func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform string, token any) error {
 	tokenString, err := json.Marshal(token)
 	if err != nil {
 		return err
 	}
-	encryptedToken, err := cloudProvider.EncryptData(ctx, string(tokenString))
+	encryptedToken, err := s.cloudProvider.EncryptData(ctx, string(tokenString))
 	if err != nil {
 		return err
 	}
