@@ -60,7 +60,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 func NewClient(httpClient *http.Client, tokens Tokens, userAgent string) *Client {
 	trans := http.DefaultTransport
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		httpClient = &http.Client{}
 	} else if t := httpClient.Transport; t != nil {
 		trans = httpClient.Transport
 	}

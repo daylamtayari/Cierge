@@ -64,7 +64,7 @@ func NewClient(httpClient *http.Client, host string, apiKey string) (*Client, er
 
 	trans := http.DefaultTransport
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		httpClient = &http.Client{}
 	} else if t := httpClient.Transport; t != nil {
 		trans = httpClient.Transport
 	}
