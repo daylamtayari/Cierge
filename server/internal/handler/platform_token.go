@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
@@ -18,6 +19,16 @@ func NewPlatformToken(platformTokenService *service.PlatformToken) *PlatformToke
 	return &PlatformToken{
 		ptService: platformTokenService,
 	}
+}
+
+// GET /api/user/token - Returns a user's platform tokens
+// for either the specified platforms or all platforms
+// if unspecified
+func (h *PlatformToken) Get(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	var tokens []api.PlatformToken
+	platform := c.Query("platform")
 }
 
 // POST /api/user/token - Creates a new platform token
@@ -61,10 +72,13 @@ func (h *PlatformToken) Create(c *gin.Context) {
 	}
 	user := contextUser.(*model.User)
 
-	err := h.ptService.Create(c.Request.Context(), user.ID, platform, token)
+	newToken, err := h.ptService.Create(c.Request.Context(), user.ID, platform, token)
 	if err != nil {
 		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"platform": platform}, "error creating platform token")
 		util.RespondInternalServerError(c)
 		return
 	}
+
+	c.JSON(200, newToken)
+	c.Set("message", "created new platform token for "+platform)
 }

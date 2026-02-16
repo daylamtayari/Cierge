@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/daylamtayari/cierge/server/cloud"
 	"github.com/daylamtayari/cierge/server/internal/model"
@@ -66,20 +67,20 @@ func (s *PlatformToken) GetByUserAndPlatform(ctx context.Context, userID uuid.UU
 
 // Creates a new token, replacing any existing one
 // Encrypts the token string and adds expiry and refresh values
-func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform string, token any) error {
+func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform string, token any) (*api.PlatformToken, error) {
 	tokenString, err := json.Marshal(token)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	encryptedToken, err := s.cloudProvider.EncryptData(ctx, string(tokenString))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var existingTokenId *uuid.UUID
 	existingToken, err := s.ptRepo.GetByUserAndPlatform(ctx, userID, platform)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
+		return nil, err
 	} else if err == nil {
 		existingTokenId = &existingToken.ID
 	}
@@ -94,18 +95,18 @@ func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform s
 	case "resy":
 		resyToken, ok := token.(resy.Tokens)
 		if !ok {
-			return ErrIncorrectPlatform
+			return nil, ErrIncorrectPlatform
 		}
 
 		authExpires, err := resy.GetTokenExpiry(resyToken.Token)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		newToken.ExpiresAt = &authExpires
 
 		refreshExpiresAt, err := resy.GetTokenExpiry(resyToken.Refresh)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		newToken.HasRefresh = true
 		newToken.RefreshExpiresAt = &refreshExpiresAt
@@ -113,10 +114,14 @@ func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform s
 	case "opentable":
 		// TODO: Implement opentable
 	default:
-		return ErrUnsupportedPlatform
+		return nil, ErrUnsupportedPlatform
 	}
 
-	return s.ptRepo.Replace(ctx, existingTokenId, newToken)
+	err = s.ptRepo.Replace(ctx, existingTokenId, newToken)
+	if err != nil {
+		return nil, err
+	}
+	return newToken.ToAPI(), nil
 }
 
 // Delete's a specified token
