@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+
 	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
@@ -27,8 +29,45 @@ func NewPlatformToken(platformTokenService *service.PlatformToken) *PlatformToke
 func (h *PlatformToken) Get(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
-	var tokens []api.PlatformToken
+	tokens := make([]*model.PlatformToken, 0)
 	platform := c.Query("platform")
+
+	contextUser, ok := c.Get("user")
+	if !ok {
+		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
+		util.RespondInternalServerError(c)
+		return
+	}
+	user := contextUser.(*model.User)
+
+	var err error
+	switch platform {
+	case "":
+		tokens, err = h.ptService.GetByUser(c.Request.Context(), user.ID)
+
+	case "resy", "opentable":
+		var token *model.PlatformToken
+		token, err = h.ptService.GetByUserAndPlatform(c.Request.Context(), user.ID, platform)
+		tokens = append(tokens, token)
+
+	default:
+		errorCol.Add(nil, zerolog.InfoLevel, true, map[string]any{"platform": platform}, "unsupported platform specified")
+		util.RespondBadRequest(c, "unsupported platform specified")
+		return
+	}
+	if err != nil && !errors.Is(err, service.ErrTokenDNE) {
+		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"platform": platform}, "failed to retrieve platform tokens for user")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	apiTokens := make([]api.PlatformToken, 0)
+	for _, token := range tokens {
+		apiTokens = append(apiTokens, *token.ToAPI())
+	}
+
+	c.JSON(200, apiTokens)
+	c.Set("message", "retrieved platform tokens for user")
 }
 
 // POST /api/user/token - Creates a new platform token
