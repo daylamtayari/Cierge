@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
@@ -30,7 +31,7 @@ func (h *PlatformToken) Get(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
 	tokens := make([]*model.PlatformToken, 0)
-	platform := c.Query("platform")
+	platform := strings.ToLower(c.Query("platform"))
 
 	contextUser, ok := c.Get("user")
 	if !ok {
@@ -74,7 +75,7 @@ func (h *PlatformToken) Get(c *gin.Context) {
 func (h *PlatformToken) Create(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
-	platform := c.Query("platform")
+	platform := strings.ToLower(c.Query("platform"))
 	if platform == "" {
 		errorCol.Add(nil, zerolog.InfoLevel, true, nil, "platform not specified in query parameters")
 		util.RespondBadRequest(c, "platform not specified")

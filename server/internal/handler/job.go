@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/daylamtayari/cierge/api"
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
@@ -26,7 +27,7 @@ func NewJob(jobService *service.Job) *Job {
 func (h *Job) List(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
-	upcomingQuery := c.DefaultQuery("upcoming", "false")
+	upcomingQuery := strings.ToLower(c.DefaultQuery("upcoming", "false"))
 	upcomingOnly, _ := strconv.ParseBool(upcomingQuery) // Ignore error as false is default behaviour and is what is returned if it also returns an error
 
 	contextUser, ok := c.Get("user")
