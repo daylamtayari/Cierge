@@ -101,24 +101,28 @@ func (r *PlatformToken) Create(ctx context.Context, platformToken *model.Platfor
 	return r.db.WithContext(ctx).Create(platformToken).Error
 }
 
-// Replace platform token
-func (r *PlatformToken) Replace(ctx context.Context, oldTokenId uuid.UUID, newToken *model.PlatformToken) error {
+// Create and replace platform token
+func (r *PlatformToken) Replace(ctx context.Context, oldTokenId *uuid.UUID, newToken *model.PlatformToken) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Delete the old token
-		if err := tx.Delete(&model.PlatformToken{}, "id = ?", oldTokenId).Error; err != nil {
-			return err
-		}
+	if oldTokenId != nil {
+		return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+			// Delete the old token
+			if err := tx.Delete(&model.PlatformToken{}, "id = ?", oldTokenId).Error; err != nil {
+				return err
+			}
 
-		// Create the new token
-		if err := tx.Create(newToken).Error; err != nil {
-			return err
-		}
+			// Create the new token
+			if err := tx.Create(newToken).Error; err != nil {
+				return err
+			}
 
-		return nil
-	})
+			return nil
+		})
+	} else {
+		return r.Create(ctx, newToken)
+	}
 }
 
 // Delete platform token
