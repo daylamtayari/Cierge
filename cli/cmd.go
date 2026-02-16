@@ -57,5 +57,6 @@ func init() {
 	rootCmd.AddCommand(initLoginCmd())
 	rootCmd.AddCommand(initJobCmd())
 	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(initTokenCmd())
 	rootCmd.AddCommand(versionCmd)
 }
