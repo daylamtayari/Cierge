@@ -9,8 +9,6 @@ import (
 )
 
 var (
-	platform string
-
 	tokenListCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List platform tokens",
@@ -50,6 +48,5 @@ var (
 )
 
 func initTokenListCmd() *cobra.Command {
-	tokenListCmd.Flags().StringVarP(&platform, "platform", "p", "", "Platform to get tokens for")
 	return tokenListCmd
 }
