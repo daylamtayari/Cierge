@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
@@ -89,6 +90,7 @@ func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform s
 		UserID:         userID,
 		Platform:       platform,
 		EncryptedToken: encryptedToken,
+		CreatedAt:      time.Now().UTC(),
 	}
 
 	switch platform {
