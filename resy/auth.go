@@ -93,7 +93,7 @@ func (c *Client) makeAuthRequest(req *http.Request) (Tokens, error) {
 }
 
 // Retrieves the expiration time of a JWT token
-func getTokenExpiry(jwtToken string) (time.Time, error) {
+func GetTokenExpiry(jwtToken string) (time.Time, error) {
 	token, _, err := jwt.NewParser().ParseUnverified(jwtToken, &jwt.RegisteredClaims{})
 	if err != nil {
 		return time.Time{}, err
