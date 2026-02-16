@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/daylamtayari/cierge/api"
 	"github.com/fatih/color"
@@ -23,6 +24,11 @@ var statusCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		client := newClient()
 
+		st := table.NewWriter()
+		st.SetStyle(table.StyleLight)
+		st.Style().Options.DrawBorder = false
+		st.Style().Options.SeparateColumns = false
+
 		var serverStatus string
 		health, err := client.GetHealth()
 		if err != nil {
@@ -35,6 +41,7 @@ var statusCmd = &cobra.Command{
 		} else {
 			serverStatus = color.GreenString(checkmark + " Server is healthy")
 		}
+		st.AppendRow(table.Row{"Server", serverStatus})
 
 		var userStatus string
 		user, err := client.GetMe()
@@ -46,25 +53,46 @@ var statusCmd = &cobra.Command{
 		} else {
 			userStatus = color.GreenString(checkmark + " Logged in - " + user.Email)
 		}
+		st.AppendRow(table.Row{"User", userStatus})
 
-		version := getVersion()
+		resyStatus := "Unknown"
+		openTableStatus := "Unknown"
+		if user != nil {
+			platformTokens, err := client.GetPlatformTokens(nil)
+			if err != nil {
+				logger.Error().Err(err).Msg("Failed to fetch platform tokens")
+			} else {
+				resyStatus = color.RedString(crossmark + " Not connected")
+				openTableStatus = color.RedString(crossmark + " Not connected")
+				for _, token := range platformTokens {
+					var tokenStatus string
+					if token.ExpiresAt != nil && time.Now().After(*token.ExpiresAt) {
+						tokenStatus = color.YellowString(warnsign + " Token is expired")
+					} else {
+						tokenStatus = color.GreenString(checkmark + " Connected")
+					}
+
+					switch token.Platform {
+					case "resy":
+						resyStatus = tokenStatus
+					case "opentable":
+						openTableStatus = tokenStatus
+					}
+				}
+			}
+		}
+		st.AppendRows([]table.Row{
+			{"Resy", resyStatus},
+			{"OpenTable", openTableStatus},
+		})
+
+		st.AppendRow(table.Row{"Version", getVersion()})
 
 		configDir, err := getConfigDir()
 		if err != nil {
 			logger.Error().Err(err).Msg("Failed to retrieve configuration directory")
 		}
-		configPath := filepath.Join(configDir, "cli.json")
-
-		st := table.NewWriter()
-		st.AppendRows([]table.Row{
-			{"Server", serverStatus},
-			{"User", userStatus},
-			{"Version", version},
-			{"Config", configPath},
-		})
-		st.SetStyle(table.StyleLight)
-		st.Style().Options.DrawBorder = false
-		st.Style().Options.SeparateColumns = false
+		st.AppendRow(table.Row{"Config", filepath.Join(configDir, "cli.json")})
 
 		fmt.Print(st.Render() + "\n")
 	},
