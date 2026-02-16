@@ -8,5 +8,6 @@ var tokenCmd = &cobra.Command{
 }
 
 func initTokenCmd() *cobra.Command {
+	tokenCmd.AddCommand(initTokenListCmd())
 	return tokenCmd
 }
