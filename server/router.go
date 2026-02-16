@@ -80,6 +80,12 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		{
 			jobs.GET("/list", handlers.Job.List)
 		}
+
+		// Restaurant route
+		restaurants := api.Group("/restaurant")
+		{
+			restaurants.GET("", handlers.Restaurant.Get)
+		}
 	}
 
 	return router

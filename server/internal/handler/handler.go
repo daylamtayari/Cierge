@@ -10,6 +10,7 @@ type Handlers struct {
 	Job           *Job
 	JobCallback   *JobCallback
 	User          *User
+	Restaurant    *Restaurant
 	PlatformToken *PlatformToken
 }
 
@@ -19,6 +20,7 @@ func New(services *service.Services, cfg *config.Config) *Handlers {
 		Job:           NewJob(services.Job),
 		JobCallback:   NewJobCallback(services.Job, services.Reservation),
 		User:          NewUser(services.User, services.Token),
+		Restaurant:    NewRestaurant(services.Restaurant),
 		PlatformToken: NewPlatformToken(services.PlatformToken),
 	}
 }

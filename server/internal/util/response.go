@@ -33,6 +33,15 @@ func RespondForbidden(c *gin.Context) {
 	})
 }
 
+// Returns a not found error message
+func RespondNotFound(c *gin.Context, message string) {
+	c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+		"error":      "Not Found",
+		"message":    message,
+		"request_id": appctx.RequestID(c.Request.Context()),
+	})
+}
+
 // Return an Internal Server Error response
 func RespondInternalServerError(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
