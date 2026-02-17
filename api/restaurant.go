@@ -22,7 +22,7 @@ type Restaurant struct {
 }
 
 // Retrieves a restaurant with a given platform ID for a specified platform
-func (c *Client) GetByPlatform(platform string, platformId string) (Restaurant, error) {
+func (c *Client) GetRestaurantByPlatform(platform string, platformId string) (Restaurant, error) {
 	reqUrl := c.host + "/api/restaurant?platform=" + platform + "&platform-id=" + platformId
 	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 	if err != nil {
