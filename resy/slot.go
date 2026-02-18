@@ -89,7 +89,8 @@ type BookingToken struct {
 
 // Returns available slots for a specified venue ID, a Venue object, and an error that is nil if
 // successful. If no venues are returned, `ErrNoVenues` is returned as the error.
-func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *Venue, error) {
+// NOTE: day must be in YYYY-MM-DD format
+func (c *Client) GetSlots(venueId int, day string, partySize int) ([]Slot, *Venue, error) {
 	type getSlotsRequest struct {
 		Lat       int    `json:"lat"`
 		Long      int    `json:"long"`
@@ -103,7 +104,7 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 		Lat:       0,
 		Long:      0,
 		VenueId:   venueId,
-		Day:       day.Format("2006-01-02"),
+		Day:       day,
 		PartySize: partySize,
 	}
 
@@ -135,10 +136,11 @@ func (c *Client) GetSlots(venueId int, day time.Time, partySize int) ([]Slot, *V
 
 // Gets the details about a slot
 // This creates a booking token that is valid for 5 minutes
+// NOTE: day parameter must be in YYYY-MM-DD format
 // NOTE: Resy will allow you to get the slot details and create a booking
 // token for a reservation that is not available. If a reservation is not available,
 // you will get a 404 Not Found when trying to book
-func (c *Client) GetSlotDetails(slotConfig string, day time.Time, partySize int) (*SlotDetails, error) {
+func (c *Client) GetSlotDetails(slotConfig string, day string, partySize int) (*SlotDetails, error) {
 	type getSlotDetailsRequest struct {
 		ConfigId  string `json:"config_id"`
 		Day       string `json:"day"`
@@ -148,7 +150,7 @@ func (c *Client) GetSlotDetails(slotConfig string, day time.Time, partySize int)
 	reqUrl := Host + "/3/details"
 	getSlotDetailsReq := getSlotDetailsRequest{
 		ConfigId:  slotConfig,
-		Day:       day.Format("2006-01-02"),
+		Day:       day,
 		PartySize: strconv.Itoa(partySize),
 	}
 

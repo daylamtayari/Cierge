@@ -58,7 +58,7 @@ var (
 					job.ID,
 					job.Platform,
 					job.ScheduledAt.Local(),
-					job.ReservationDate.Format("2006-01-02"),
+					job.ReservationDate,
 					job.PartySize,
 					job.PreferredTimes,
 					status,

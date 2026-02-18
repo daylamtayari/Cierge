@@ -110,7 +110,7 @@ func (c *ResyClient) BookSlots(ctx context.Context, event Event, slots any) (*Bo
 // If an ErrNotFound is returned, that is due to the slot no longer being available
 func (c *ResyClient) bookSlot(ctx context.Context, slot resy.Slot, partySize int) (*BookingResult, error) {
 	// Get the slot details to get the booking token
-	slotDetails, err := c.client.GetSlotDetails(slot.Config.Token, slot.Date.Start.Time, partySize)
+	slotDetails, err := c.client.GetSlotDetails(slot.Config.Token, slot.Date.Start.UTC().Format("2006-01-02"), partySize)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,10 @@ func (c *ResyClient) getSlotsUntilDeadline(ctx context.Context, event Event, ven
 // Accepts a slice of slots representing valid reservation slots, and an ordered slice of
 // time objects that represent the preferred slot times in order of preference.
 // Returns a slice of matching slots in order of preference
-func matchSlots(slots []resy.Slot, preferredTimes []time.Time) []resy.Slot {
+// NOTE: Preferred times string values must be in format "HH:mm" and are
+// assumed to be accurate when parsed
+func matchSlots(slots []resy.Slot, preferredTimes []string) []resy.Slot {
+
 	slotsByTime := make(map[[3]int]resy.Slot)
 	for _, slot := range slots {
 		h, m, s := slot.Date.Start.Clock()
@@ -193,8 +196,9 @@ func matchSlots(slots []resy.Slot, preferredTimes []time.Time) []resy.Slot {
 	matchingSlots := make([]resy.Slot, 0)
 
 	for _, preferredTime := range preferredTimes {
-		h, m, s := preferredTime.Clock()
-		key := [3]int{h, m, s}
+		preferredT, _ := time.Parse("15:04", preferredTime)
+		h, m, _ := preferredT.Clock()
+		key := [3]int{h, m, 0}
 
 		if matchingSlot, exists := slotsByTime[key]; exists {
 			matchingSlots = append(matchingSlots, matchingSlot)
