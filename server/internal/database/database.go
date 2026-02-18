@@ -39,6 +39,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&model.Job{},
 		&model.Restaurant{},
 		&model.DropConfig{},
+		&model.DropConfigRestaurant{},
 		&model.Reservation{},
 		&model.Favourite{},
 		&model.Notification{},

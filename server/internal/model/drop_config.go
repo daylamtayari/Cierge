@@ -8,21 +8,18 @@ import (
 )
 
 type DropConfig struct {
-	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	Platform     string    `gorm:"type:platform;not null"`
-	RestaurantID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_drop_configs_restaurant_days"`
+	ID uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 
-	DaysInAdvance int16      `gorm:"type:smallint;not null;uniqueIndex:idx_drop_configs_restaurant_days"`
-	DropTime      string     `gorm:"type:time;not null"` // "15:04"
-	Timezone      *Timezone  `gorm:"type:varchar(64)"`
-	Confidence    int16      `gorm:"type:smallint;not null;default:0"`
+	DaysInAdvance int16      `gorm:"type:smallint;not null;uniqueIndex:idx_drop_configs_days_time"`
+	DropTime      string     `gorm:"type:time;not null;uniqueIndex:idx_drop_configs_days_time"` // "15:04"
+	Confidence    int16      `gorm:"-:migration"` // populated from drop_config_restaurants when querying by restaurant
 	LastUsedAt    *time.Time `gorm:"type:timestamptz"`
 
 	CreatedBy *uuid.UUID `gorm:"type:uuid"`
 
 	// Relations
-	Restaurant *Restaurant `gorm:"foreignKey:RestaurantID"`
-	Jobs       []Job       `gorm:"foreignKey:DropConfigID"`
+	Restaurants []*Restaurant `gorm:"many2many:drop_config_restaurants;"`
+	Jobs        []Job         `gorm:"foreignKey:DropConfigID"`
 
 	CreatedAt time.Time `gorm:"not null;default:now()"`
 	UpdatedAt time.Time `gorm:"not null;default:now()"`
@@ -31,11 +28,8 @@ type DropConfig struct {
 func (m *DropConfig) ToAPI() *api.DropConfig {
 	return &api.DropConfig{
 		ID:            m.ID,
-		Platform:      m.Platform,
-		RestaurantID:  m.RestaurantID,
 		DaysInAdvance: m.DaysInAdvance,
 		DropTime:      m.DropTime,
-		Timezone:      m.Timezone.Location,
 		Confidence:    m.Confidence,
 		CreatedAt:     m.CreatedAt,
 	}

@@ -8,14 +8,11 @@ import (
 )
 
 type DropConfig struct {
-	ID           uuid.UUID `json:"id"`
-	Platform     string    `json:"platform"`
-	RestaurantID uuid.UUID `json:"restaurant_id"`
+	ID uuid.UUID `json:"id"`
 
-	DaysInAdvance int16          `json:"days_in_advance"`
-	DropTime      string         `json:"drop_time"`
-	Timezone      *time.Location `json:"timezone"`
-	Confidence    int16          `json:"confidence"`
+	DaysInAdvance int16  `json:"days_in_advance"`
+	DropTime      string `json:"drop_time"`
+	Confidence    int16  `json:"confidence"`
 
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -26,7 +23,10 @@ type dropConfigCreateRequest struct {
 	DropTime      string
 }
 
-// Retrieves all drop configs for a specified restaurant
+// Retrieves all drop configs for a specified restaurant, ordered
+// by confidence in descending order
+// The confidence value represents how many times a drop config has
+// been used to schedule a job for the given restaurant
 // If none exist, an empty slice is returned
 func (c *Client) GetDropConfigs(restaurantId uuid.UUID) ([]DropConfig, error) {
 	reqUrl := c.host + "/api/drop-config?restaurant=" + restaurantId.String()

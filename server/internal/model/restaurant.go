@@ -21,7 +21,7 @@ type Restaurant struct {
 	Rating *float32 `gorm:"type:real"`
 
 	// Relations
-	DropConfigs  []DropConfig  `gorm:"foreignKey:RestaurantID;constraint:OnDelete:CASCADE"`
+	DropConfigs  []*DropConfig `gorm:"many2many:drop_config_restaurants;"`
 	Favourites   []Favourite   `gorm:"foreignKey:RestaurantID;constraint:OnDelete:CASCADE"`
 	Jobs         []Job         `gorm:"foreignKey:RestaurantID;constraint:OnDelete:RESTRICT"`
 	Reservations []Reservation `gorm:"foreignKey:RestaurantID;constraint:OnDelete:RESTRICT"`

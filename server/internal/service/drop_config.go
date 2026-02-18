@@ -27,28 +27,33 @@ func NewDropConfig(dropConfigRepo *repository.DropConfig, restaurantRepo *reposi
 	}
 }
 
+// Returns drop configs for a specified restaurant ordered by confidence in descending order
 func (s *DropConfig) GetByRestaurant(ctx context.Context, restaurantId uuid.UUID) ([]*model.DropConfig, error) {
 	return s.dcRepo.GetByRestaurant(ctx, restaurantId)
 }
 
-// Creates a new drop config but not before checking that it does not match an existing config
+// Creates or reuses a drop config for the given restaurant.
+// If a config with the same days_in_advance and drop_time already exists,
+// the restaurant is associated with it and the existing config is returned.
 func (s *DropConfig) Create(ctx context.Context, restaurantId uuid.UUID, daysInAdvance int16, dropTime string) (*model.DropConfig, error) {
 	_, err := time.Parse("15:04", dropTime)
 	if err != nil {
 		return nil, ErrInvalidDropTime
 	}
 
-	existing, err := s.dcRepo.GetByConfig(ctx, restaurantId, daysInAdvance, dropTime)
+	if _, err := s.restaurantRepo.GetByID(ctx, restaurantId); err != nil {
+		return nil, err
+	}
+
+	existing, err := s.dcRepo.GetByConfig(ctx, daysInAdvance, dropTime)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 	if existing != nil {
+		if err := s.dcRepo.AddRestaurant(ctx, existing.ID, restaurantId); err != nil {
+			return nil, err
+		}
 		return existing, nil
-	}
-
-	restaurant, err := s.restaurantRepo.GetByID(ctx, restaurantId)
-	if err != nil {
-		return nil, err
 	}
 
 	user, ok := ctx.Value("user").(*model.User)
@@ -57,21 +62,23 @@ func (s *DropConfig) Create(ctx context.Context, restaurantId uuid.UUID, daysInA
 	}
 
 	dropConfig := model.DropConfig{
-		Platform:      restaurant.Platform,
-		RestaurantID:  restaurantId,
 		DaysInAdvance: daysInAdvance,
 		DropTime:      dropTime,
 		CreatedBy:     &user.ID,
 	}
 
-	if restaurant.Timezone != nil {
-		dropConfig.Timezone = restaurant.Timezone
+	if err := s.dcRepo.Create(ctx, &dropConfig); err != nil {
+		return nil, err
 	}
 
-	return &dropConfig, s.dcRepo.Create(ctx, &dropConfig)
+	if err := s.dcRepo.AddRestaurant(ctx, dropConfig.ID, restaurantId); err != nil {
+		return nil, err
+	}
+
+	return &dropConfig, nil
 }
 
-// Increment the confidence of a drop config
-func (s *DropConfig) IncrementConfidence(ctx context.Context, configId uuid.UUID) error {
-	return s.dcRepo.IncrementConfidence(ctx, configId)
+// Increment the confidence of a drop config for a specific restaurant
+func (s *DropConfig) IncrementConfidence(ctx context.Context, dropConfigId uuid.UUID, restaurantId uuid.UUID) error {
+	return s.dcRepo.IncrementConfidence(ctx, dropConfigId, restaurantId)
 }
