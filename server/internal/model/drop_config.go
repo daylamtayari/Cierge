@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 )
 
@@ -25,4 +26,17 @@ type DropConfig struct {
 
 	CreatedAt time.Time `gorm:"not null;default:now()"`
 	UpdatedAt time.Time `gorm:"not null;default:now()"`
+}
+
+func (m *DropConfig) ToAPI() *api.DropConfig {
+	return &api.DropConfig{
+		ID:            m.ID,
+		Platform:      m.Platform,
+		RestaurantID:  m.RestaurantID,
+		DaysInAdvance: m.DaysInAdvance,
+		DropTime:      m.DropTime,
+		Timezone:      m.Timezone.Location,
+		Confidence:    m.Confidence,
+		CreatedAt:     m.CreatedAt,
+	}
 }
