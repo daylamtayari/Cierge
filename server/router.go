@@ -86,6 +86,13 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		{
 			restaurants.GET("", handlers.Restaurant.Get)
 		}
+
+		// Drop config routes
+		dropConfig := api.Group("/drop-config")
+		{
+			dropConfig.GET("", handlers.DropConfig.Get)
+			dropConfig.POST("", handlers.DropConfig.Create)
+		}
 	}
 
 	return router

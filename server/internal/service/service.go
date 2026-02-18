@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrUserNotInContext = errors.New("user not in context")
+	ErrUserNotInContext = errors.New("user object not in context")
 )
 
 type Services struct {
