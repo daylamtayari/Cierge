@@ -1,11 +1,17 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/daylamtayari/cierge/server/cloud"
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
+)
+
+var (
+	ErrUserNotInContext = errors.New("user not in context")
 )
 
 type Services struct {
@@ -17,6 +23,7 @@ type Services struct {
 	Reservation   *Reservation
 	Restaurant    *Restaurant
 	PlatformToken *PlatformToken
+	DropConfig    *DropConfig
 }
 
 func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenstore.Store, cloudProvider cloud.Provider) *Services {
@@ -33,5 +40,6 @@ func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenst
 		Reservation:   NewReservation(repos.Reservation),
 		Restaurant:    NewRestaurant(repos.Restaurant, resyClient),
 		PlatformToken: NewPlatformToken(repos.PlatformToken, cloudProvider),
+		DropConfig:    NewDropConfig(repos.DropConfig, repos.Restaurant),
 	}
 }
