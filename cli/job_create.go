@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
@@ -24,6 +25,7 @@ var (
 	jobPlatform             string
 	jobTimeSlotsInput       []string
 	jobTimeSlots            []string
+	jobDropConfigId         string
 
 	jobCreateCmd = &cobra.Command{
 		Use:   "create",
@@ -51,7 +53,7 @@ var (
 				}
 			}
 
-			var restaurantId *uuid.UUID
+			var restaurant *api.Restaurant
 			if cmd.Flags().Changed("restaurant") {
 				switch jobPlatform {
 				case "resy":
@@ -66,11 +68,11 @@ var (
 					} else if err != nil {
 						logger.Error().Err(err).Msg("Failed to fetch Resy restaurant")
 					} else {
-						restaurant, err := client.GetRestaurantByPlatform(jobPlatform, restaurantPlatformId)
+						res, err := client.GetRestaurantByPlatform(jobPlatform, restaurantPlatformId)
 						if err != nil {
 							logger.Error().Err(err).Msg("Failed to get restaurant")
 						} else {
-							restaurantId = &restaurant.ID
+							restaurant = &res
 						}
 					}
 
@@ -78,7 +80,7 @@ var (
 					// TODO: Implement opentable
 				}
 			}
-			if restaurantId == nil {
+			if restaurant == nil {
 				switch jobPlatform {
 				case "resy":
 					venueId, err := runResyVenueSearch(resyClient)
@@ -91,11 +93,11 @@ var (
 					logger.Fatal().Msg("OpenTable search not yet implemented")
 				}
 
-				restaurant, err := client.GetRestaurantByPlatform(jobPlatform, restaurantPlatformId)
+				res, err := client.GetRestaurantByPlatform(jobPlatform, restaurantPlatformId)
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to get restaurant")
 				}
-				restaurantId = &restaurant.ID
+				restaurant = &res
 			}
 
 			if cmd.Flags().Changed("size") && jobPartySize <= 0 {
@@ -179,6 +181,131 @@ var (
 					logger.Fatal().Err(err).Msg("Failed to prompt user for time slots")
 				}
 			}
+
+			var dropConfig *uuid.UUID
+			dropConfigs, err := client.GetDropConfigs(restaurant.ID)
+			if err != nil {
+				logger.Error().Err(err).Msg("Failed to retrieve drop configurations")
+			}
+			if cmd.Flags().Changed("drop-config") {
+				parsedId, err := uuid.Parse(jobDropConfigId)
+				if err != nil {
+					logger.Error().Err(err).Msgf("Invalid drop config ID %q - must be a valid UUID", jobDropConfigId)
+				} else {
+					for _, dc := range dropConfigs {
+						if dc.ID == parsedId {
+							dropConfig = &parsedId
+							break
+						}
+					}
+					if dropConfig == nil {
+						logger.Error().Msgf("Drop config ID %q was not found for the restaurant", jobDropConfigId)
+					}
+				}
+			}
+			if len(dropConfigs) > 0 {
+				options := make([]huh.Option[string], 0, len(dropConfigs)+1)
+				tzAbbr := restaurant.Timezone
+				if loc, err := time.LoadLocation(restaurant.Timezone); err == nil {
+					tzAbbr = time.Now().In(loc).Format("MST")
+				}
+				maxConf, maxDays := 0, 0
+				for _, dc := range dropConfigs {
+					if c := int(dc.Confidence); c > maxConf {
+						maxConf = c
+					}
+					if d := int(dc.DaysInAdvance); d > maxDays {
+						maxDays = d
+					}
+				}
+				confWidth := len(fmt.Sprintf("%d", maxConf))
+				daysWidth := len(fmt.Sprintf("%d", maxDays))
+				for _, dc := range dropConfigs {
+					dropDate := jobReservationDate.Add(-time.Duration(dc.DaysInAdvance) * 24 * time.Hour)
+					label := fmt.Sprintf("%*d %s  %*d days in advance (%s) at %s %s", confWidth, dc.Confidence, upArrow, daysWidth, dc.DaysInAdvance, dropDate.Format("02 Jan"), dc.DropTime, tzAbbr)
+					options = append(options, huh.NewOption(label, dc.ID.String()))
+				}
+				options = append(options, huh.NewOption("Create new drop configuration", "new"))
+
+				var selectedDropConfig string
+				err := huh.NewSelect[string]().
+					Title("Select drop configuration:").
+					Options(options...).
+					Value(&selectedDropConfig).
+					Run()
+				if err != nil {
+					logger.Fatal().Err(err).Msg("Failed to prompt user for drop configuration")
+				}
+				if selectedDropConfig != "new" {
+					parsedId, _ := uuid.Parse(selectedDropConfig)
+					dropConfig = &parsedId
+				}
+			}
+			if dropConfig == nil {
+				var daysInAdvanceInput string
+				err := huh.NewInput().
+					Title("Days in advance:").
+					Description("How many days before the reservation date should the drop be attempted?").
+					Value(&daysInAdvanceInput).
+					Validate(func(s string) error {
+						val, err := strconv.ParseInt(s, 10, 16)
+						if err != nil {
+							return errors.New("days in advance must be a valid number")
+						}
+						if val <= 0 {
+							return errors.New("days in advance must be greater than 0")
+						}
+						return nil
+					}).
+					Run()
+				if err != nil {
+					logger.Fatal().Err(err).Msg("Failed to prompt user for days in advance")
+				}
+
+				var dropTimeInput string
+				err = huh.NewInput().
+					Title("Drop time (HH:mm):").
+					Placeholder("09:00").
+					Value(&dropTimeInput).
+					Validate(func(s string) error {
+						if _, err := time.Parse("15:04", s); err != nil {
+							return errors.New("invalid time format - use HH:mm")
+						}
+						return nil
+					}).
+					Run()
+				if err != nil {
+					logger.Fatal().Err(err).Msg("Failed to prompt user for drop time")
+				}
+
+				daysInAdvance, _ := strconv.ParseInt(daysInAdvanceInput, 10, 16)
+				dropTimeParsed, _ := time.Parse("15:04", dropTimeInput)
+				dropDate := jobReservationDate.Add(-time.Duration(daysInAdvance) * 24 * time.Hour)
+				loc, err := time.LoadLocation(restaurant.Timezone)
+				if err != nil {
+					loc = time.UTC
+				}
+				expectedDrop := time.Date(dropDate.Year(), dropDate.Month(), dropDate.Day(), dropTimeParsed.Hour(), dropTimeParsed.Minute(), 0, 0, loc)
+
+				var confirmed bool
+				err = huh.NewConfirm().
+					Title("Confirm drop configuration").
+					Description(fmt.Sprintf("%d days in advance at %s — expected drop: %s", daysInAdvance, dropTimeInput, expectedDrop.Format("02 Jan at 15:04 MST"))).
+					Value(&confirmed).
+					Run()
+				if err != nil {
+					logger.Fatal().Err(err).Msg("Failed to confirm drop configuration")
+				}
+				if !confirmed {
+					logger.Fatal().Msg("Drop configuration creation cancelled")
+				}
+
+				newDropConfig, err := client.CreateDropConfig(restaurant.ID, int16(daysInAdvance), dropTimeInput)
+				if err != nil {
+					logger.Fatal().Err(err).Msg("Failed to create drop configuration")
+				}
+				dropConfig = &newDropConfig.ID
+			}
 		},
 	}
 )
@@ -189,6 +316,7 @@ func initJobCreateCmd() *cobra.Command {
 	jobCreateCmd.Flags().StringVar(&jobReservationDateInput, "date", "", "Date for the reservation - format: DD-MM-YYYY")
 	jobCreateCmd.Flags().StringVar(&restaurantPlatformId, "restaurant", "", "ID of the restaurant for the respective platform")
 	jobCreateCmd.Flags().StringSliceVar(&jobTimeSlotsInput, "slots", nil, "Time slots for the reservation - format: HH:mm")
+	jobCreateCmd.Flags().StringVar(&jobDropConfigId, "drop-config", "", "ID of the drop configuration to use")
 	return jobCreateCmd
 }
 
@@ -488,7 +616,7 @@ func (m timeSlotModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m timeSlotModel) View() string {
-	if m.quitting {
+	if m.quitting || m.confirmed {
 		return ""
 	}
 

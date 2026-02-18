@@ -31,6 +31,10 @@ type Restaurant struct {
 }
 
 func (m *Restaurant) ToAPI() *api.Restaurant {
+	var timezone string
+	if m.Timezone != nil && m.Timezone.Location != nil {
+		timezone = m.Timezone.String()
+	}
 	return &api.Restaurant{
 		ID:         m.ID,
 		Platform:   m.Platform,
@@ -39,7 +43,7 @@ func (m *Restaurant) ToAPI() *api.Restaurant {
 		Address:    m.Address,
 		City:       m.City,
 		State:      m.State,
-		Timezone:   m.Timezone.Location,
+		Timezone:   timezone,
 		Rating:     m.Rating,
 		CreatedAt:  m.CreatedAt,
 		UpdatedAt:  m.UpdatedAt,

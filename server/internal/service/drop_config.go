@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	"github.com/google/uuid"
@@ -56,15 +57,12 @@ func (s *DropConfig) Create(ctx context.Context, restaurantId uuid.UUID, daysInA
 		return existing, nil
 	}
 
-	user, ok := ctx.Value("user").(*model.User)
-	if !ok {
-		return nil, ErrUserNotInContext
-	}
+	userID := appctx.UserID(ctx)
 
 	dropConfig := model.DropConfig{
 		DaysInAdvance: daysInAdvance,
 		DropTime:      dropTime,
-		CreatedBy:     &user.ID,
+		CreatedBy:     &userID,
 	}
 
 	if err := s.dcRepo.Create(ctx, &dropConfig); err != nil {

@@ -58,7 +58,10 @@ func (r *DropConfig) GetByConfig(ctx context.Context, daysInAdvance int16, dropT
 	err := r.db.WithContext(ctx).
 		Where("days_in_advance = ? AND drop_time = ?", daysInAdvance, dropTime).
 		Take(&dropConfig).Error
-	return &dropConfig, err
+	if err != nil {
+		return nil, err
+	}
+	return &dropConfig, nil
 }
 
 // Create a drop config

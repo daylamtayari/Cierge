@@ -11,8 +11,8 @@ type DropConfig struct {
 	ID uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
 
 	DaysInAdvance int16      `gorm:"type:smallint;not null;uniqueIndex:idx_drop_configs_days_time"`
-	DropTime      string     `gorm:"type:time;not null;uniqueIndex:idx_drop_configs_days_time"` // "15:04"
-	Confidence    int16      `gorm:"-:migration"` // populated from drop_config_restaurants when querying by restaurant
+	DropTime      string     `gorm:"type:varchar(5);not null;uniqueIndex:idx_drop_configs_days_time"` // "HH:mm"
+	Confidence    int16      `gorm:"<-:false;-:migration"` // populated from drop_config_restaurants when querying by restaurant
 	LastUsedAt    *time.Time `gorm:"type:timestamptz"`
 
 	CreatedBy *uuid.UUID `gorm:"type:uuid"`

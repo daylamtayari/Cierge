@@ -12,12 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	checkmark = `✓`
-	crossmark = `✗`
-	warnsign  = `⚠`
-)
-
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Get status",

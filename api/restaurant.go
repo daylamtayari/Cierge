@@ -8,17 +8,17 @@ import (
 )
 
 type Restaurant struct {
-	ID         uuid.UUID      `json:"id"`
-	Platform   string         `json:"platform"`
-	PlatformID string         `json:"platform_id"`
-	Name       string         `json:"name"`
-	Address    *string        `json:"address,omitempty"`
-	City       *string        `json:"city,omitempty"`
-	State      *string        `json:"state,omitempty"`
-	Timezone   *time.Location `json:"timezone,omitempty"`
-	Rating     *float32       `json:"rating,omitempty"`
-	CreatedAt  time.Time      `json:"created_at"`
-	UpdatedAt  time.Time      `json:"updated_at"`
+	ID         uuid.UUID `json:"id"`
+	Platform   string    `json:"platform"`
+	PlatformID string    `json:"platform_id"`
+	Name       string    `json:"name"`
+	Address    *string   `json:"address,omitempty"`
+	City       *string   `json:"city,omitempty"`
+	State      *string   `json:"state,omitempty"`
+	Timezone   string    `json:"timezone,omitempty"`
+	Rating     *float32  `json:"rating,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 // Retrieves a restaurant with a given platform ID for a specified platform
