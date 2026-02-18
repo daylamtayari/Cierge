@@ -30,7 +30,7 @@ type dropConfigCreateRequest struct {
 
 // GET /api/drop-config - Get drop configs
 // Returns a slice of drop configs, ordered by confidence
-// in decreasing order, that is empty if there are no results
+// in descending order, that is empty if there are no results
 func (h *DropConfig) Get(c *gin.Context) {
 	logger := appctx.Logger(c.Request.Context())
 	errorCol := appctx.ErrorCollector(c.Request.Context())

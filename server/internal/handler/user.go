@@ -46,15 +46,7 @@ func (h *User) Me(c *gin.Context) {
 func (h *User) APIKey(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())
 
-	contextUser, ok := c.Get("user")
-	if !ok {
-		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
-		util.RespondInternalServerError(c)
-		return
-	}
-	user := contextUser.(*model.User)
-
-	apiKey, err := h.tokenService.GenerateAPIKey(c.Request.Context(), user.ID)
+	apiKey, err := h.tokenService.GenerateAPIKey(c.Request.Context(), appctx.UserID(c.Request.Context()))
 	if err != nil {
 		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "failed to generate API key")
 		util.RespondInternalServerError(c)

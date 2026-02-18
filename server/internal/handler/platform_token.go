@@ -33,22 +33,16 @@ func (h *PlatformToken) Get(c *gin.Context) {
 	tokens := make([]*model.PlatformToken, 0)
 	platform := strings.ToLower(c.Query("platform"))
 
-	contextUser, ok := c.Get("user")
-	if !ok {
-		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
-		util.RespondInternalServerError(c)
-		return
-	}
-	user := contextUser.(*model.User)
+	userID := appctx.UserID(c.Request.Context())
 
 	var err error
 	switch platform {
 	case "":
-		tokens, err = h.ptService.GetByUser(c.Request.Context(), user.ID)
+		tokens, err = h.ptService.GetByUser(c.Request.Context(), userID)
 
 	case "resy", "opentable":
 		var token *model.PlatformToken
-		token, err = h.ptService.GetByUserAndPlatform(c.Request.Context(), user.ID, platform)
+		token, err = h.ptService.GetByUserAndPlatform(c.Request.Context(), userID, platform)
 		tokens = append(tokens, token)
 
 	default:
@@ -104,15 +98,7 @@ func (h *PlatformToken) Create(c *gin.Context) {
 		return
 	}
 
-	contextUser, ok := c.Get("user")
-	if !ok {
-		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
-		util.RespondInternalServerError(c)
-		return
-	}
-	user := contextUser.(*model.User)
-
-	newToken, err := h.ptService.Create(c.Request.Context(), user.ID, platform, token)
+	newToken, err := h.ptService.Create(c.Request.Context(), appctx.UserID(c.Request.Context()), platform, token)
 	if err != nil {
 		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"platform": platform}, "error creating platform token")
 		util.RespondInternalServerError(c)
