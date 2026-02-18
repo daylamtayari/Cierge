@@ -35,10 +35,7 @@ func (h *Auth) Login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errorCol.Add(err, zerolog.InfoLevel, true, nil, "improper login request format")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error":      "Invalid request",
-			"request_id": appctx.RequestID(c.Request.Context()),
-		})
+		util.RespondBadRequest(c, "")
 		return
 	}
 
@@ -47,17 +44,11 @@ func (h *Auth) Login(c *gin.Context) {
 		switch {
 		case errors.Is(err, service.ErrUserDNE):
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "user does not exist")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error":      "Invalid credentials",
-				"request_id": appctx.RequestID(c.Request.Context()),
-			})
+			util.RespondUnauthorized(c)
 			return
 		case errors.Is(err, service.ErrInvalidCredentials):
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "invalid user credentials")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error":      "Invalid credentials",
-				"request_id": appctx.RequestID(c.Request.Context()),
-			})
+			util.RespondUnauthorized(c)
 			return
 		case errors.Is(err, service.ErrAccountLocked):
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "authentication attempted for a locked account")
@@ -68,10 +59,7 @@ func (h *Auth) Login(c *gin.Context) {
 			return
 		default:
 			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "internal server error during the login flow")
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"error":      "Internal server error",
-				"request_id": appctx.RequestID(c.Request.Context()),
-			})
+			util.RespondInternalServerError(c)
 			return
 		}
 	}

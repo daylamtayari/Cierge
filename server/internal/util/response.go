@@ -10,11 +10,14 @@ import (
 
 // Return a Bad Request error response with a custom message
 func RespondBadRequest(c *gin.Context, message string) {
-	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+	badRequestResponse := map[string]any{
 		"error":      "Bad Requeest",
-		"message":    message,
 		"request_id": appctx.RequestID(c.Request.Context()),
-	})
+	}
+	if message != "" {
+		badRequestResponse["message"] = message
+	}
+	c.AbortWithStatusJSON(http.StatusBadRequest, badRequestResponse)
 }
 
 // Return an Unauthorized error response
