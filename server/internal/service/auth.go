@@ -99,7 +99,7 @@ func (s *Auth) HashPassword(password string) string {
 // Performs a logout by validating the tokens and if valid, revoking them
 func (s *Auth) Logout(ctx context.Context, accessToken string, refreshToken string) error {
 	if accessToken != "" {
-		accessTokenClaims, err := s.tokenService.ValidateBearerToken(ctx, accessToken)
+		accessTokenClaims, err := s.tokenService.ValidateAuthToken(ctx, accessToken)
 		if err != nil {
 			return err
 		}

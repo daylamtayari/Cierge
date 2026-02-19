@@ -151,8 +151,8 @@ func (s *Token) ValidateCallbackSecret(ctx context.Context, callbackSecretHash s
 	return subtle.ConstantTimeCompare([]byte(callbackSecretHash), []byte(s.hashSecret(callbackSecret))) == 1
 }
 
-// Validates a bearer token wrapping the ValidateJWTToken method
-func (s *Token) ValidateBearerToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
+// Validates an auth token wrapping the ValidateJWTToken method
+func (s *Token) ValidateAuthToken(ctx context.Context, bearerToken string) (*AccessTokenClaims, error) {
 	claims, err := s.validateJWTToken(ctx, bearerToken)
 	if err != nil {
 		return nil, err

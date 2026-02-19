@@ -76,7 +76,7 @@ func (m *Auth) RequireAuth() gin.HandlerFunc {
 			}
 			user = validatedUser
 		} else {
-			claims, err := m.tokenService.ValidateBearerToken(c.Request.Context(), tokenString)
+			claims, err := m.tokenService.ValidateAuthToken(c.Request.Context(), tokenString)
 
 			if err != nil {
 				var revocationError *service.TokenRevocationError
