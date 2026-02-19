@@ -87,7 +87,7 @@ func Logger(baseLogger zerolog.Logger, isDevelopment bool) gin.HandlerFunc {
 		}
 
 		// This project should be used at a small enough scale that these
-		// log events become too significant to justify log sampling.
+		// log events don't become too significant to justify log sampling.
 		logEvent := logger.WithLevel(logLevel)
 		if errorCol.HasErrors() {
 			logEvent = errorCol.ApplyToEvent(logEvent)
@@ -107,6 +107,7 @@ func Logger(baseLogger zerolog.Logger, isDevelopment bool) gin.HandlerFunc {
 // Sanitize the request headers to remove any sensitive information
 // Handles headers:
 // - Authorization
+// - Cookie
 func sanitizeHeaders(headers http.Header) http.Header {
 	if _, ok := headers["Authorization"]; ok {
 		headers["Authorization"] = []string{"*****"}
