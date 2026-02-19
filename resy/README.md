@@ -1,5 +1,7 @@
 # Resy API Library
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/resy.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/resy)
+
 While not feature complete, this API library covers 90+% of things you would ever need when interacting with the Resy API. Similarly, it covers the overwhelming majority of fields are mapped in structs, not every single field is simply due to how verbose the API is and how much irrelevant data exists.
 
 If there are any fields or methods you want to see implemented, reach out and I will happily implement them.
