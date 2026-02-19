@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -128,10 +127,7 @@ func (h *Job) Create(c *gin.Context) {
 	err = h.jobService.Schedule(c.Request.Context(), job, restaurant)
 	if err != nil && errors.Is(err, service.ErrTokenDNE) {
 		errorCol.Add(err, zerolog.InfoLevel, false, nil, "no token configured")
-		c.AbortWithStatusJSON(http.StatusFailedDependency, gin.H{
-			"error":      "Platform token not configured for platform",
-			"request_id": appctx.RequestID(c.Request.Context()),
-		})
+		util.RespondConflict(c, "Platform token not configured for platform")
 		return
 	} else if err != nil {
 		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to schedule job")

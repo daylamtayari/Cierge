@@ -13,6 +13,7 @@ import (
 
 var (
 	ErrBadRequest       = errors.New("bad or malformed request")
+	ErrConflict         = errors.New("conflict")
 	ErrFailedDependency = errors.New("failed dependency")
 	ErrNotFound         = errors.New("not found")
 	ErrServerError      = errors.New("server encountered internal error")
@@ -117,32 +118,55 @@ func (c *Client) Do(req *http.Request, v any) error {
 	defer res.Body.Close() //nolint: errcheck
 
 	var body []byte
-	if res.ContentLength != 0 && (res.StatusCode == 200 || res.StatusCode == 424) {
+	if res.ContentLength != 0 {
 		body, err = io.ReadAll(res.Body)
 		if err != nil {
 			return err
 		}
 
-		// If a request has a failed dependecy, get body for reason
-		if res.StatusCode == 424 {
-			return fmt.Errorf("%w: %v", ErrFailedDependency, string(body))
-		}
+		switch res.StatusCode {
+		case 200:
+			if _, ok := v.(*[]byte); ok {
+				// If a byte array is provided, the body value
+				// is returned directly and not unmarshalled
+				*v.(*[]byte) = body
+			} else if v != nil {
+				err = json.Unmarshal(body, &v)
+			}
+			if err != nil {
+				return err
+			}
+			return nil
+		// If a response is a user error, innclude the reason in the error message
+		case 400, 404, 409:
+			errorMessage := struct {
+				Message string `json:"message"`
+			}{}
+			err = json.Unmarshal(body, &errorMessage)
+			if err != nil {
+				return err
+			}
 
-		if _, ok := v.(*[]byte); ok {
-			// If a byte array is provided, the body value
-			// is returned directly and not unmarshalled
-			*v.(*[]byte) = body
-		} else if v != nil {
-			err = json.Unmarshal(body, &v)
-		}
-		if err != nil {
-			return err
+			var resErr error
+			switch res.StatusCode {
+			case 400:
+				resErr = ErrBadRequest
+			case 404:
+				resErr = ErrNotFound
+			case 409:
+				resErr = ErrConflict
+			}
+
+			if errorMessage.Message == "" {
+				return resErr
+			} else {
+				return fmt.Errorf("%w: %s", resErr, errorMessage.Message)
+			}
 		}
 	}
 
+	// Any remaining statuses to handle
 	switch res.StatusCode {
-	case 200:
-		return nil
 	case 401:
 		return ErrUnauthenticated
 	case 403:

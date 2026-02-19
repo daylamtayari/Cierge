@@ -36,13 +36,28 @@ func RespondForbidden(c *gin.Context) {
 	})
 }
 
-// Returns a not found error message
+// Returns a not found error message with a custom message
 func RespondNotFound(c *gin.Context, message string) {
-	c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+	notFoundResponse := map[string]any{
 		"error":      "Not Found",
-		"message":    message,
 		"request_id": appctx.RequestID(c.Request.Context()),
-	})
+	}
+	if message != "" {
+		notFoundResponse["message"] = message
+	}
+	c.AbortWithStatusJSON(http.StatusNotFound, notFoundResponse)
+}
+
+// Returns a conflict error message with a custom message
+func RespondConflict(c *gin.Context, message string) {
+	conflictResponse := map[string]any{
+		"error":      "Conflict",
+		"request_id": appctx.RequestID(c.Request.Context()),
+	}
+	if message != "" {
+		conflictResponse["message"] = message
+	}
+	c.AbortWithStatusJSON(http.StatusConflict, conflictResponse)
 }
 
 // Return an Internal Server Error response
