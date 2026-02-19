@@ -556,13 +556,23 @@ const timeSlotViewHeight = 10
 type timeSlotModel struct {
 	allSlots      []string
 	filteredSlots []string
-	selected      map[string]bool
+	prioritySlots []string // ordered by priority; index 0 = priority 1
 	cursor        int
 	filterInput   textinput.Model
 	filtering     bool
 	confirmed     bool
 	quitting      bool
 	err           error
+}
+
+// slotPriority returns the 1-based priority of slot, or 0 if unselected.
+func (m timeSlotModel) slotPriority(slot string) int {
+	for i, s := range m.prioritySlots {
+		if s == slot {
+			return i + 1
+		}
+	}
+	return 0
 }
 
 func (m timeSlotModel) Init() tea.Cmd {
@@ -593,7 +603,7 @@ func (m timeSlotModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.filterInput.Blur()
 				return m, nil
 			}
-			if len(m.selected) == 0 {
+			if len(m.prioritySlots) == 0 {
 				m.err = errors.New("select at least one time slot")
 				return m, nil
 			}
@@ -619,11 +629,45 @@ func (m timeSlotModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case " ", "x":
 			if !m.filtering && len(m.filteredSlots) > 0 {
 				slot := m.filteredSlots[m.cursor]
-				if m.selected[slot] {
-					delete(m.selected, slot)
+				if p := m.slotPriority(slot); p > 0 {
+					m.prioritySlots = tsRemoveAt(m.prioritySlots, p-1)
 				} else {
-					m.selected[slot] = true
+					m.prioritySlots = append(m.prioritySlots, slot)
 				}
+			}
+
+		case "+":
+			// Increase priority (lower number, move toward front of list)
+			if !m.filtering && len(m.filteredSlots) > 0 {
+				slot := m.filteredSlots[m.cursor]
+				if p := m.slotPriority(slot); p > 1 {
+					m.prioritySlots = tsSwapAt(m.prioritySlots, p-2, p-1)
+				}
+			}
+
+		case "-":
+			// Decrease priority (higher number, move toward end of list)
+			if !m.filtering && len(m.filteredSlots) > 0 {
+				slot := m.filteredSlots[m.cursor]
+				if p := m.slotPriority(slot); p > 0 && p < len(m.prioritySlots) {
+					m.prioritySlots = tsSwapAt(m.prioritySlots, p-1, p)
+				}
+			}
+
+		case "1", "2", "3", "4", "5", "6", "7", "8", "9":
+			if !m.filtering && len(m.filteredSlots) > 0 {
+				n, _ := strconv.Atoi(msg.String())
+				slot := m.filteredSlots[m.cursor]
+				// Remove from current position if already selected
+				if p := m.slotPriority(slot); p > 0 {
+					m.prioritySlots = tsRemoveAt(m.prioritySlots, p-1)
+				}
+				// Insert at desired position, clamped to valid range
+				insertPos := n - 1
+				if insertPos > len(m.prioritySlots) {
+					insertPos = len(m.prioritySlots)
+				}
+				m.prioritySlots = tsInsertAt(m.prioritySlots, insertPos, slot)
 			}
 		}
 	}
@@ -670,25 +714,31 @@ func (m timeSlotModel) View() string {
 	}
 	b.WriteString("\n")
 
+	// Keep bracket width consistent as selections grow to avoid layout jitter
+	numWidth := len(fmt.Sprintf("%d", max(len(m.prioritySlots), 1)))
+	renderSlot := func(slot string, isCursor bool) string {
+		cur := " "
+		if isCursor {
+			cur = ">"
+		}
+		var check string
+		if p := m.slotPriority(slot); p > 0 {
+			check = fmt.Sprintf("%*d", numWidth, p)
+		} else {
+			check = strings.Repeat(" ", numWidth)
+		}
+		return fmt.Sprintf("%s [%s] %s", cur, check, slot)
+	}
+
 	n := len(m.filteredSlots)
 	if n >= timeSlotViewHeight {
-		// Carousel: cursor is always pinned at the centre of the visible window.
-		// Each navigation step shifts the entire window by one, wrapping seamlessly.
+		// Carousel: cursor pinned at centre, window shifts each step.
 		half := timeSlotViewHeight / 2
 		startIdx := (m.cursor - half + n) % n
 		for i := range timeSlotViewHeight {
 			slotIdx := (startIdx + i) % n
-			slot := m.filteredSlots[slotIdx]
 			isCursor := i == half
-			check := " "
-			if m.selected[slot] {
-				check = "✗"
-			}
-			cur := " "
-			if isCursor {
-				cur = ">"
-			}
-			line := fmt.Sprintf("%s [%s] %s", cur, check, slot)
+			line := renderSlot(m.filteredSlots[slotIdx], isCursor)
 			if isCursor {
 				b.WriteString(selectedStyle.Render(line))
 			} else {
@@ -699,15 +749,7 @@ func (m timeSlotModel) View() string {
 	} else {
 		for i, slot := range m.filteredSlots {
 			isCursor := i == m.cursor
-			check := " "
-			if m.selected[slot] {
-				check = "✗"
-			}
-			cur := " "
-			if isCursor {
-				cur = ">"
-			}
-			line := fmt.Sprintf("%s [%s] %s", cur, check, slot)
+			line := renderSlot(slot, isCursor)
 			if isCursor {
 				b.WriteString(selectedStyle.Render(line))
 			} else {
@@ -722,14 +764,37 @@ func (m timeSlotModel) View() string {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(m.err.Error()))
 		b.WriteString("\n")
 	}
-	b.WriteString(helpStyle.Render(fmt.Sprintf("%d selected • ↑/↓: navigate • space/x: toggle • f//: search • enter: confirm • esc: cancel", len(m.selected))))
+	b.WriteString(helpStyle.Render(fmt.Sprintf(
+		"%d selected • ↑/j / ↓/k: navigate • space/x: toggle • 1-9: set priority • +/-: adjust priority • f//: search • enter: confirm • esc: cancel",
+		len(m.prioritySlots),
+	)))
 
 	return b.String()
 }
 
+func tsRemoveAt(s []string, i int) []string {
+	out := make([]string, 0, len(s)-1)
+	out = append(out, s[:i]...)
+	return append(out, s[i+1:]...)
+}
+
+func tsInsertAt(s []string, i int, v string) []string {
+	out := make([]string, 0, len(s)+1)
+	out = append(out, s[:i]...)
+	out = append(out, v)
+	return append(out, s[i:]...)
+}
+
+func tsSwapAt(s []string, i, j int) []string {
+	out := make([]string, len(s))
+	copy(out, s)
+	out[i], out[j] = out[j], out[i]
+	return out
+}
+
 // runTimeSlotPicker presents an interactive multi-select time slot picker.
 // Slots are ordered starting from 18:00 and wrap around to 17:45.
-// Returns selected slots in chronological order.
+// Returns selected slots in priority order.
 func runTimeSlotPicker() ([]string, error) {
 	allSlots := make([]string, 96)
 	for i := range 96 {
@@ -746,7 +811,6 @@ func runTimeSlotPicker() ([]string, error) {
 	m := timeSlotModel{
 		allSlots:      allSlots,
 		filteredSlots: allSlots,
-		selected:      make(map[string]bool),
 		filterInput:   fi,
 	}
 
@@ -761,12 +825,5 @@ func runTimeSlotPicker() ([]string, error) {
 		return nil, fmt.Errorf("no time slots selected")
 	}
 
-	// Return slots in chronological order, not selection order
-	var selected []string
-	for _, slot := range result.allSlots {
-		if result.selected[slot] {
-			selected = append(selected, slot)
-		}
-	}
-	return selected, nil
+	return result.prioritySlots, nil
 }
