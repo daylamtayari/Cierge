@@ -8,6 +8,7 @@ import (
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/repository"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,18 @@ func NewRestaurant(restaurantRepo *repository.Restaurant, resyClient *resy.Clien
 	}
 }
 
-// Retrieves a restaurant from it's platform ID
+// Retrieves a restaurant from its ID
+func (s *Restaurant) GetByID(ctx context.Context, restaurantId uuid.UUID) (*model.Restaurant, error) {
+	restaurant, err := s.restaurantRepo.GetByID(ctx, restaurantId)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrReservationDNE
+	} else if err != nil {
+		return nil, err
+	}
+	return restaurant, nil
+}
+
+// Retrieves a restaurant from its platform ID
 func (s *Restaurant) GetByPlatformID(ctx context.Context, platform string, platformID string) (*model.Restaurant, error) {
 	restaurant, err := s.restaurantRepo.GetByPlatformID(ctx, platform, platformID)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {

@@ -4,8 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/reservation"
+	"github.com/daylamtayari/cierge/server/cloud"
+	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/repository"
 	"github.com/google/uuid"
@@ -17,12 +21,20 @@ var (
 )
 
 type Job struct {
-	jobRepo *repository.Job
+	jobRepo       *repository.Job
+	ptService     *PlatformToken
+	tokenService  *Token
+	cloudProvider cloud.Provider
+	serverURL     string
 }
 
-func NewJob(jobRepo *repository.Job) *Job {
+func NewJob(jobRepo *repository.Job, ptService *PlatformToken, tokenService *Token, cloudProvider cloud.Provider, serverURL string) *Job {
 	return &Job{
-		jobRepo: jobRepo,
+		jobRepo:       jobRepo,
+		ptService:     ptService,
+		tokenService:  tokenService,
+		cloudProvider: cloudProvider,
+		serverURL:     serverURL,
 	}
 }
 
@@ -77,4 +89,71 @@ func (s *Job) UpdateFromCallback(ctx context.Context, job *model.Job, callback r
 	}
 
 	return job, s.jobRepo.Update(ctx, job)
+}
+
+// Update the status of a job
+func (s *Job) UpdateStatus(ctx context.Context, status model.JobStatus, id uuid.UUID) error {
+	return s.jobRepo.UpdateStatus(ctx, status, id)
+}
+
+// Create a new job and returns the job and an error that is nil if successful
+func (s *Job) Create(ctx context.Context, jobCreationRequest *api.JobCreationRequest, restaurant *model.Restaurant, dropConfig *model.DropConfig) (*model.Job, error) {
+	reservationDate, _ := time.Parse("2006-01-02", jobCreationRequest.ReservationDate)
+	scheduledAtDate := reservationDate.Add(-time.Duration(dropConfig.DaysInAdvance) * 24 * time.Hour)
+	scheduledAtTime, _ := time.Parse("15:04", dropConfig.DropTime)
+	scheduledAtLoc := time.UTC
+	if restaurant.Timezone != nil {
+		scheduledAtLoc = restaurant.Timezone.Location
+	}
+	scheduledAt := time.Date(scheduledAtDate.Year(), scheduledAtDate.Month(), scheduledAtDate.Day(), scheduledAtTime.Hour(), scheduledAtTime.Minute(), 0, 0, scheduledAtLoc)
+
+	job := model.Job{
+		UserID:          appctx.UserID(ctx),
+		RestaurantID:    restaurant.ID,
+		Platform:        restaurant.Platform,
+		ReservationDate: jobCreationRequest.ReservationDate,
+		PartySize:       jobCreationRequest.PartySize,
+		PreferredTimes:  jobCreationRequest.PreferredTimes,
+		ScheduledAt:     scheduledAt,
+		DropConfigID:    jobCreationRequest.DropConfigID,
+		Status:          model.JobStatusCreated,
+	}
+
+	return &job, s.jobRepo.Create(ctx, &job)
+}
+
+// Schedule a job and return an error if unsuccessful
+// Includes getting the platform token and generating and
+// encrypting the callback secret and scheduling the job
+func (s *Job) Schedule(ctx context.Context, job *model.Job) error {
+	platformToken, err := s.ptService.GetByUserAndPlatform(ctx, job.UserID, job.Platform)
+	if err != nil {
+		return err
+	}
+	callbackSecret, err := s.tokenService.GenerateCallbackSecret(ctx, job.ID)
+	if err != nil {
+		return err
+	}
+	encryptedCallbackSecret, err := s.cloudProvider.EncryptData(ctx, callbackSecret)
+	if err != nil {
+		return err
+	}
+	event := reservation.Event{
+		JobID:                   job.ID,
+		Platform:                job.Platform,
+		PlatformVenueId:         job.Restaurant.PlatformID,
+		EncryptedToken:          platformToken.EncryptedToken,
+		EncryptedCallbackSecret: encryptedCallbackSecret,
+		ReservationDate:         job.ReservationDate,
+		PartySize:               job.PartySize,
+		PreferredTimes:          job.PreferredTimes,
+		DropTime:                job.ScheduledAt,
+		ServerEndpoint:          s.serverURL,
+		Callback:                true,
+	}
+	err = s.cloudProvider.ScheduleJob(ctx, event)
+	if err != nil {
+		return err
+	}
+	return nil
 }

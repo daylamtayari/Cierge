@@ -78,7 +78,7 @@ func (h *DropConfig) Create(c *gin.Context) {
 	var dropConfigCreateReq dropConfigCreateRequest
 	if err := c.ShouldBindBodyWithJSON(&dropConfigCreateReq); err != nil {
 		errorCol.Add(err, zerolog.InfoLevel, true, nil, "drop config creation request has improper format")
-		util.RespondBadRequest(c, "Drop configuration creation request")
+		util.RespondBadRequest(c, "Invalid drop configuration creation request")
 		return
 	}
 

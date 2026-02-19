@@ -24,14 +24,14 @@ type Job struct {
 	RestaurantID uuid.UUID `gorm:"type:uuid;not null;index:idx_jobs_restaurant"`
 	Platform     string    `gorm:"type:platform;not null;index:idx_jobs_platform"`
 
-	ReservationDate time.Time      `gorm:"type:date;not null"`
+	ReservationDate string         `gorm:"type:date;not null"` // YYYY-MM-DD
 	PartySize       int16          `gorm:"type:smallint;not null"`
-	PreferredTimes  pq.StringArray `gorm:"type:varchar(10)[];not null"` // "18:30:00"
+	PreferredTimes  pq.StringArray `gorm:"type:varchar(5)[];not null"` // HH:mm
 
-	ScheduledAt        time.Time  `gorm:"not null;index:idx_jobs_scheduled,where:status = 'scheduled'"`
-	DropConfigID       *uuid.UUID `gorm:"type:uuid"`
-	CallbackSecretHash *string    `gorm:"type:varchar(255)"`
-	Callbacked         bool       `gorm:"not null;default:false"`
+	ScheduledAt        time.Time `gorm:"not null;index:idx_jobs_scheduled,where:status = 'scheduled'"`
+	DropConfigID       uuid.UUID `gorm:"type:uuid"`
+	CallbackSecretHash *string   `gorm:"type:varchar(255)"`
+	Callbacked         bool      `gorm:"not null;default:false"`
 
 	Status      JobStatus  `gorm:"type:job_status;not null;default:'scheduled';index:idx_jobs_status;index:idx_jobs_user_status"`
 	StartedAt   *time.Time `gorm:"type:timestamptz"`
@@ -62,7 +62,7 @@ func (m *Job) ToAPI() *api.Job {
 		PreferredTimes:  m.PreferredTimes,
 
 		ScheduledAt:  m.ScheduledAt,
-		DropConfigID: m.DropConfigID,
+		DropConfigID: &m.DropConfigID,
 		Callbacked:   m.Callbacked,
 
 		Status:      api.JobStatus(m.Status),

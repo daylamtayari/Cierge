@@ -57,6 +57,14 @@ func (s Server) Address() string {
 	return fmt.Sprintf("%s:%d", s.Host, s.Port)
 }
 
+func (s Server) URL() string {
+	scheme := "http"
+	if s.TLS.Enabled {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://%s:%d/", scheme, s.Host, s.Port)
+}
+
 // Database configuration
 type Database struct {
 	Host        string   `json:"host" default:"localhost"`

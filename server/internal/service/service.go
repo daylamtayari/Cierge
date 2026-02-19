@@ -29,17 +29,18 @@ type Services struct {
 func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenstore.Store, cloudProvider cloud.Provider) *Services {
 	resyClient := resy.NewClient(nil, resy.Tokens{ApiKey: resy.DefaultApiKey}, "")
 	userService := NewUser(repos.User)
-	tokenService := NewToken(userService, cfg.Auth, tokenStore)
+	tokenService := NewToken(userService, repos.Job, cfg.Auth, tokenStore)
+	platformTokenService := NewPlatformToken(repos.PlatformToken, cloudProvider)
 
 	return &Services{
 		User:          userService,
 		Token:         tokenService,
 		Health:        NewHealth(repos.DB(), repos.Timeout()),
 		Auth:          NewAuth(userService, tokenService, &cfg.Auth),
-		Job:           NewJob(repos.Job),
+		Job:           NewJob(repos.Job, platformTokenService, tokenService, cloudProvider, cfg.Server.URL()),
 		Reservation:   NewReservation(repos.Reservation),
 		Restaurant:    NewRestaurant(repos.Restaurant, resyClient),
-		PlatformToken: NewPlatformToken(repos.PlatformToken, cloudProvider),
+		PlatformToken: platformTokenService,
 		DropConfig:    NewDropConfig(repos.DropConfig, repos.Restaurant),
 	}
 }

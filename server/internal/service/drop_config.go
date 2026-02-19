@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	ErrDropConfigDNE   = errors.New("drop config does not exist")
 	ErrInvalidDropTime = errors.New("drop time is not in HH:mm format")
 )
 
@@ -26,6 +27,17 @@ func NewDropConfig(dropConfigRepo *repository.DropConfig, restaurantRepo *reposi
 		dcRepo:         dropConfigRepo,
 		restaurantRepo: restaurantRepo,
 	}
+}
+
+// Gets a drop config from its ID
+func (s *DropConfig) GetByID(ctx context.Context, dropConfigId uuid.UUID) (*model.DropConfig, error) {
+	dropConfig, err := s.dcRepo.GetByID(ctx, dropConfigId)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrDropConfigDNE
+	} else if err != nil {
+		return nil, err
+	}
+	return dropConfig, nil
 }
 
 // Returns drop configs for a specified restaurant ordered by confidence in descending order

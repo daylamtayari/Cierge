@@ -18,7 +18,7 @@ type Handlers struct {
 func New(services *service.Services, cfg *config.Config) *Handlers {
 	return &Handlers{
 		Auth:          NewAuth(services.Auth, cfg.IsDevelopment()),
-		Job:           NewJob(services.Job),
+		Job:           NewJob(services.Job, services.Restaurant, services.DropConfig),
 		JobCallback:   NewJobCallback(services.Job, services.Reservation),
 		User:          NewUser(services.User, services.Token),
 		Restaurant:    NewRestaurant(services.Restaurant),

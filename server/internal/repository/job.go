@@ -40,3 +40,35 @@ func (r *Job) Update(ctx context.Context, job *model.Job) error {
 
 	return r.db.WithContext(ctx).Save(job).Error
 }
+
+// Sets the callback secret hash for a specified job
+func (r *Job) SetCallbackSecretHash(ctx context.Context, secretHash string, id uuid.UUID) error {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	return r.db.WithContext(ctx).Model(&model.Job{}).
+		Where("id = ?", id).
+		Updates(map[string]any{
+			"callback_secret_hash": secretHash,
+		}).Error
+}
+
+// Updates the status of a job
+func (r *Job) UpdateStatus(ctx context.Context, status model.JobStatus, id uuid.UUID) error {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	return r.db.WithContext(ctx).Model(&model.Job{}).
+		Where("id = ?", id).
+		Updates(map[string]any{
+			"status": status,
+		}).Error
+}
+
+// Create a job
+func (r *Job) Create(ctx context.Context, job *model.Job) error {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	return r.db.WithContext(ctx).Create(job).Error
+}

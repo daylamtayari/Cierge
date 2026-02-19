@@ -24,9 +24,9 @@ type Job struct {
 	RestaurantID uuid.UUID `json:"restaurant_id"`
 	Platform     string    `json:"platform"`
 
-	ReservationDate time.Time `json:"reservation_date"`
-	PartySize       int16     `json:"party_size"`
-	PreferredTimes  []string  `json:"preferred_times"`
+	ReservationDate string   `json:"reservation_date"` // YYYY-MM-DD
+	PartySize       int16    `json:"party_size"`
+	PreferredTimes  []string `json:"preferred_times"` // HH:mm
 
 	ScheduledAt  time.Time  `json:"scheduled_at"`
 	DropConfigID *uuid.UUID `json:"drop_config_id,omitempty"`
@@ -43,6 +43,15 @@ type Job struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// Request type for a new job
+type JobCreationRequest struct {
+	RestaurantID    uuid.UUID `json:"restaurant_id"`
+	ReservationDate string    `json:"reservation_date"` // YYYY-MM-DD
+	PartySize       int16     `json:"party_size"`
+	PreferredTimes  []string  `json:"preferred_times"` // HH:mm
+	DropConfigID    uuid.UUID `json:"drop_config_id"`
 }
 
 // Retrieve jobs for the user

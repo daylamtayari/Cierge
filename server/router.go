@@ -33,7 +33,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	router.Use(middleware.Recovery())
 
 	authMiddleware := middleware.NewAuth(services.Token, services.User)
-	callbackAuthMiddleware := middleware.NewCallbackAuth(services.Job)
+	callbackAuthMiddleware := middleware.NewCallbackAuth(services.Job, services.Token)
 
 	handlers := handler.New(services, cfg)
 
@@ -78,6 +78,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		// Job routes
 		jobs := api.Group("/job")
 		{
+			jobs.POST("", handlers.Job.Create)
 			jobs.GET("/list", handlers.Job.List)
 		}
 
