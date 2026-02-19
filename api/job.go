@@ -28,9 +28,9 @@ type Job struct {
 	PartySize       int16    `json:"party_size"`
 	PreferredTimes  []string `json:"preferred_times"` // HH:mm
 
-	ScheduledAt  time.Time  `json:"scheduled_at"`
-	DropConfigID *uuid.UUID `json:"drop_config_id,omitempty"`
-	Callbacked   bool       `json:"callbacked"`
+	ScheduledAt  time.Time `json:"scheduled_at"`
+	DropConfigID uuid.UUID `json:"drop_config_id"`
+	Callbacked   bool      `json:"callbacked"`
 
 	Status      JobStatus  `json:"status"`
 	StartedAt   *time.Time `json:"started_at,omitempty"`

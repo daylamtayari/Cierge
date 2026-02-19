@@ -144,6 +144,6 @@ func (h *Job) Create(c *gin.Context) {
 		// Don't return an error as the job was successfully scheduled
 	}
 
-	c.JSON(200, job)
+	c.JSON(200, job.ToAPI())
 	c.Set("message", "created and scheduled job")
 }

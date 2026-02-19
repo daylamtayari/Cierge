@@ -62,7 +62,7 @@ func (m *Job) ToAPI() *api.Job {
 		PreferredTimes:  m.PreferredTimes,
 
 		ScheduledAt:  m.ScheduledAt,
-		DropConfigID: &m.DropConfigID,
+		DropConfigID: m.DropConfigID,
 		Callbacked:   m.Callbacked,
 
 		Status:      api.JobStatus(m.Status),
