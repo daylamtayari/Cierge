@@ -52,6 +52,12 @@ var (
 					logger.Fatal().Err(err).Msg("Failed to prompt user for reservation platform")
 				}
 			}
+			platformTokens, err := client.GetPlatformTokens(&jobPlatform)
+			if err != nil {
+				logger.Error().Err(err).Msg("Failed to retrieve platform tokens")
+			} else if len(platformTokens) == 0 {
+				logger.Fatal().Msgf("No platform tokens registered for %q, please add tokens first using the 'token add' command", jobPlatform)
+			}
 
 			// Restaurant selection
 			var restaurant *api.Restaurant
