@@ -71,3 +71,21 @@ func (c *Client) GetJobs(upcomingOnly bool) ([]Job, error) {
 
 	return jobs, nil
 }
+
+// Create a new job
+// Returns the created job and an error that is nil if successful
+func (c *Client) CreateJob(jobCreationReq JobCreationRequest) (Job, error) {
+	reqUrl := c.host + "/api/job"
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, jobCreationReq)
+	if err != nil {
+		return Job{}, err
+	}
+
+	var job Job
+	err = c.Do(req, &job)
+	if err != nil {
+		return Job{}, err
+	}
+
+	return job, nil
+}
