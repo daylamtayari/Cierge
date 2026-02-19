@@ -19,7 +19,7 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:   "cierge",
-		Short: "Cierge CLI",
+		Short: "Cierge Command Line Interface",
 		Long:  ``,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Skip persistent pre run for version retrieval
