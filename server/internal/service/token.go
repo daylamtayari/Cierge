@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/config"
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
+	"github.com/daylamtayari/cierge/server/internal/repository"
 	tokenstore "github.com/daylamtayari/cierge/server/internal/token_store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -74,6 +76,7 @@ type RefreshTokenClaims struct {
 
 type Token struct {
 	userService        *User
+	jobRepo            *repository.Job
 	tokenStore         *tokenstore.Store
 	jwtSecret          string
 	jwtIssuer          string
@@ -81,9 +84,10 @@ type Token struct {
 	refreshTokenExpiry time.Duration
 }
 
-func NewToken(userService *User, authConfig config.Auth, tokenStore *tokenstore.Store) *Token {
+func NewToken(userService *User, jobRepo *repository.Job, authConfig config.Auth, tokenStore *tokenstore.Store) *Token {
 	return &Token{
 		userService:        userService,
+		jobRepo:            jobRepo,
 		tokenStore:         tokenStore,
 		jwtSecret:          authConfig.JWTSecret,
 		jwtIssuer:          authConfig.JWTIssuer,
@@ -115,8 +119,8 @@ func (s *Token) ExtractToken(ctx context.Context, authHeader string) (TokenType,
 	}
 }
 
-// Creates a SHA-256 hash of an API key
-func (s *Token) hashApiKey(apiKey string) string {
+// Creates a SHA-256 hash of a secret
+func (s *Token) hashSecret(apiKey string) string {
 	hash := sha256.Sum256([]byte(apiKey))
 	return hex.EncodeToString(hash[:])
 }
@@ -131,7 +135,7 @@ func (s *Token) ValidateApiToken(ctx context.Context, apiToken string) (*model.U
 		}
 	}
 
-	hashedToken := s.hashApiKey(apiToken)
+	hashedToken := s.hashSecret(apiToken)
 
 	user, err := s.userService.GetByApiKey(ctx, hashedToken)
 	if err != nil && errors.Is(err, ErrUserDNE) {
@@ -140,6 +144,11 @@ func (s *Token) ValidateApiToken(ctx context.Context, apiToken string) (*model.U
 		return nil, fmt.Errorf("%w: %w", ErrApiKeyCheckFail, err)
 	}
 	return user, nil
+}
+
+// Validates whether a callback secret matches the specified hash
+func (s *Token) ValidateCallbackSecret(ctx context.Context, callbackSecretHash string, callbackSecret string) bool {
+	return subtle.ConstantTimeCompare([]byte(callbackSecretHash), []byte(s.hashSecret(callbackSecret))) == 1
 }
 
 // Validates a bearer token wrapping the ValidateJWTToken method
@@ -261,48 +270,41 @@ func (s *Token) generateJWTToken(ctx context.Context, userID uuid.UUID, expiry t
 	return tokenString, nil
 }
 
-// Revokes a token for a given JTI
-func (s *Token) RevokeToken(ctx context.Context, jti string, revokedBy string) error {
-	data, err := s.tokenStore.GetToken(ctx, jti)
-	if err != nil {
-		return err
+// Securely generate a random alphanumeric string
+func (s *Token) generateSecretKey() (string, error) {
+	const (
+		secretKeyLength = 30
+		charset         = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	)
+
+	charsetLen := big.NewInt(int64(len(charset)))
+	// Generate random alphanumeric string
+	key := make([]byte, secretKeyLength)
+	for j := range key {
+		num, err := rand.Int(rand.Reader, charsetLen)
+		if err != nil {
+			return "", fmt.Errorf("%w: %w", ErrApiKeyGenerationFail, err)
+		}
+		key[j] = charset[num.Int64()]
 	}
 
-	now := time.Now().UTC()
-	data.Revoked = true
-	data.RevokedBy = &revokedBy
-	data.RevokedAt = &now
-
-	return s.tokenStore.UpdateToken(ctx, jti, data)
+	return string(key), nil
 }
 
 // GenerateAPIKey creates or replaces a user's API key
 // Returns the plaintext API key and an error that is nil if successful
 func (s *Token) GenerateAPIKey(ctx context.Context, userID uuid.UUID) (string, error) {
-	const (
-		apiKeyLength = 30
-		charset      = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		maxRetries   = 10
-	)
-
+	const maxRetries = 10
+	// Generate a unique API key with collision checking
 	var apiKey string
 	var hashedKey string
-	charsetLen := big.NewInt(int64(len(charset)))
-
-	// Generate a unique API key with collision checking
+	var err error
 	for i := range maxRetries {
-		// Generate random alphanumeric string
-		key := make([]byte, apiKeyLength)
-		for j := range key {
-			num, err := rand.Int(rand.Reader, charsetLen)
-			if err != nil {
-				return "", fmt.Errorf("%w: %w", ErrApiKeyGenerationFail, err)
-			}
-			key[j] = charset[num.Int64()]
+		apiKey, err = s.generateSecretKey()
+		if err != nil {
+			return "", err
 		}
-		apiKey = string(key)
-		hashedKey = s.hashApiKey(apiKey)
-
+		hashedKey = s.hashSecret(apiKey)
 		// Check if the key already exists
 		exists, err := s.userService.ExistsByApiKey(ctx, hashedKey)
 		if err != nil {
@@ -318,10 +320,40 @@ func (s *Token) GenerateAPIKey(ctx context.Context, userID uuid.UUID) (string, e
 		}
 	}
 
-	err := s.userService.userRepo.UpdateAPIKey(ctx, userID, hashedKey)
+	err = s.userService.userRepo.UpdateAPIKey(ctx, userID, hashedKey)
 	if err != nil {
 		return "", fmt.Errorf("%w: failed to update user API key: %w", ErrApiKeyGenerationFail, err)
 	}
 
 	return apiKey, nil
+}
+
+// Generate a callback secret and sets it for the specified job
+// Returns the plaintext secret and an error that is nil if successful
+func (s *Token) GenerateCallbackSecret(ctx context.Context, jobID uuid.UUID) (string, error) {
+	secret, err := s.generateSecretKey()
+	if err != nil {
+		return "", err
+	}
+
+	err = s.jobRepo.SetCallbackSecretHash(ctx, s.hashSecret(secret), jobID)
+	if err != nil {
+		return "", err
+	}
+	return secret, nil
+}
+
+// Revokes a token for a given JTI
+func (s *Token) RevokeToken(ctx context.Context, jti string, revokedBy string) error {
+	data, err := s.tokenStore.GetToken(ctx, jti)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now().UTC()
+	data.Revoked = true
+	data.RevokedBy = &revokedBy
+	data.RevokedAt = &now
+
+	return s.tokenStore.UpdateToken(ctx, jti, data)
 }

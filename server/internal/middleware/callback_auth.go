@@ -23,12 +23,14 @@ var (
 )
 
 type CallbackAuth struct {
-	jobService *service.Job
+	jobService   *service.Job
+	tokenService *service.Token
 }
 
-func NewCallbackAuth(jobService *service.Job) *CallbackAuth {
+func NewCallbackAuth(jobService *service.Job, tokenService *service.Token) *CallbackAuth {
 	return &CallbackAuth{
-		jobService: jobService,
+		jobService:   jobService,
+		tokenService: tokenService,
 	}
 }
 
@@ -92,12 +94,13 @@ func (m *CallbackAuth) RequireCallbackAuth() gin.HandlerFunc {
 			return
 		}
 
-		validToken, err := util.SecureVerifyHash(*job.CallbackSecretHash, authToken)
-		if err != nil {
-			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to verify hash during callback request auth")
-			util.RespondInternalServerError(c)
+		if job.CallbackSecretHash == nil {
+			errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "callback request is for job with no callback secret")
+			util.RespondUnauthorized(c)
 			return
-		} else if !validToken {
+		}
+		validToken := m.tokenService.ValidateCallbackSecret(c.Request.Context(), *job.CallbackSecretHash, authToken)
+		if !validToken {
 			errorCol.Add(ErrInvalidSecret, zerolog.InfoLevel, true, nil, "invalid secret provided as token of callback request")
 			util.RespondUnauthorized(c)
 			return
