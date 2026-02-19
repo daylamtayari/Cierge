@@ -52,10 +52,7 @@ func (h *Auth) Login(c *gin.Context) {
 			return
 		case errors.Is(err, service.ErrAccountLocked):
 			errorCol.Add(err, zerolog.InfoLevel, true, nil, "authentication attempted for a locked account")
-			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
-				"error":      "Too many requests",
-				"request_id": appctx.RequestID(c.Request.Context()),
-			})
+			util.RespondTooMany(c)
 			return
 		default:
 			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "internal server error during the login flow")
@@ -117,4 +114,48 @@ func (h *Auth) Logout(c *gin.Context) {
 
 	c.JSON(200, gin.H{"message": "logout successful"})
 	c.Set("message", "successful logout")
+}
+
+// POST /auth/refresh
+func (h *Auth) Refresh(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	refreshToken, err := c.Cookie(service.RefreshTokenCookieName)
+	if err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "no refresh token cookie")
+		util.RespondUnauthorized(c)
+		return
+	}
+
+	tokenSet, err := h.authService.Refresh(c.Request.Context(), refreshToken)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrUserDNE):
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "user no longer exists during refresh")
+			util.RespondUnauthorized(c)
+		case errors.Is(err, service.ErrAccountLocked):
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "refresh attempted for locked account")
+			util.RespondTooMany(c)
+		default:
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "invalid or expired refresh token")
+			util.RespondUnauthorized(c)
+		}
+		return
+	}
+
+	c.SetSameSite(http.SameSiteLaxMode)
+	for _, cookie := range tokenSet {
+		c.SetCookie(
+			cookie.Name,
+			cookie.Value,
+			int(cookie.MaxAge.Seconds()),
+			"/",
+			"",
+			!h.isDevelopment,
+			true,
+		)
+	}
+
+	c.JSON(200, gin.H{"message": "tokens refreshed"})
+	c.Set("message", "successful token refresh")
 }

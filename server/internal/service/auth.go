@@ -23,7 +23,6 @@ var (
 	ErrFailFetchUser       = errors.New("failed to fetch user")
 	ErrFailRecordFailLogin = errors.New("failed to record a failed login")
 	ErrInvalidCredentials  = errors.New("invalid credential")
-
 )
 
 type PasswordValidationError string
@@ -180,6 +179,38 @@ func (s *Auth) Logout(ctx context.Context, accessToken string, refreshToken stri
 	}
 
 	return nil
+}
+
+// Refresh validates a refresh token, revokes it, and issues a new token set
+func (s *Auth) Refresh(ctx context.Context, refreshToken string) ([]AuthCookie, error) {
+	claims, err := s.tokenService.ValidateRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return nil, ErrInvalidCredentials
+	}
+
+	user, err := s.userService.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if user.IsAccountLocked() {
+		return nil, ErrAccountLocked
+	}
+
+	tokenSet, err := s.generateTokenSet(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.tokenService.RevokeToken(ctx, claims.ID, "refresh"); err != nil {
+		return nil, err
+	}
+
+	return tokenSet, nil
 }
 
 // Generate a set of AuthCookie's containing tokens

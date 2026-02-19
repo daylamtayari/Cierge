@@ -60,6 +60,14 @@ func RespondConflict(c *gin.Context, message string) {
 	c.AbortWithStatusJSON(http.StatusConflict, conflictResponse)
 }
 
+// Return a Too Many Requests error response
+func RespondTooMany(c *gin.Context) {
+	c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+		"error":      "Too many requests",
+		"request_id": appctx.RequestID(c.Request.Context()),
+	})
+}
+
 // Return an Internal Server Error response
 func RespondInternalServerError(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
