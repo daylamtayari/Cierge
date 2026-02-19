@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/daylamtayari/cierge/server/internal/config"
 	"github.com/daylamtayari/cierge/server/internal/util"
@@ -21,6 +23,19 @@ var (
 	ErrFailFetchUser       = errors.New("failed to fetch user")
 	ErrFailRecordFailLogin = errors.New("failed to record a failed login")
 	ErrInvalidCredentials  = errors.New("invalid credential")
+
+)
+
+type PasswordValidationError string
+
+func (e PasswordValidationError) Error() string { return string(e) }
+
+const (
+	ErrPasswordTooShort       PasswordValidationError = "password must be at least 8 characters"
+	ErrPasswordTooLong        PasswordValidationError = "password must be at most 128 characters"
+	ErrPasswordMissingLetter  PasswordValidationError = "password must contain at least one letter"
+	ErrPasswordMissingDigit   PasswordValidationError = "password must contain at least one digit"
+	ErrPasswordMissingSpecial PasswordValidationError = "password must contain at least one special character"
 )
 
 type AuthCookie struct {
@@ -91,9 +106,53 @@ func (s *Auth) Login(ctx context.Context, email string, password string) ([]Auth
 	return tokenSet, err
 }
 
+// Changes a user's password to the provided new password
+// NOTE: Assumes that the old password has been verified prior to calling this
+func (s *Auth) ChangePassword(ctx context.Context, newPassword string, userId uuid.UUID) error {
+	if err := s.validatePassword(newPassword); err != nil {
+		return err
+	}
+	return s.userService.UpdatePassword(ctx, userId, s.HashPassword(newPassword))
+}
+
 // Hashes a given password and returns the argon2id hash
 func (s *Auth) HashPassword(password string) string {
 	return util.HashSaltString(password, s.argonParams)
+}
+
+// Validates that a password meets the complexity requirements:
+// 8–128 characters, at least one letter, one digit, and one special character
+func (s *Auth) validatePassword(password string) error {
+	length := utf8.RuneCountInString(password)
+	if length < 8 {
+		return ErrPasswordTooShort
+	}
+	if length > 128 {
+		return ErrPasswordTooLong
+	}
+
+	var hasLetter, hasDigit, hasSpecial bool
+	for _, r := range password {
+		switch {
+		case unicode.IsLetter(r):
+			hasLetter = true
+		case unicode.IsDigit(r):
+			hasDigit = true
+		default:
+			hasSpecial = true
+		}
+	}
+
+	if !hasLetter {
+		return ErrPasswordMissingLetter
+	}
+	if !hasDigit {
+		return ErrPasswordMissingDigit
+	}
+	if !hasSpecial {
+		return ErrPasswordMissingSpecial
+	}
+	return nil
 }
 
 // Performs a logout by validating the tokens and if valid, revoking them

@@ -73,6 +73,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 			users.GET("/token", handlers.PlatformToken.Get)
 			users.POST("/token", handlers.PlatformToken.Create)
 			users.POST("/api-key", handlers.User.APIKey)
+			users.POST("/password", handlers.User.ChangePassword)
 		}
 
 		// Job routes

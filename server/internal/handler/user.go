@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+
 	appctx "github.com/daylamtayari/cierge/server/internal/context"
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/service"
@@ -12,12 +14,19 @@ import (
 type User struct {
 	userService  *service.User
 	tokenService *service.Token
+	authService  *service.Auth
 }
 
-func NewUser(userService *service.User, tokenService *service.Token) *User {
+type changePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+func NewUser(userService *service.User, tokenService *service.Token, authService *service.Auth) *User {
 	return &User{
 		userService:  userService,
 		tokenService: tokenService,
+		authService:  authService,
 	}
 }
 
@@ -57,4 +66,57 @@ func (h *User) APIKey(c *gin.Context) {
 		"api_key": apiKey,
 	})
 	c.Set("message", "generated new API key")
+}
+
+// POST /api/user/password - Changes a user's password
+func (h *User) ChangePassword(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	var changePasswordReq changePasswordRequest
+	if err := c.ShouldBindBodyWithJSON(&changePasswordReq); err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "change password request has invalid format")
+		util.RespondBadRequest(c, "Invalid change password request")
+		return
+	}
+
+	contextUser, ok := c.Get("user")
+	if !ok {
+		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
+		util.RespondInternalServerError(c)
+		return
+	}
+	user := contextUser.(*model.User)
+
+	if user.PasswordHash == nil {
+		util.RespondForbidden(c)
+		return
+	}
+
+	// Verify old password
+	match, err := util.SecureVerifyHash(*user.PasswordHash, changePasswordReq.OldPassword)
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to verify password hash")
+		util.RespondInternalServerError(c)
+		return
+	}
+	if !match {
+		errorCol.Add(nil, zerolog.InfoLevel, true, nil, "provided old password is incorrect")
+		util.RespondBadRequest(c, "Incorrect old password")
+		return
+	}
+
+	if err := h.authService.ChangePassword(c.Request.Context(), changePasswordReq.NewPassword, user.ID); err != nil {
+		var valErr service.PasswordValidationError
+		if errors.As(err, &valErr) {
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "new password failed validation")
+			util.RespondBadRequest(c, valErr.Error())
+			return
+		}
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to update password")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "password changed successfully"})
+	c.Set("message", "changed password")
 }

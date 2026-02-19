@@ -90,6 +90,11 @@ func (s *User) RecordFailedLogin(ctx context.Context, userID uuid.UUID, lockUnti
 	return s.userRepo.RecordFailedLogin(ctx, userID, lockUntil)
 }
 
+// Updates the password hash for a user
+func (s *User) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
+	return s.userRepo.UpdatePassword(ctx, userID, passwordHash)
+}
+
 // Creates or updates a user's API key
 func (s *User) UpdateAPIKey(ctx context.Context, id uuid.UUID, apiKey string) error {
 	return s.userRepo.UpdateAPIKey(ctx, id, apiKey)

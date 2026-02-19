@@ -16,16 +16,16 @@ type DropConfig struct {
 	dropConfigService *service.DropConfig
 }
 
-func NewDropConfig(dropConfigService *service.DropConfig) *DropConfig {
-	return &DropConfig{
-		dropConfigService: dropConfigService,
-	}
-}
-
 type dropConfigCreateRequest struct {
 	Restaurant    uuid.UUID
 	DaysInAdvance int16
 	DropTime      string
+}
+
+func NewDropConfig(dropConfigService *service.DropConfig) *DropConfig {
+	return &DropConfig{
+		dropConfigService: dropConfigService,
+	}
 }
 
 // GET /api/drop-config - Get drop configs

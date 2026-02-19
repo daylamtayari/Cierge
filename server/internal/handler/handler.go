@@ -20,7 +20,7 @@ func New(services *service.Services, cfg *config.Config) *Handlers {
 		Auth:          NewAuth(services.Auth, cfg.IsDevelopment()),
 		Job:           NewJob(services.Job, services.Restaurant, services.DropConfig),
 		JobCallback:   NewJobCallback(services.Job, services.Reservation),
-		User:          NewUser(services.User, services.Token),
+		User:          NewUser(services.User, services.Token, services.Auth),
 		Restaurant:    NewRestaurant(services.Restaurant),
 		PlatformToken: NewPlatformToken(services.PlatformToken),
 		DropConfig:    NewDropConfig(services.DropConfig),
