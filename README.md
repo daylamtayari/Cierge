@@ -18,6 +18,16 @@ The repository is a monorepo and contains multiple components that are each indi
 
 ### I am a user
 
+1. Download the binary for the latest release of the command line interface that corresponds to your platform (Mac users, select Darwin)
+    - Open a terminal and run the Cierge CLI by doing `./cierge`
+2. Run `cierge init` and specify the server host provided to you by the server administrator and your credentials
+3. Connect reservation platforms by running `cierge token add`
+4. Verify everything is good by running `cierge status`
+
+You are now ready to start creating reservation jobs!
+
+To create a new reservation job, run `cierge job create` and follow the prompts.
+
 ### I want to host my server
 
 ## Features
