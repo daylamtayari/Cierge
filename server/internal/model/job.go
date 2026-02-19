@@ -1,12 +1,40 @@
 package model
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
+
+// DateString is a YYYY-MM-DD string that implements the scan method
+// pgx returns date columns as time.Time, without this GORM would store it as RFC3339
+type DateString string
+
+func (d *DateString) Scan(value any) error {
+	if value == nil {
+		*d = ""
+		return nil
+	}
+	switch v := value.(type) {
+	case time.Time:
+		*d = DateString(v.Format("2006-01-02"))
+	case string:
+		*d = DateString(v)
+	case []byte:
+		*d = DateString(v)
+	default:
+		return fmt.Errorf("cannot scan type %T into DateString", value)
+	}
+	return nil
+}
+
+func (d DateString) Value() (driver.Value, error) {
+	return string(d), nil
+}
 
 type JobStatus string
 
@@ -24,7 +52,7 @@ type Job struct {
 	RestaurantID uuid.UUID `gorm:"type:uuid;not null;index:idx_jobs_restaurant"`
 	Platform     string    `gorm:"type:platform;not null;index:idx_jobs_platform"`
 
-	ReservationDate string         `gorm:"type:date;not null"` // YYYY-MM-DD
+	ReservationDate DateString     `gorm:"type:date;not null"` // YYYY-MM-DD
 	PartySize       int16          `gorm:"type:smallint;not null"`
 	PreferredTimes  pq.StringArray `gorm:"type:varchar(5)[];not null"` // HH:mm
 
@@ -57,7 +85,7 @@ func (m *Job) ToAPI() *api.Job {
 		RestaurantID: m.RestaurantID,
 		Platform:     m.Platform,
 
-		ReservationDate: m.ReservationDate,
+		ReservationDate: string(m.ReservationDate),
 		PartySize:       m.PartySize,
 		PreferredTimes:  m.PreferredTimes,
 

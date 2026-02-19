@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/daylamtayari/cierge/api"
 	"github.com/fatih/color"
@@ -25,7 +26,7 @@ var (
 
 			jt := table.NewWriter()
 			jt.SetStyle(table.StyleRounded)
-			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled Date", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time", "Confirmation"})
+			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled At", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time", "Confirmation"})
 
 			for _, job := range jobs {
 				var status string
@@ -54,11 +55,13 @@ var (
 					confirmation = *job.Confirmation
 				}
 
+				reservationDate, _ := time.Parse("2006-01-02", job.ReservationDate)
+
 				jt.AppendRow(table.Row{
 					job.ID,
 					job.Platform,
-					job.ScheduledAt.Local(),
-					job.ReservationDate,
+					job.ScheduledAt.Local().Format("02 Jan 2006 at 15:04 MST"),
+					reservationDate.Format("02 January 2006"),
 					job.PartySize,
 					job.PreferredTimes,
 					status,

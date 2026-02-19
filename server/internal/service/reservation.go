@@ -67,7 +67,7 @@ func (s *Reservation) CreateFromJob(ctx context.Context, job *model.Job) (*model
 		// TODO: Attempt to fetch the timezone of the restaurant, store it and use it here (sounds like a function for the restaurant service)
 	}
 
-	parsedDate, _ := time.Parse("2006-01-02", job.ReservationDate)
+	parsedDate, _ := time.Parse("2006-01-02", string(job.ReservationDate))
 
 	res := model.Reservation{
 		JobID:        &job.ID,
