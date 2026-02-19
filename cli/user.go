@@ -9,5 +9,6 @@ var userCmd = &cobra.Command{
 
 func initUserCmd() *cobra.Command {
 	userCmd.AddCommand(userMeCmd)
+	userCmd.AddCommand(userPasswordCmd)
 	return userCmd
 }

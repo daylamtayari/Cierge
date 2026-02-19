@@ -48,6 +48,7 @@ func (c *Client) GetMe() (*User, error) {
 }
 
 // Change a user's password
+// NOTE: Password requirements: upper case, number, special character, min 8, max 128
 func (c *Client) ChangePassword(oldPassword string, newPassword string) error {
 	reqUrl := c.host + "/api/user/password"
 	passwordChangeReq := passwordChangeRequest{
