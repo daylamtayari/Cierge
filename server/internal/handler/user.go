@@ -17,6 +17,10 @@ type User struct {
 	authService  *service.Auth
 }
 
+type createUserRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
 type changePasswordRequest struct {
 	OldPassword string `json:"old_password" binding:"required"`
 	NewPassword string `json:"new_password" binding:"required"`
@@ -119,4 +123,38 @@ func (h *User) ChangePassword(c *gin.Context) {
 
 	c.JSON(200, gin.H{"message": "password changed successfully"})
 	c.Set("message", "changed password")
+}
+
+// PUT /api/admin/user - Creates a new user with a randomly generated password
+func (h *User) Create(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	var req createUserRequest
+	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "create user request has invalid format")
+		util.RespondBadRequest(c, "Invalid create user request")
+		return
+	}
+
+	user, password, err := h.userService.CreateWithGeneratedPassword(c.Request.Context(), req.Email, false)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrInvalidEmail):
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "invalid email provided for user creation")
+			util.RespondBadRequest(c, "Invalid email address")
+		case errors.Is(err, service.ErrUserAlreadyExists):
+			errorCol.Add(err, zerolog.InfoLevel, true, nil, "user already exists with that email")
+			util.RespondConflict(c, "A user with that email already exists")
+		default:
+			errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to create user")
+			util.RespondInternalServerError(c)
+		}
+		return
+	}
+
+	c.JSON(201, gin.H{
+		"user":     user.ToAPI(),
+		"password": password,
+	})
+	c.Set("message", "created user")
 }

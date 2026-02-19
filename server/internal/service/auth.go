@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 	"unicode"
@@ -14,6 +16,14 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+var defaultArgonParams = &util.Argon2Params{
+	Memory:      64 * 1024,
+	Iterations:  3,
+	Parallelism: 4,
+	SaltLength:  16,
+	KeyLength:   32,
+}
 
 var (
 	AccessTokenCookieName  = "access_token"
@@ -55,14 +65,51 @@ func NewAuth(userService *User, tokenService *Token, authConfig *config.Auth) *A
 		userService:  userService,
 		tokenService: tokenService,
 		authConfig:   authConfig,
-		argonParams: &util.Argon2Params{
-			Memory:      64 * 1024,
-			Iterations:  3,
-			Parallelism: 4,
-			SaltLength:  16,
-			KeyLength:   32,
-		},
+		argonParams:  defaultArgonParams,
 	}
+}
+
+// Generates a cryptographically random password satisfying the complexity requirements:
+// 16 characters, with at least one letter, one digit, and one special character
+func generateRandomPassword() (string, error) {
+	const (
+		letters  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		digits   = "0123456789"
+		specials = "!@#$%^&*-_=+?"
+		allChars = letters + digits + specials
+		length   = 16
+	)
+
+	password := make([]byte, length)
+
+	// Guarantee one character from each required class
+	for i, charset := range []string{letters, digits, specials} {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		password[i] = charset[idx.Int64()]
+	}
+
+	// Fill remaining positions with random characters
+	for i := 3; i < length; i++ {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(allChars))))
+		if err != nil {
+			return "", err
+		}
+		password[i] = allChars[idx.Int64()]
+	}
+
+	// Shuffle to avoid predictable positions for required characters
+	for i := length - 1; i > 0; i-- {
+		j, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			return "", err
+		}
+		password[i], password[j.Int64()] = password[j.Int64()], password[i]
+	}
+
+	return string(password), nil
 }
 
 // Authenticates a user with email and password and returns a slice of AuthCookie

@@ -9,13 +9,15 @@ import (
 
 	"github.com/daylamtayari/cierge/server/internal/model"
 	"github.com/daylamtayari/cierge/server/internal/repository"
+	"github.com/daylamtayari/cierge/server/internal/util"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 var (
-	ErrUserDNE      = errors.New("user does not exist")
-	ErrInvalidEmail = errors.New("invalid email address")
+	ErrUserDNE           = errors.New("user does not exist")
+	ErrUserAlreadyExists = errors.New("user with that email already exists")
+	ErrInvalidEmail      = errors.New("invalid email address")
 )
 
 type User struct {
@@ -127,7 +129,28 @@ func (s *User) Create(ctx context.Context, email string, hashedPassword string, 
 
 	err = s.userRepo.Create(ctx, &user)
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return nil, ErrUserAlreadyExists
+		}
 		return nil, err
 	}
 	return &user, nil
+}
+
+// Creates a new user with a randomly generated password that satisfies complexity requirements
+// Returns the created user and the plaintext password
+func (s *User) CreateWithGeneratedPassword(ctx context.Context, email string, isAdmin bool) (*model.User, string, error) {
+	password, err := generateRandomPassword()
+	if err != nil {
+		return nil, "", err
+	}
+
+	hashedPassword := util.HashSaltString(password, defaultArgonParams)
+
+	user, err := s.Create(ctx, email, hashedPassword, isAdmin)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, password, nil
 }

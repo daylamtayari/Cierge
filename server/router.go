@@ -103,7 +103,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		admin := api.Group("/admin")
 		admin.Use(authMiddleware.RequireAdmin())
 		{
-			admin.PUT("/user")
+			admin.PUT("/user", handlers.User.Create)
 		}
 	}
 
