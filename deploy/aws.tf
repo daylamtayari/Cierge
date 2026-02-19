@@ -157,12 +157,15 @@ resource "aws_kms_key_policy" "cierge" {
         }
       },
       {
-        Sid    = "AllowServerEncrypt"
+        Sid    = "AllowServerEncryptDecrypt"
         Effect = "Allow"
         Principal = {
           AWS = aws_iam_user.cierge_server.arn
         }
-        Action   = "kms:Encrypt"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt"
+        ]
         Resource = "*"
       },
       {
@@ -220,9 +223,12 @@ resource "aws_iam_user_policy" "cierge_server" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "KMSEncrypt"
+        Sid    = "KMSEncryptDecrypt"
         Effect = "Allow"
-        Action = "kms:Encrypt"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt"
+        ]
         # Scoped to only the Cierge KMS key
         Resource = aws_kms_key.cierge.arn
       },

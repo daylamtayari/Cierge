@@ -205,6 +205,24 @@ func (p *Provider) EncryptData(ctx context.Context, plaintext string) (string, e
 	return base64.StdEncoding.EncodeToString(output.CiphertextBlob), nil
 }
 
+// Decrypts a base64-encoded ciphertext using KMS and returns the plaintext
+func (p *Provider) DecryptData(ctx context.Context, ciphertext string) (string, error) {
+	ciphertextBlob, err := base64.StdEncoding.DecodeString(ciphertext)
+	if err != nil {
+		return "", err
+	}
+
+	output, err := p.kms.Decrypt(ctx, &kms.DecryptInput{
+		KeyId:          &p.kmsKeyID,
+		CiphertextBlob: ciphertextBlob,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return string(output.Plaintext), nil
+}
+
 // Validates an AWS config
 func ValidateConfig(cfg map[string]any, isProduction bool) error {
 	pCfg, err := decodeConfig(cfg)

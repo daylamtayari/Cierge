@@ -33,6 +33,9 @@ type Provider interface {
 
 	// Encrypts plaintext and returns base64-encoded ciphertext
 	EncryptData(ctx context.Context, plaintext string) (string, error)
+
+	// Decrypts a base64-encoded ciphertext and returns plaintext
+	DecryptData(ctx context.Context, ciphertext string) (string, error)
 }
 
 // Represents a cloud provider's constructor

@@ -31,6 +31,10 @@ func (p *Provider) EncryptData(ctx context.Context, plaintext string) (string, e
 	return "", nil
 }
 
+func (p *Provider) DecryptData(ctx context.Context, ciphertext string) (string, error) {
+	return "", nil
+}
+
 func ValidateConfig(config map[string]any, isProduction bool) error {
 	return nil
 }
