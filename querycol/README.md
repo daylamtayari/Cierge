@@ -1,5 +1,7 @@
 # querycol - A wide-event inspired database query collector
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/querycol.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/querycol)
+
 Inspired by wide-event logging, I wanted to be able to collect all database queries that occurred in a request flow, and then output them at the conclusion of the event.
 
 ## Design

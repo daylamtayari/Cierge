@@ -1,5 +1,7 @@
 # errcol - A wide-event inspired error collector
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/errcol.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/errcol)
+
 Inspired by wide-event logging, I wanted to be able to collect all errors that occurred in a request flow to then output them at the conclusion of the event.
 
 A core goal of this package is having errors that tell me exactly what went wrong, where, was this expected (i.e. a malformed input), and the context around the error. Unexpected errors are items that should warrant attention.

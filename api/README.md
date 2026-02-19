@@ -1,5 +1,7 @@
 # Cierge API Library
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/api.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/api)
+
 Complete API library for the Cierge API.
 
 ## Usage
