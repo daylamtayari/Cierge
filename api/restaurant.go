@@ -21,6 +21,23 @@ type Restaurant struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
+// Retrieves a restaurant by its ID
+func (c *Client) GetRestaurant(id uuid.UUID) (Restaurant, error) {
+	reqUrl := c.host + "/api/restaurant/" + id.String()
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return Restaurant{}, err
+	}
+
+	var restaurant Restaurant
+	err = c.Do(req, &restaurant)
+	if err != nil {
+		return Restaurant{}, err
+	}
+
+	return restaurant, nil
+}
+
 // Retrieves a restaurant with a given platform ID for a specified platform
 func (c *Client) GetRestaurantByPlatform(platform string, platformId string) (Restaurant, error) {
 	reqUrl := c.host + "/api/restaurant?platform=" + platform + "&platform-id=" + platformId

@@ -80,13 +80,14 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		{
 			jobs.POST("", handlers.Job.Create)
 			jobs.GET("/list", handlers.Job.List)
-			jobs.POST("/:job/cancel")
+			jobs.POST("/:job/cancel", handlers.Job.Cancel)
 		}
 
 		// Restaurant route
 		restaurants := api.Group("/restaurant")
 		{
 			restaurants.GET("", handlers.Restaurant.Get)
+			restaurants.GET("/:id", handlers.Restaurant.GetByID)
 		}
 
 		// Drop config routes
@@ -94,6 +95,13 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		{
 			dropConfig.GET("", handlers.DropConfig.Get)
 			dropConfig.POST("", handlers.DropConfig.Create)
+		}
+
+		// Admin routes
+		admin := api.Group("/admin")
+		admin.Use(authMiddleware.RequireAdmin())
+		{
+			admin.PUT("/user")
 		}
 	}
 

@@ -167,6 +167,8 @@ func (c *Client) Do(req *http.Request, v any) error {
 
 	// Any remaining statuses to handle
 	switch res.StatusCode {
+	case 200:
+		return nil
 	case 401:
 		return ErrUnauthenticated
 	case 403:

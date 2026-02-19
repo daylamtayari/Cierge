@@ -10,6 +10,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/service"
 	"github.com/daylamtayari/cierge/server/internal/util"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -73,4 +74,34 @@ func (h *Restaurant) Get(c *gin.Context) {
 	}
 
 	c.JSON(200, restaurant.ToAPI())
+}
+
+// GET /api/restaurant/:id - Return a restaurant by its ID
+func (h *Restaurant) GetByID(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+	logger := appctx.Logger(c.Request.Context())
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "invalid restaurant ID")
+		util.RespondBadRequest(c, "Invalid restaurant ID")
+		return
+	}
+
+	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Str("restaurant_id", id.String())
+	})
+
+	restaurant, err := h.restaurantService.GetByID(c.Request.Context(), id)
+	if err != nil && errors.Is(err, service.ErrRestaurantDNE) {
+		util.RespondNotFound(c, "Restaurant not found")
+		return
+	} else if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to retrieve restaurant")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	c.JSON(200, restaurant.ToAPI())
+	c.Set("message", "retrieved restaurant")
 }

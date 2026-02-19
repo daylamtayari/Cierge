@@ -90,7 +90,7 @@ func (c *Client) CreateJob(jobCreationReq JobCreationRequest) (Job, error) {
 	return job, nil
 }
 
-// Cancels an existing job
+// Cancel an existing job
 func (c *Client) CancelJob(jobId uuid.UUID) error {
 	reqUrl := c.host + "/api/job/" + jobId.String() + "/cancel"
 	req, err := http.NewRequest(http.MethodPost, reqUrl, nil)
