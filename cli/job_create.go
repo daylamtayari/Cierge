@@ -14,13 +14,14 @@ import (
 	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/google/uuid"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )
 
 var (
 	restaurantPlatformId    string
 	jobReservationDateInput string
-	jobReservationDate      *time.Time
+	jobReservationDate      *string
 	jobPartySize            int16
 	jobPlatform             string
 	jobTimeSlotsInput       []string
@@ -34,6 +35,7 @@ var (
 			client := newClient()
 			resyClient := resy.NewClient(nil, resy.Tokens{ApiKey: resy.DefaultApiKey}, "")
 
+			// Platform selection
 			if cmd.Flags().Changed("platform") {
 				jobPlatform = strings.ToLower(jobPlatform)
 				if jobPlatform != "resy" && jobPlatform != "opentable" {
@@ -53,6 +55,7 @@ var (
 				}
 			}
 
+			// Restaurant selection
 			var restaurant *api.Restaurant
 			if cmd.Flags().Changed("restaurant") {
 				switch jobPlatform {
@@ -100,6 +103,7 @@ var (
 				restaurant = &res
 			}
 
+			// Party size selection
 			if cmd.Flags().Changed("size") && jobPartySize <= 0 {
 				logger.Error().Msg("Party size must be greater than 0")
 				jobPartySize = 0
@@ -133,7 +137,8 @@ var (
 				if err != nil {
 					logger.Error().Err(err).Msg("Failed to parse specified reservation date")
 				} else {
-					jobReservationDate = &reservationDate
+					reservationDateFormatted := reservationDate.Format("2006-01-02")
+					jobReservationDate = &reservationDateFormatted
 				}
 			}
 			if jobReservationDate == nil {
@@ -162,9 +167,11 @@ var (
 				}
 
 				parsedDate, _ := time.Parse("02-01-2006", dateInput)
-				jobReservationDate = &parsedDate
+				parsedDateFormatted := parsedDate.Format("2006-01-02")
+				jobReservationDate = &parsedDateFormatted
 			}
 
+			// Timeslot selection
 			if len(jobTimeSlotsInput) > 0 {
 				for _, tsInput := range jobTimeSlotsInput {
 					if _, err := time.Parse("15:04", tsInput); err == nil {
@@ -182,6 +189,7 @@ var (
 				}
 			}
 
+			// Drop config selection
 			var dropConfig *uuid.UUID
 			dropConfigs, err := client.GetDropConfigs(restaurant.ID)
 			if err != nil {
@@ -220,8 +228,9 @@ var (
 				}
 				confWidth := len(fmt.Sprintf("%d", maxConf))
 				daysWidth := len(fmt.Sprintf("%d", maxDays))
+				reservationDate, _ := time.Parse("2006-01-02", *jobReservationDate)
 				for _, dc := range dropConfigs {
-					dropDate := jobReservationDate.Add(-time.Duration(dc.DaysInAdvance) * 24 * time.Hour)
+					dropDate := reservationDate.Add(-time.Duration(dc.DaysInAdvance) * 24 * time.Hour)
 					label := fmt.Sprintf("%*d %s  %*d days in advance (%s) at %s %s", confWidth, dc.Confidence, upArrow, daysWidth, dc.DaysInAdvance, dropDate.Format("02 Jan"), dc.DropTime, tzAbbr)
 					options = append(options, huh.NewOption(label, dc.ID.String()))
 				}
@@ -278,9 +287,10 @@ var (
 					logger.Fatal().Err(err).Msg("Failed to prompt user for drop time")
 				}
 
+				reservationDate, _ := time.Parse("2006-01-02", *jobReservationDate)
 				daysInAdvance, _ := strconv.ParseInt(daysInAdvanceInput, 10, 16)
 				dropTimeParsed, _ := time.Parse("15:04", dropTimeInput)
-				dropDate := jobReservationDate.Add(-time.Duration(daysInAdvance) * 24 * time.Hour)
+				dropDate := reservationDate.Add(-time.Duration(daysInAdvance) * 24 * time.Hour)
 				loc, err := time.LoadLocation(restaurant.Timezone)
 				if err != nil {
 					loc = time.UTC
@@ -306,6 +316,33 @@ var (
 				}
 				dropConfig = &newDropConfig.ID
 			}
+
+			// Job creation
+			job, err := client.CreateJob(api.JobCreationRequest{
+				RestaurantID:    restaurant.ID,
+				ReservationDate: *jobReservationDate,
+				PartySize:       jobPartySize,
+				PreferredTimes:  jobTimeSlots,
+				DropConfigID:    *dropConfig,
+			})
+			if err != nil {
+				logger.Fatal().Err(err).Msg("Failed to create job")
+			}
+
+			jt := table.NewWriter()
+			jt.SetStyle(table.StyleLight)
+			jt.Style().Options.DrawBorder = false
+			jt.Style().Options.SeparateColumns = false
+			jt.AppendRows([]table.Row{
+				{"ID", job.ID},
+				{"Restaurant", restaurant.Name},
+				{"Platform", job.Platform},
+				{"Scheduled At", job.ScheduledAt.Local().Format("02 Jan 15:04")},
+				{"Reservation Date", job.ReservationDate},
+				{"Party Size", job.PartySize},
+				{"Preferred Times", job.PreferredTimes},
+			})
+			fmt.Print(jt.Render() + "\n")
 		},
 	}
 )
