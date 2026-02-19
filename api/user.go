@@ -24,6 +24,11 @@ type User struct {
 	CreatedAt   time.Time  `json:"created_at"`
 }
 
+type passwordChangeRequest struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
 // Returns a User pointer representing the authenticated
 // user making the request
 func (c *Client) GetMe() (*User, error) {
@@ -40,4 +45,24 @@ func (c *Client) GetMe() (*User, error) {
 	}
 
 	return &user, nil
+}
+
+// Change a user's password
+func (c *Client) ChangePassword(oldPassword string, newPassword string) error {
+	reqUrl := c.host + "/api/user/password"
+	passwordChangeReq := passwordChangeRequest{
+		OldPassword: oldPassword,
+		NewPassword: newPassword,
+	}
+	req, err := c.NewJsonRequest(http.MethodPost, reqUrl, passwordChangeReq)
+	if err != nil {
+		return err
+	}
+
+	err = c.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
