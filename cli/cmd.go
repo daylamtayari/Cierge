@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
@@ -43,6 +45,14 @@ var (
 			}
 			if cfg.HostURL == "" {
 				return fmt.Errorf("no server host specified")
+			}
+
+			if cmd.Name() != "status" && cmd.Name() != "login" && cmd.Name() != "init" {
+				client := newClient()
+				_, err := client.GetMe()
+				if errors.Is(err, api.ErrUnauthenticated) {
+					logger.Fatal().Err(err).Msg("User is not authenticated")
+				}
 			}
 
 			return nil
