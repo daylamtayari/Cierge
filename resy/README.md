@@ -6,7 +6,7 @@ If there are any fields or methods you want to see implemented, reach out and I 
 
 ## Usage
 
-Create a new client by calling the `NewClient` function. This accepts the following paramenters:
+Create a new client by calling the `NewClient` function. This accepts the following parameters:
 - An `http.Client` that will be used as the underlying HTTP client that is used to make requests, otherwise a new `http.Client` is used.
 - `Tokens` containing the API key and optionally the authenticated user tokens. If no API key is specified, the default will be used.
 - A string for the user agent to be used. If an empty string is specified, a default value representing a generic popular user agent will be used. Resy's API requires a user agent to be present.
