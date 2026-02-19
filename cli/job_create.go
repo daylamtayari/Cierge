@@ -329,6 +329,7 @@ var (
 				logger.Fatal().Err(err).Msg("Failed to create job")
 			}
 
+			reservationDate, _ := time.Parse("2006-01-02", job.ReservationDate)
 			jt := table.NewWriter()
 			jt.SetStyle(table.StyleLight)
 			jt.Style().Options.DrawBorder = false
@@ -337,8 +338,8 @@ var (
 				{"ID", job.ID},
 				{"Restaurant", restaurant.Name},
 				{"Platform", job.Platform},
-				{"Scheduled At", job.ScheduledAt.Local().Format("02 Jan 15:04")},
-				{"Reservation Date", job.ReservationDate},
+				{"Scheduled At", job.ScheduledAt.Local().Format("02 January at 15:04 MST")},
+				{"Reservation Date", reservationDate.Format("02 January 2006")},
 				{"Party Size", job.PartySize},
 				{"Preferred Times", job.PreferredTimes},
 			})
@@ -765,7 +766,7 @@ func (m timeSlotModel) View() string {
 		b.WriteString("\n")
 	}
 	b.WriteString(helpStyle.Render(fmt.Sprintf(
-		"%d selected • ↑/j / ↓/k: navigate • space/x: toggle • 1-9: set priority • +/-: adjust priority • f//: search • enter: confirm • esc: cancel",
+		"%d selected • ↑/k / ↓/j: navigate • space/x: toggle • 1-9: set priority • +/-: adjust priority • f / /: search • enter: confirm • esc: cancel",
 		len(m.prioritySlots),
 	)))
 
