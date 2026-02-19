@@ -1,24 +1,33 @@
 # Cierge - Your restaurant reservation concierge
 
-After too many times spent getting ready on my laptop at a set time to then see all reservations get sniped by bots and disappear before I can click any, I decided to build something that would allow my friends and I to actually be able to get reservations and not have to organise a morning around getting online at a set time.  
+After too many times spent getting ready at a set time to then see all reservations get sniped by bots and disappear before I can click any, I decided to build something that would allow my friends and I to actually be able to get reservations and not have to organise a morning around getting online at a set time.  
 **This is solely intended for personal use.** To all those who scalp and resell, you truly ruin it for everyone else.
 
 ## Introduction
 
 Cierge is a platform built to support multiple users and handle scheduling reservation jobs. The goal is for a user to select the restaurant, the date, and time slots and Cierge will handle scheduling the execution of the reservation job right when reservations open up for the given date, executing it, and notifying the user of the result.  
 
-Cierge is designed to be cloud agnostic but has native support for AWS to allow for using Lambdas to perform the execution and EventBridge to handle scheduling.
+Cierge is designed to be cloud agnostic but has native support for AWS to allow for the use of Lambdas to perform the job execution and EventBridge to handle scheduling.
 
 The repository is a monorepo and contains multiple components that are each individually versioned. See [Components](#components)
 
 > [!WARNING]
-> Cierge remains in active development. Please make sure to use a tagged version of the repo for actual usage.
+> Cierge is in active development. Please make sure to use a tagged version of the repo for actual usage.
 
 ## Getting Started
 
 ### I am a user
 
 ### I want to host my server
+
+## Features
+- Automated reservation booking at the exact time reservations become available
+- Drop configurations so you don't have to manually set when the reservation needs to be executed
+- Handles multiple acceptable slot times with respective priority to try and ensure that preferred times are booked
+- Management of token platforms and maintaining of token lifecycle to allow for seamless experience for users
+- Cloud agnostic job execution
+- Command line interface for interacting with Cierge
+- API library to allow for easy integrations
 
 ## Components
 
@@ -35,11 +44,11 @@ The repository is a monorepo and contains multiple components that are each indi
 
 ## Roadmap
 
-### Alpha
+### Alpha (we are here)
 
 Core functionality and good enough to start sharing.
 
-### Beta
+### Beta (in progress)
 
 - [ ] Notifications
 - [ ] OpenTable support
@@ -51,7 +60,7 @@ Core functionality and good enough to start sharing.
 
 ### Release
 
-- [ ] Website (ugh, 'web design is my passion')
+- [ ] Website (ugh)
 - [ ] Complete documentation
 - [ ] OIDC authentication
 - [ ] Social authentication
