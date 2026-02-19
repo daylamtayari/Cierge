@@ -81,7 +81,7 @@ func (c *ResyClient) Book(ctx context.Context, event Event, slot any) (Attempt, 
 	startTime := time.Now().UTC()
 	resySlot := slot.(resy.Slot)
 
-	bookingResult, err := c.bookSlot(ctx, resySlot, event.PartySize)
+	bookingResult, err := c.bookSlot(ctx, resySlot, int(event.PartySize))
 
 	attempt := Attempt{
 		Result:    bookingResult,
@@ -165,7 +165,7 @@ func (c *ResyClient) getSlotsUntilDeadline(ctx context.Context, event Event, ven
 			return nil, ctx.Err()
 		}
 
-		slots, _, err := c.client.GetSlots(venueId, event.ReservationDate, event.PartySize)
+		slots, _, err := c.client.GetSlots(venueId, event.ReservationDate, int(event.PartySize))
 		if err != nil {
 			// Exit if an error is returned in the request
 			return nil, err

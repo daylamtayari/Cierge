@@ -18,7 +18,7 @@ type Event struct {
 	EncryptedToken          string    `json:"encrypted_token"`
 	EncryptedCallbackSecret string    `json:"encrypted_callback_secret"`
 	ReservationDate         string    `json:"reservation_date"` // YYYY-MM-DD
-	PartySize               int       `json:"party_size"`
+	PartySize               int16     `json:"party_size"`
 	PreferredTimes          []string  `json:"preferred_times"` // HH:mm
 	DropTime                time.Time `json:"drop_time"`
 	ServerEndpoint          string    `json:"server_endpoint"`
