@@ -17,8 +17,9 @@ The repository is a monorepo and contains multiple components that are each indi
 ## Getting Started
 
 ### I am a user
+[![Latest CLI Release](https://img.shields.io/github/v/tag/daylamtayari/Cierge?filter=cli%2F*&label=CLI%20Release)](https://github.com/daylamtayari/Cierge/releases?q=cli)
 
-1. Download the binary for the latest release of the command line interface that corresponds to your platform (Mac users, select Darwin) - [![Latest CLI Release](https://img.shields.io/github/v/tag/daylamtayari/Cierge?filter=cli%2F*&label=CLI%20Release)](https://github.com/daylamtayari/Cierge/releases?q=cli)
+1. Download the binary for the latest release of the command line interface that corresponds to your platform (Mac users, select Darwin)
     - Open a terminal and run the Cierge CLI by doing `./cierge`
 2. Run `cierge init` and specify the server host provided to you by the server administrator and your credentials
 3. Connect reservation platforms by running `cierge token add`
