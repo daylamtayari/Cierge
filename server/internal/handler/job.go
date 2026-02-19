@@ -114,11 +114,16 @@ func (h *Job) Create(c *gin.Context) {
 		return
 	}
 
+	// Creation of job
 	job, err := h.jobService.Create(c.Request.Context(), &jobCreationReq, restaurant, dropConfig)
 	if err != nil {
 		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to create job")
 		util.RespondInternalServerError(c)
 		return
+	}
+	err = h.dropConfigService.IncrementConfidence(c.Request.Context(), dropConfig.ID, restaurant.ID)
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to increment drop config confidence")
 	}
 	err = h.jobService.Schedule(c.Request.Context(), job)
 	if err != nil {
