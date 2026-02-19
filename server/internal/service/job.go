@@ -50,6 +50,17 @@ func (s *Job) GetByID(ctx context.Context, jobID uuid.UUID) (*model.Job, error) 
 	return job, nil
 }
 
+// Retrieves all jobs for a given user
+func (s *Job) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Job, error) {
+	jobs, err := s.jobRepo.GetByUser(ctx, userID)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return jobs, ErrJobDNE
+	} else if err != nil {
+		return jobs, err
+	}
+	return jobs, nil
+}
+
 // Updates a job record from a callback request. Updates the various fields of the Job object
 // and if successful, stores the success output and creates a reservation.
 func (s *Job) UpdateFromCallback(ctx context.Context, job *model.Job, callback reservation.Output) (*model.Job, error) {
@@ -125,7 +136,7 @@ func (s *Job) Create(ctx context.Context, jobCreationRequest *api.JobCreationReq
 // Schedule a job and return an error if unsuccessful
 // Includes getting the platform token and generating and
 // encrypting the callback secret and scheduling the job
-func (s *Job) Schedule(ctx context.Context, job *model.Job) error {
+func (s *Job) Schedule(ctx context.Context, job *model.Job, restaurant *model.Restaurant) error {
 	platformToken, err := s.ptService.GetByUserAndPlatform(ctx, job.UserID, job.Platform)
 	if err != nil {
 		return err
@@ -141,7 +152,7 @@ func (s *Job) Schedule(ctx context.Context, job *model.Job) error {
 	event := reservation.Event{
 		JobID:                   job.ID,
 		Platform:                job.Platform,
-		PlatformVenueId:         job.Restaurant.PlatformID,
+		PlatformVenueId:         restaurant.PlatformID,
 		EncryptedToken:          platformToken.EncryptedToken,
 		EncryptedCallbackSecret: encryptedCallbackSecret,
 		ReservationDate:         job.ReservationDate,

@@ -27,10 +27,19 @@ func (r *Job) GetByID(ctx context.Context, id uuid.UUID) (*model.Job, error) {
 	defer cancel()
 
 	var job model.Job
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&job).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Restaurant").Where("id = ?", id).First(&job).Error; err != nil {
 		return nil, err
 	}
 	return &job, nil
+}
+
+// Get all jobs for a given user
+func (r *Job) GetByUser(ctx context.Context, userId uuid.UUID) ([]*model.Job, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	var jobs []*model.Job
+	return jobs, r.db.WithContext(ctx).Where("user_id = ?", userId).Find(&jobs).Error
 }
 
 // Updates a job

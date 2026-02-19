@@ -37,16 +37,15 @@ func (h *Job) List(c *gin.Context) {
 	upcomingQuery := strings.ToLower(c.DefaultQuery("upcoming", "false"))
 	upcomingOnly, _ := strconv.ParseBool(upcomingQuery) // Ignore error as false is default behaviour and is what is returned if it also returns an error
 
-	contextUser, ok := c.Get("user")
-	if !ok {
-		errorCol.Add(nil, zerolog.ErrorLevel, false, nil, "user object not found in gin context when expected")
+	jobs, err := h.jobService.GetByUser(c.Request.Context(), appctx.UserID(c.Request.Context()))
+	if err != nil && !errors.Is(err, service.ErrJobDNE) {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to fetch jobs for user")
 		util.RespondInternalServerError(c)
 		return
 	}
-	user := contextUser.(*model.User)
 
 	apiJobs := make([]*api.Job, 0)
-	for _, job := range user.Jobs {
+	for _, job := range jobs {
 		if !upcomingOnly {
 			apiJobs = append(apiJobs, job.ToAPI())
 		} else if job.Status == model.JobStatusCreated || job.Status == model.JobStatusScheduled {
