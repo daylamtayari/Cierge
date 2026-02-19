@@ -9,5 +9,6 @@ use (
 	./querycol
 	./reservation
 	./resy
+	./script
 	./server
 )
