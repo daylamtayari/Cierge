@@ -43,7 +43,9 @@ func (h *PlatformToken) Get(c *gin.Context) {
 	case "resy", "opentable":
 		var token *model.PlatformToken
 		token, err = h.ptService.GetByUserAndPlatform(c.Request.Context(), userID, platform)
-		tokens = append(tokens, token)
+		if token != nil {
+			tokens = append(tokens, token)
+		}
 
 	default:
 		errorCol.Add(nil, zerolog.InfoLevel, true, map[string]any{"platform": platform}, "unsupported platform specified")
