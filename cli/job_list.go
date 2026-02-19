@@ -7,6 +7,7 @@ import (
 	"github.com/daylamtayari/cierge/api"
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,9 @@ var (
 
 			jt := table.NewWriter()
 			jt.SetStyle(table.StyleRounded)
+			jt.SetColumnConfigs([]table.ColumnConfig{
+				{Number: 5, Align: text.AlignLeft},
+			})
 			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled At", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time", "Confirmation"})
 
 			for _, job := range jobs {
