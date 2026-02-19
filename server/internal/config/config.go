@@ -100,7 +100,7 @@ type Auth struct {
 	JWTSecret          string   `json:"jwt_secret"`
 	JWTIssuer          string   `json:"jwt_issuer" default:"cierge"`
 	AccessTokenExpiry  Duration `json:"access_token_expiry" default:"15m"`
-	RefreshTokenExpiry Duration `json:"refresh_token_expiry" default:"7d"`
+	RefreshTokenExpiry Duration `json:"refresh_token_expiry" default:"168h"`
 
 	// Rate limiting for local authentication - not used for OIDC
 	RateLimitRequests int      `json:"rate_limit_requests" default:"3"`
