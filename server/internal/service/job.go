@@ -168,3 +168,12 @@ func (s *Job) Schedule(ctx context.Context, job *model.Job, restaurant *model.Re
 	}
 	return nil
 }
+
+// Cancels a job
+func (s *Job) Cancel(ctx context.Context, jobId uuid.UUID) error {
+	err := s.cloudProvider.CancelJob(ctx, jobId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

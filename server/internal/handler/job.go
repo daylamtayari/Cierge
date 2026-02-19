@@ -12,6 +12,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/service"
 	"github.com/daylamtayari/cierge/server/internal/util"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -142,4 +143,69 @@ func (h *Job) Create(c *gin.Context) {
 
 	c.JSON(200, job.ToAPI())
 	c.Set("message", "created and scheduled job")
+}
+
+// POST /api/job/:job/cancel
+func (h *Job) Cancel(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+	logger := appctx.Logger(c.Request.Context())
+
+	jobId := c.Param("job")
+	if jobId == "" {
+		errorCol.Add(nil, zerolog.InfoLevel, true, nil, "no job ID specified")
+		util.RespondBadRequest(c, "Job ID must be specified")
+		return
+	}
+	jobUid, err := uuid.Parse(jobId)
+	if err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "job ID specified is not a UUID")
+		util.RespondBadRequest(c, "Job ID must be a valid UUID")
+		return
+	}
+
+	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Str("job_id", jobUid.String())
+	})
+
+	job, err := h.jobService.GetByID(c.Request.Context(), jobUid)
+	if err != nil && errors.Is(err, service.ErrJobDNE) {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "no job exists with specified ID")
+		util.RespondNotFound(c, "Job with specified ID not found")
+		return
+	} else if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to retrieve job from ID")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	switch job.Status {
+	case model.JobStatusCancelled:
+		c.Status(200)
+		c.Set("message", "job already cancelled")
+		return
+	case model.JobStatusSuccess, model.JobStatusFailed:
+		errorCol.Add(nil, zerolog.InfoLevel, true, nil, "job cannot be cancelled as it has been executed")
+		util.RespondConflict(c, "Job has already been executed")
+		return
+	}
+
+	if time.Now().After(job.ScheduledAt) {
+		errorCol.Add(nil, zerolog.InfoLevel, true, nil, "job cannot be cancelled as it's past its start time")
+		util.RespondConflict(c, "Job execution has already started")
+		return
+	}
+
+	err = h.jobService.Cancel(c.Request.Context(), job.ID)
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to cancel job")
+		util.RespondInternalServerError(c)
+		return
+	}
+	err = h.jobService.UpdateStatus(c.Request.Context(), model.JobStatusCancelled, job.ID)
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to mark job as cancelled")
+	}
+
+	c.Status(200)
+	c.Set("message", "cancelled job")
 }
