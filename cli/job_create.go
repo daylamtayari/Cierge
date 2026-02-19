@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/google/uuid"
@@ -42,14 +41,13 @@ var (
 					logger.Fatal().Msgf("Invalid platform %q specified - only 'resy' and 'opentable' are supported platforms", jobPlatform)
 				}
 			} else {
-				err := huh.NewSelect[string]().
+				err := runHuh(huh.NewSelect[string]().
 					Title("Select reservation platform:").
 					Options(
 						huh.NewOption("Resy", "resy"),
 						huh.NewOption("OpenTable", "opentable"),
 					).
-					Value(&jobPlatform).
-					Run()
+					Value(&jobPlatform))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for reservation platform")
 				}
@@ -110,7 +108,7 @@ var (
 			}
 			if jobPartySize == 0 {
 				var partySize string
-				err := huh.NewInput().
+				err := runHuh(huh.NewInput().
 					Title("Enter party size:").
 					Value(&partySize).
 					Validate(func(s string) error {
@@ -122,8 +120,7 @@ var (
 							return errors.New("party size must be greater than 0")
 						}
 						return nil
-					}).
-					Run()
+					}))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for party size")
 				}
@@ -143,7 +140,7 @@ var (
 			}
 			if jobReservationDate == nil {
 				var dateInput string
-				err := huh.NewInput().
+				err := runHuh(huh.NewInput().
 					Title("Enter reservation date (DD-MM-YYYY):").
 					Placeholder("01-12-2026").
 					Value(&dateInput).
@@ -160,8 +157,7 @@ var (
 							return errors.New("reservation date cannot be in the past")
 						}
 						return nil
-					}).
-					Run()
+					}))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for reservation date")
 				}
@@ -237,11 +233,10 @@ var (
 				options = append(options, huh.NewOption("Create new drop configuration", "new"))
 
 				var selectedDropConfig string
-				err := huh.NewSelect[string]().
+				err := runHuh(huh.NewSelect[string]().
 					Title("Select drop configuration:").
 					Options(options...).
-					Value(&selectedDropConfig).
-					Run()
+					Value(&selectedDropConfig))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for drop configuration")
 				}
@@ -252,7 +247,7 @@ var (
 			}
 			if dropConfig == nil {
 				var daysInAdvanceInput string
-				err := huh.NewInput().
+				err := runHuh(huh.NewInput().
 					Title("Days in advance:").
 					Description("How many days before the reservation date should the drop be attempted?").
 					Value(&daysInAdvanceInput).
@@ -265,14 +260,13 @@ var (
 							return errors.New("days in advance must be greater than 0")
 						}
 						return nil
-					}).
-					Run()
+					}))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for days in advance")
 				}
 
 				var dropTimeInput string
-				err = huh.NewInput().
+				err = runHuh(huh.NewInput().
 					Title("Drop time (HH:mm):").
 					Placeholder("09:00").
 					Value(&dropTimeInput).
@@ -281,8 +275,7 @@ var (
 							return errors.New("invalid time format - use HH:mm")
 						}
 						return nil
-					}).
-					Run()
+					}))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for drop time")
 				}
@@ -298,11 +291,10 @@ var (
 				expectedDrop := time.Date(dropDate.Year(), dropDate.Month(), dropDate.Day(), dropTimeParsed.Hour(), dropTimeParsed.Minute(), 0, 0, loc)
 
 				var confirmed bool
-				err = huh.NewConfirm().
+				err = runHuh(huh.NewConfirm().
 					Title("Confirm drop configuration").
 					Description(fmt.Sprintf("%d days in advance at %s — expected drop: %s", daysInAdvance, dropTimeInput, expectedDrop.Format("02 Jan at 15:04 MST"))).
-					Value(&confirmed).
-					Run()
+					Value(&confirmed))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to confirm drop configuration")
 				}
@@ -380,19 +372,6 @@ type searchResultMsg struct {
 type triggerSearchMsg struct{}
 
 const searchDebounceMs = 300
-
-var (
-	titleStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("205"))
-
-	selectedStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("170")).
-			Bold(true)
-
-	helpStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("241"))
-)
 
 func (m resySearchModel) Init() tea.Cmd {
 	return textinput.Blink
@@ -526,7 +505,7 @@ func (m resySearchModel) performSearch(query string) tea.Cmd {
 // runResyVenueSearch provides an interactive real-time search interface for Resy venues.
 // It returns the venue ID of the selected restaurant or an error if cancelled or failed.
 func runResyVenueSearch(client *resy.Client) (int, error) {
-	ti := textinput.New()
+	ti := styledTextInput()
 	ti.Placeholder = "Type to search..."
 	ti.Focus()
 	ti.CharLimit = 100
@@ -762,7 +741,7 @@ func (m timeSlotModel) View() string {
 
 	b.WriteString("\n")
 	if m.err != nil {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Render(m.err.Error()))
+		b.WriteString(errorStyle.Render(m.err.Error()))
 		b.WriteString("\n")
 	}
 	b.WriteString(helpStyle.Render(fmt.Sprintf(
@@ -805,7 +784,7 @@ func runTimeSlotPicker() ([]string, error) {
 		allSlots[i] = fmt.Sprintf("%02d:%02d", hour, minute)
 	}
 
-	fi := textinput.New()
+	fi := styledTextInput()
 	fi.Placeholder = "type to filter..."
 	fi.CharLimit = 5
 

@@ -23,14 +23,13 @@ var (
 					logger.Fatal().Msgf("Invalid platform %q specified - only 'resy' and 'opentable' are supported platforms", platform)
 				}
 			} else {
-				err := huh.NewSelect[string]().
+				err := runHuh(huh.NewSelect[string]().
 					Title("Select reservation platform:").
 					Options(
 						huh.NewOption("Resy", "resy"),
 						huh.NewOption("OpenTable", "opentable"),
 					).
-					Value(&platform).
-					Run()
+					Value(&platform))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for reservation platform")
 				}
@@ -42,16 +41,16 @@ var (
 				var username string
 				var password string
 
-				err := huh.NewInput().Title("Enter your email:").
+				err := runHuh(huh.NewInput().Title("Enter your email:").
 					Description(color.YellowString(warnsign + " By connecting your credentials, you assume trust in the server owner")).
-					Value(&username).Run()
+					Value(&username))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for username")
 				}
 
-				err = huh.NewInput().Title("Enter your password:").
+				err = runHuh(huh.NewInput().Title("Enter your password:").
 					Description(color.YellowString(warnsign + " By connecting your credentials, you assume trust in the server owner")).
-					EchoMode(huh.EchoModePassword).Value(&password).Run()
+					EchoMode(huh.EchoModePassword).Value(&password))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for password")
 				}

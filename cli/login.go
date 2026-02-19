@@ -26,14 +26,13 @@ var (
 			} else if cmd.Flags().Changed("username") || cmd.Flags().Changed("password") {
 				loginMethod = "userpass"
 			} else {
-				err := huh.NewSelect[string]().
+				err := runHuh(huh.NewSelect[string]().
 					Title("Select login method").
 					Options(
 						huh.NewOption("API Key", "api"),
 						huh.NewOption("Username/Password", "userpass"),
 					).
-					Value(&loginMethod).
-					Run()
+					Value(&loginMethod))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for login method")
 				}
@@ -44,7 +43,7 @@ var (
 			switch loginMethod {
 			case "api":
 				if apiKey == "" {
-					err := huh.NewInput().Title("Enter API key:").EchoMode(huh.EchoModePassword).Value(&apiKey).Run()
+					err := runHuh(huh.NewInput().Title("Enter API key:").EchoMode(huh.EchoModePassword).Value(&apiKey))
 					if err != nil {
 						logger.Fatal().Err(err).Msg("Failed to prompt user for API key")
 					}
@@ -66,13 +65,13 @@ var (
 
 			case "userpass":
 				if username == "" {
-					err := huh.NewInput().Title("Enter username:").Value(&username).Run()
+					err := runHuh(huh.NewInput().Title("Enter username:").Value(&username))
 					if err != nil {
 						logger.Fatal().Err(err).Msg("Failed to prompt user for username")
 					}
 				}
 				if password == "" {
-					err := huh.NewInput().Title("Enter password:").EchoMode(huh.EchoModePassword).Value(&password).Run()
+					err := runHuh(huh.NewInput().Title("Enter password:").EchoMode(huh.EchoModePassword).Value(&password))
 					if err != nil {
 						logger.Fatal().Err(err).Msg("Failed to prompt user for password")
 					}
@@ -101,7 +100,7 @@ var (
 				}
 				if user.HasApiKey {
 					var confirm bool
-					err = huh.NewConfirm().Title("You already have an API key, are you sure you want to generate a new one?\nThis will revoke your existing API key.").Value(&confirm).Run()
+					err = runHuh(huh.NewConfirm().Title("You already have an API key, are you sure you want to generate a new one?\nThis will revoke your existing API key.").Value(&confirm))
 					if err != nil {
 						logger.Fatal().Err(err).Msg("Failed to prompt user for confirmation")
 					}

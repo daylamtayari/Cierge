@@ -15,7 +15,7 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if !cmd.Flags().Changed("host") {
 			var userHost string
-			err := huh.NewInput().Title("Enter server URL:").Validate(validateHost).Value(&userHost).Run()
+			err := runHuh(huh.NewInput().Title("Enter server URL:").Validate(validateHost).Value(&userHost))
 			if err != nil {
 				logger.Fatal().Err(err).Msg("Failed to prompt user for host")
 			}
