@@ -171,8 +171,6 @@ func (c *Client) Do(req *http.Request, v any) error {
 		return ErrUnauthenticated
 	case 403:
 		return ErrUnauthorized
-	case 404:
-		return ErrNotFound
 	case 500:
 		return ErrServerError
 	default:
