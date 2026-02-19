@@ -28,7 +28,7 @@ func (r *DropConfig) GetByID(ctx context.Context, id uuid.UUID) (*model.DropConf
 	defer cancel()
 
 	var dropConfig model.DropConfig
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&dropConfig).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Take(&dropConfig).Error; err != nil {
 		return nil, err
 	}
 	return &dropConfig, nil

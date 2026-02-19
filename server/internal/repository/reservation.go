@@ -27,7 +27,7 @@ func (r *Reservation) GetByID(ctx context.Context, id uuid.UUID) (*model.Reserva
 	defer cancel()
 
 	var reservation model.Reservation
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&reservation).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Take(&reservation).Error; err != nil {
 		return nil, err
 	}
 	return &reservation, nil

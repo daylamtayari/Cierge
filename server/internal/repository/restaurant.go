@@ -27,7 +27,7 @@ func (r *Restaurant) GetByID(ctx context.Context, id uuid.UUID) (*model.Restaura
 	defer cancel()
 
 	var restaurant model.Restaurant
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&restaurant).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Take(&restaurant).Error; err != nil {
 		return nil, err
 	}
 	return &restaurant, nil
@@ -39,7 +39,7 @@ func (r *Restaurant) GetByPlatformID(ctx context.Context, platform string, platf
 	defer cancel()
 
 	var restaurant model.Restaurant
-	if err := r.db.WithContext(ctx).Where("platform = ?", platform).Where("platform_id = ?", platformID).First(&restaurant).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("platform = ?", platform).Where("platform_id = ?", platformID).Take(&restaurant).Error; err != nil {
 		return nil, err
 	}
 	return &restaurant, nil

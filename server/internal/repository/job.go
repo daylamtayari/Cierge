@@ -27,7 +27,7 @@ func (r *Job) GetByID(ctx context.Context, id uuid.UUID) (*model.Job, error) {
 	defer cancel()
 
 	var job model.Job
-	if err := r.db.WithContext(ctx).Preload("Restaurant").Where("id = ?", id).First(&job).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Restaurant").Where("id = ?", id).Take(&job).Error; err != nil {
 		return nil, err
 	}
 	return &job, nil

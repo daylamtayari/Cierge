@@ -31,7 +31,7 @@ func (r *User) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	defer cancel()
 
 	var user model.User
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Take(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -43,7 +43,7 @@ func (r *User) GetByEmail(ctx context.Context, email string) (*model.User, error
 	defer cancel()
 
 	var user model.User
-	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("email = ?", email).Take(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -55,7 +55,7 @@ func (r *User) GetByApiKey(ctx context.Context, apiKey string) (*model.User, err
 	defer cancel()
 
 	var user model.User
-	if err := r.db.WithContext(ctx).Where("api_key = ?", apiKey).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("api_key = ?", apiKey).Take(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -107,7 +107,7 @@ func (r *User) GetNotificationPreferences(ctx context.Context, userID uuid.UUID)
 	defer cancel()
 
 	var notificationPreferences model.UserNotificationPreferences
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&notificationPreferences).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Take(&notificationPreferences).Error; err != nil {
 		return nil, err
 	}
 	return &notificationPreferences, nil

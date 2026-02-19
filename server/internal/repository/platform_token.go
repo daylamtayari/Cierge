@@ -27,7 +27,7 @@ func (r *PlatformToken) GetByID(ctx context.Context, id uuid.UUID) (*model.Platf
 	defer cancel()
 
 	var platformToken model.PlatformToken
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&platformToken).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Take(&platformToken).Error; err != nil {
 		return nil, err
 	}
 	return &platformToken, nil
@@ -51,7 +51,7 @@ func (r *PlatformToken) GetByUserAndPlatform(ctx context.Context, userID uuid.UU
 	defer cancel()
 
 	var platformToken model.PlatformToken
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Where("platform = ?", platform).First(&platformToken).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Where("platform = ?", platform).Take(&platformToken).Error; err != nil {
 		return nil, err
 	}
 	return &platformToken, nil
