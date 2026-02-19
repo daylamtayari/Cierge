@@ -34,7 +34,7 @@ func AutoMigrate(db *gorm.DB) error {
 
 	if err := db.AutoMigrate(
 		&model.User{},
-		&model.UserNotificationPreferences{},
+		&model.NotificationPreferences{},
 		&model.PlatformToken{},
 		&model.Job{},
 		&model.Restaurant{},

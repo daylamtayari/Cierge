@@ -21,10 +21,6 @@ func NewUser(db *gorm.DB, timeout time.Duration) *User {
 	}
 }
 
-// -----------------
-// Retrieval methods
-// -----------------
-
 // Gets a user with a given ID
 func (r *User) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
@@ -100,22 +96,6 @@ func (r *User) GetAdmins(ctx context.Context) ([]model.User, error) {
 	err := r.db.WithContext(ctx).Where("is_admin = true").Find(&users).Error
 	return users, err
 }
-
-// Get user notification preferences
-func (r *User) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (*model.UserNotificationPreferences, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.timeout)
-	defer cancel()
-
-	var notificationPreferences model.UserNotificationPreferences
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Take(&notificationPreferences).Error; err != nil {
-		return nil, err
-	}
-	return &notificationPreferences, nil
-}
-
-// -----------------
-// Mutating methods
-// -----------------
 
 // Create user
 func (r *User) Create(ctx context.Context, user *model.User) error {
@@ -203,21 +183,6 @@ func (r *User) UpdateAdminStatus(ctx context.Context, id uuid.UUID, isAdmin bool
 	defer cancel()
 
 	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Update("is_admin", isAdmin).Error
-}
-
-// User notification preferences
-func (r *User) CreateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
-	ctx, cancel := context.WithTimeout(ctx, r.timeout)
-	defer cancel()
-
-	return r.db.WithContext(ctx).Create(prefs).Error
-}
-
-func (r *User) UpdateNotificationPreferences(ctx context.Context, prefs *model.UserNotificationPreferences) error {
-	ctx, cancel := context.WithTimeout(ctx, r.timeout)
-	defer cancel()
-
-	return r.db.WithContext(ctx).Save(prefs).Error
 }
 
 // Delete user

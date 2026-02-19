@@ -27,12 +27,12 @@ type User struct {
 	OIDCSubject  *string `gorm:"column:oidc_subject;type:varchar(255);index:idx_users_oidc,where:oidc_provider IS NOT NULL"`
 
 	// Relations
-	NotificationPreferences *UserNotificationPreferences `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
-	PlatformTokens          []PlatformToken              `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
-	Favourites              []Favourite                  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
-	Jobs                    []Job                        `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
-	Reservations            []Reservation                `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
-	Notifications           []Notification               `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	NotificationPreferences *NotificationPreferences `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	PlatformTokens          []PlatformToken          `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Favourites              []Favourite              `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Jobs                    []Job                    `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Reservations            []Reservation            `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Notifications           []Notification           `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 
 	CreatedAt time.Time `gorm:"not null;default:now()"`
 	UpdatedAt time.Time `gorm:"not null;default:now()"`
