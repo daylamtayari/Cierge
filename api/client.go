@@ -12,13 +12,14 @@ import (
 )
 
 var (
-	ErrBadRequest      = errors.New("bad or malformed request")
-	ErrNotFound        = errors.New("not found")
-	ErrServerError     = errors.New("server encountered internal error")
-	ErrUnauthenticated = errors.New("unauthenticated")
-	ErrUnauthorized    = errors.New("unauthorized")
-	ErrUnhandledStatus = errors.New("unhandled status code returned")
-	ErrInvalidHost     = errors.New("invalid host value provided")
+	ErrBadRequest       = errors.New("bad or malformed request")
+	ErrFailedDependency = errors.New("failed dependency")
+	ErrNotFound         = errors.New("not found")
+	ErrServerError      = errors.New("server encountered internal error")
+	ErrUnauthenticated  = errors.New("unauthenticated")
+	ErrUnauthorized     = errors.New("unauthorized")
+	ErrUnhandledStatus  = errors.New("unhandled status code returned")
+	ErrInvalidHost      = errors.New("invalid host value provided")
 )
 
 type Client struct {
@@ -116,10 +117,15 @@ func (c *Client) Do(req *http.Request, v any) error {
 	defer res.Body.Close() //nolint: errcheck
 
 	var body []byte
-	if res.ContentLength != 0 && res.StatusCode == 200 {
+	if res.ContentLength != 0 && (res.StatusCode == 200 || res.StatusCode == 424) {
 		body, err = io.ReadAll(res.Body)
 		if err != nil {
 			return err
+		}
+
+		// If a request has a failed dependecy, get body for reason
+		if res.StatusCode == 424 {
+			return fmt.Errorf("%w: %v", ErrFailedDependency, string(body))
 		}
 
 		if _, ok := v.(*[]byte); ok {
