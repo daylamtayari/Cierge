@@ -20,7 +20,7 @@ func notifyServer(ctx context.Context, serverEndpoint string, callbackSecret str
 		serverEndpoint += "/"
 	}
 
-	reqUrl := serverEndpoint + "internal/jobs/status"
+	reqUrl := serverEndpoint + "internal/job/status"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqUrl, bytes.NewReader(output))
 	if err != nil {
