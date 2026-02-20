@@ -134,6 +134,7 @@ resource "aws_kms_key_policy" "cierge" {
         Action = [
           "kms:DescribeKey",
           "kms:GetKeyPolicy",
+          "kms:PutKeyPolicy",
           "kms:ListKeyPolicies",
           "kms:GetKeyRotationStatus",
           "kms:ListResourceTags",
