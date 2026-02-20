@@ -20,8 +20,8 @@ The repository is a monorepo and contains multiple components that are each indi
 [![Latest CLI Release](https://img.shields.io/github/v/tag/daylamtayari/Cierge?filter=cli%2F*&label=CLI%20Release)](https://github.com/daylamtayari/Cierge/releases?q=cli)
 
 1. Download the binary for the latest release of the command line interface that corresponds to your platform (Mac users, select Darwin, and users with an M series Mac, select Darwin arm64)
-    - Open a terminal and run the Cierge CLI by doing `./cierge`
-    - If you get a permission issue, run `chmod +x cierge` to give it executable permissions
+    - Mac users, open the `pkg` file and install it. Then open a terminal and go to step 2
+    - For Windows and Linux users, open a terminal from the download location and run the Cierge CLI by doing `./cierge`
 2. Run `cierge init` and specify the server host provided to you by the server administrator and your credentials
 3. Connect reservation platforms by running `cierge token add`
 4. Verify everything is good by running `cierge status`
@@ -33,7 +33,7 @@ To create a new reservation job, run `cierge job create` and follow the prompts.
 ### I want to host my server
 
 1. Create the necessary AWS infrastructure (lambda, KMS key, roles) using the `deploy/aws.tf` Terraform  
-    - A local implementation is on the roadmap for the next release but at this time, AWS usage is required
+    - A local implementation of the scheduler and reservation logic is on the roadmap for the next release but at this time, the scheduling and reservation execution via a lambda is only implemented in AWS
 2. Generate TLS certificates for the host (required in production)
 2. Complete the server configuration file (`deploy/server.json`)
     - Complete the AWS configuration using the values outputted from the Terraform
