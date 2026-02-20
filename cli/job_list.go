@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/daylamtayari/cierge/api"
-	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
@@ -33,21 +31,7 @@ var (
 			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled At", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time", "Confirmation"})
 
 			for _, job := range jobs {
-				var status string
-				switch job.Status {
-				case api.JobStatusCreated:
-					status = "Created"
-				case api.JobStatusScheduled:
-					status = color.BlueString("Scheduled")
-				case api.JobStatusSuccess:
-					status = color.GreenString("Succeeded")
-				case api.JobStatusFailed:
-					status = color.RedString("Failed")
-				case api.JobStatusCancelled:
-					status = color.YellowString("Cancelled")
-				default:
-					status = string(job.Status)
-				}
+				status := formatJobStatus(job.Status)
 
 				reservedTime := ""
 				if job.ReservedTime != nil {
