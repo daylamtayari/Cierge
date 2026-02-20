@@ -84,25 +84,25 @@ var (
 				{"Reservation Date", selectedJob.ReservationDate},
 				{"Party Size", selectedJob.PartySize},
 				{"Preferred Times", selectedJob.PreferredTimes},
-				{"Scheduled At", selectedJob.ScheduledAt.Format("02 Jan 2006")},
+				{"Scheduled At", selectedJob.ScheduledAt.Local().Format("02 Jan 2006")},
 			})
 
 			if selectedJob.Status == api.JobStatusSuccess || selectedJob.Status == api.JobStatusFailed {
 				jt.AppendRows([]table.Row{
-					{"Started At", selectedJob.StartedAt.Format("2006-01-02 15:04:05")},
-					{"Completed At", selectedJob.CompletedAt.Format("2006-01-02 15:04:05")},
+					{"Started At", selectedJob.StartedAt.Local().Format("2006-01-02 15:04:05")},
+					{"Completed At", selectedJob.CompletedAt.Local().Format("2006-01-02 15:04:05")},
 				})
 			}
 			if selectedJob.Status == api.JobStatusSuccess {
 				jt.AppendRows([]table.Row{
-					{"Reserved Time", selectedJob.ReservedTime.Format("02 Jan 2006 15:04:05 MST")},
+					{"Reserved Time", selectedJob.ReservedTime.Format("02 Jan 2006 15:04:05")},
 					{"Confirmation", *selectedJob.Confirmation},
 				})
 			}
 			if selectedJob.Logs != nil {
 				jt.AppendRow(table.Row{"Logs", *selectedJob.Logs})
 			}
-			jt.AppendRow(table.Row{"Created At", selectedJob.CreatedAt.Format("2006-01-02 15:04")})
+			jt.AppendRow(table.Row{"Created At", selectedJob.CreatedAt.Local().Format("2006-01-02 15:04")})
 
 			fmt.Print(jt.Render() + "\n")
 		},
