@@ -17,6 +17,9 @@ const (
 	cliTagPrefix = "cli/"
 )
 
+// version is set at build time
+var version string
+
 // GitHubRelease represents a GitHub release
 type GitHubRelease struct {
 	TagName     string    `json:"tag_name"`
@@ -41,15 +44,17 @@ var versionCmd = &cobra.Command{
 
 // Retrieve the version of the CLI
 func getVersion() string {
-	if info, ok := debug.ReadBuildInfo(); ok {
-		version := info.Main.Version
-		if version == "" || version == "(devel)" {
-			version = "dev"
-		}
+	if version != "" {
 		return version
-	} else {
-		return "unknown"
 	}
+	if info, ok := debug.ReadBuildInfo(); ok {
+		v := info.Main.Version
+		if v == "" || v == "(devel)" {
+			return "dev"
+		}
+		return v
+	}
+	return "unknown"
 }
 
 // Queries the GitHub API to check if a newer CLI release is available
