@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/huh"
+	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
@@ -60,9 +61,11 @@ var (
 
 				options := make([]huh.Option[uuid.UUID], 0, len(userJobs))
 				for _, job := range userJobs {
-					date, _ := time.Parse("2006-01-02", job.ReservationDate)
-					label := fmt.Sprintf("%s for %s, party of %d", restaurantNames[job.RestaurantID], date.Format("02 Jan 2006"), job.PartySize)
-					options = append(options, huh.NewOption(label, job.ID))
+					if job.Status == api.JobStatusScheduled {
+						date, _ := time.Parse("2006-01-02", job.ReservationDate)
+						label := fmt.Sprintf("%s for %s, party of %d", restaurantNames[job.RestaurantID], date.Format("02 Jan 2006"), job.PartySize)
+						options = append(options, huh.NewOption(label, job.ID))
+					}
 				}
 
 				err := runHuh(huh.NewMultiSelect[uuid.UUID]().
