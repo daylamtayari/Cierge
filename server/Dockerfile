@@ -17,4 +17,4 @@ RUN apk add --no-cache ca-certificates tzdata git
 COPY --from=builder /build/bin/server /cierge
 
 EXPOSE 8080
-ENTRYPOINT ["cierge"]
+ENTRYPOINT ["/cierge"]
