@@ -151,11 +151,6 @@ resource "aws_kms_key_policy" "cierge" {
         }
         Action   = "kms:Decrypt"
         Resource = "*"
-        Condition = {
-          StringEquals = {
-            "kms:EncryptionContext:aws:lambda:FunctionArn" = aws_lambda_function.reservation_handler.arn
-          }
-        }
       },
       {
         Sid    = "AllowServerEncryptDecrypt"
@@ -164,28 +159,22 @@ resource "aws_kms_key_policy" "cierge" {
           AWS = aws_iam_user.cierge_server.arn
         }
         Action = [
+          "kms:DescribeKey",
+          "kms:GenerateDataKey",
           "kms:Encrypt",
           "kms:Decrypt"
         ]
         Resource = "*"
       },
       {
-        Sid    = "AllowEventBridgeScheduler"
+        # Scheduler execution role needs kms:Decrypt to decrypt the schedule payload at run time
+        Sid    = "AllowSchedulerExecutionDecrypt"
         Effect = "Allow"
         Principal = {
-          Service = "scheduler.amazonaws.com"
+          AWS = aws_iam_role.scheduler_execution.arn
         }
-        Action = [
-          "kms:Decrypt",
-          "kms:GenerateDataKey"
-        ]
+        Action   = "kms:Decrypt"
         Resource = "*"
-        Condition = {
-          StringEquals = {
-            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
-            "kms:ViaService"    = "scheduler.${var.aws_region}.amazonaws.com"
-          }
-        }
       }
     ]
   })
@@ -227,6 +216,8 @@ resource "aws_iam_user_policy" "cierge_server" {
         Sid    = "KMSEncryptDecrypt"
         Effect = "Allow"
         Action = [
+          "kms:DescribeKey",
+          "kms:GenerateDataKey",
           "kms:Encrypt",
           "kms:Decrypt"
         ]
@@ -302,6 +293,13 @@ resource "aws_iam_role_policy" "scheduler_execution" {
         Action = "lambda:InvokeFunction"
         # Scoped to only the reservation handler Lambda
         Resource = aws_lambda_function.reservation_handler.arn
+      },
+      {
+        Sid    = "KMSDecrypt"
+        Effect = "Allow"
+        Action = "kms:Decrypt"
+        # Needed to decrypt the schedule payload encrypted with the customer-managed key
+        Resource = aws_kms_key.cierge.arn
       }
     ]
   })
