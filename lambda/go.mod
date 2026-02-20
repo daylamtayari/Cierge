@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.52.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.9
 	github.com/aws/aws-sdk-go-v2/service/kms v1.50.0
-	github.com/daylamtayari/cierge/reservation v0.7.0
+	github.com/daylamtayari/cierge/reservation v0.8.6
 )
 
 require (
@@ -23,7 +23,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.6 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
-	github.com/daylamtayari/cierge/resy v0.7.4 // indirect
+	github.com/daylamtayari/cierge/resy v0.8.8 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 )
