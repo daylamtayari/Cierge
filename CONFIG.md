@@ -92,6 +92,7 @@ All configuration values across the server and the CLI can be overridden with en
 | `kms_key_id` | `` | KMS key ID for encryption |
 | `lambda_arn` | `` | ARN of the Lambda function for job execution |
 | `scheduler_role_arn` | `` | ARN of the IAM role for the EventBridge scheduler |
+| `schedule_group_name` | `` | EventBridge Scheduler schedule group name |
 | `cold_start_buffer` | `1m` | Buffer duration to account for Lambda cold starts |
 | `access_key_id` | `` | AWS access key ID |
 | `secret_access_key` | `` | AWS secret access key |

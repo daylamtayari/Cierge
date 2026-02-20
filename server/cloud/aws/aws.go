@@ -23,41 +23,44 @@ import (
 )
 
 var (
-	ErrDecodeConfig           = errors.New("failed to decode config")
-	ErrMissingRegion          = errors.New("region is required")
-	ErrMissingKMSKeyID        = errors.New("KMS key ID is required")
-	ErrMissingLambdaARN       = errors.New("lambda ARN is required")
-	ErrMissingSchedulerRole   = errors.New("scheduler role ARN is required")
-	ErrMissingColdStartBuffer = errors.New("cold start buffer is required")
-	ErrInvalidColdStartBuffer = errors.New("cold start buffer is not a valid duration")
-	ErrInvalidKMSKeyID        = errors.New("KMS key ID value is invalid")
-	ErrInvalidLambdaARN       = errors.New("lambda ARN value is invalid")
-	ErrInvalidSchedulerRole   = errors.New("schedule role ARN is invalid")
-	ErrMissingCredentials     = errors.New("no credentials found in environment or config")
-	ErrCredentialValidation   = errors.New("invalid credentials provided")
+	ErrDecodeConfig              = errors.New("failed to decode config")
+	ErrMissingRegion             = errors.New("region is required")
+	ErrMissingKMSKeyID           = errors.New("KMS key ID is required")
+	ErrMissingLambdaARN          = errors.New("lambda ARN is required")
+	ErrMissingSchedulerRole      = errors.New("scheduler role ARN is required")
+	ErrMissingScheduleGroupName  = errors.New("schedule group name is required")
+	ErrMissingColdStartBuffer    = errors.New("cold start buffer is required")
+	ErrInvalidColdStartBuffer    = errors.New("cold start buffer is not a valid duration")
+	ErrInvalidKMSKeyID           = errors.New("KMS key ID value is invalid")
+	ErrInvalidLambdaARN          = errors.New("lambda ARN value is invalid")
+	ErrInvalidSchedulerRole      = errors.New("schedule role ARN is invalid")
+	ErrMissingCredentials        = errors.New("no credentials found in environment or config")
+	ErrCredentialValidation      = errors.New("invalid credentials provided")
 )
 
 const scheduleNamePrefix = "cierge-job-"
 
 type Provider struct {
-	scheduler       *scheduler.Client
-	kms             *kms.Client
-	lambdaARN       string
-	roleARN         string
-	kmsKeyID        string
-	coldStartBuffer time.Duration
+	scheduler         *scheduler.Client
+	kms               *kms.Client
+	lambdaARN         string
+	roleARN           string
+	kmsKeyID          string
+	scheduleGroupName string
+	coldStartBuffer   time.Duration
 }
 
 // AWS provider configuration
 type providerConfig struct {
-	Region           string `json:"region"`
-	KMSKeyID         string `json:"kms_key_id"`
-	LambdaARN        string `json:"lambda_arn"`
-	SchedulerRoleARN string `json:"scheduler_role_arn"`
-	ColdStartBuffer  string `json:"cold_start_buffer"`
-	AccessKeyID      string `json:"access_key_id"`
-	SecretAccessKey  string `json:"secret_access_key"`
-	SessionToken     string `json:"session_token"`
+	Region            string `json:"region"`
+	KMSKeyID          string `json:"kms_key_id"`
+	LambdaARN         string `json:"lambda_arn"`
+	SchedulerRoleARN  string `json:"scheduler_role_arn"`
+	ScheduleGroupName string `json:"schedule_group_name"`
+	ColdStartBuffer   string `json:"cold_start_buffer"`
+	AccessKeyID       string `json:"access_key_id"`
+	SecretAccessKey   string `json:"secret_access_key"`
+	SessionToken      string `json:"session_token"`
 }
 
 // Creates a new AWS provider
@@ -80,12 +83,13 @@ func NewProvider(cfg map[string]any) (cloud.Provider, error) {
 	}
 
 	return &Provider{
-		scheduler:       scheduler.NewFromConfig(awsCfg),
-		kms:             kms.NewFromConfig(awsCfg),
-		lambdaARN:       pCfg.LambdaARN,
-		roleARN:         pCfg.SchedulerRoleARN,
-		kmsKeyID:        pCfg.KMSKeyID,
-		coldStartBuffer: coldStartBuffer,
+		scheduler:         scheduler.NewFromConfig(awsCfg),
+		kms:               kms.NewFromConfig(awsCfg),
+		lambdaARN:         pCfg.LambdaARN,
+		roleARN:           pCfg.SchedulerRoleARN,
+		kmsKeyID:          pCfg.KMSKeyID,
+		scheduleGroupName: pCfg.ScheduleGroupName,
+		coldStartBuffer:   coldStartBuffer,
 	}, nil
 }
 
@@ -104,6 +108,7 @@ func (p *Provider) ScheduleJob(ctx context.Context, event reservation.Event) err
 
 	_, err = p.scheduler.CreateSchedule(ctx, &scheduler.CreateScheduleInput{
 		Name:               &name,
+		GroupName:          &p.scheduleGroupName,
 		ScheduleExpression: &expression,
 		FlexibleTimeWindow: &schedulertypes.FlexibleTimeWindow{
 			Mode: schedulertypes.FlexibleTimeWindowModeOff,
@@ -128,7 +133,8 @@ func (p *Provider) CancelJob(ctx context.Context, jobID uuid.UUID) error {
 	name := scheduleNamePrefix + jobID.String()
 
 	_, err := p.scheduler.DeleteSchedule(ctx, &scheduler.DeleteScheduleInput{
-		Name: &name,
+		Name:      &name,
+		GroupName: &p.scheduleGroupName,
 	})
 	if err != nil {
 		var notFound *schedulertypes.ResourceNotFoundException
@@ -146,7 +152,8 @@ func (p *Provider) UpdateJobCredentials(ctx context.Context, jobID uuid.UUID, en
 	name := scheduleNamePrefix + jobID.String()
 
 	getOutput, err := p.scheduler.GetSchedule(ctx, &scheduler.GetScheduleInput{
-		Name: &name,
+		Name:      &name,
+		GroupName: &p.scheduleGroupName,
 	})
 	if err != nil {
 		var notFound *schedulertypes.ResourceNotFoundException
@@ -174,6 +181,7 @@ func (p *Provider) UpdateJobCredentials(ctx context.Context, jobID uuid.UUID, en
 
 	_, err = p.scheduler.UpdateSchedule(ctx, &scheduler.UpdateScheduleInput{
 		Name:               &name,
+		GroupName:          &p.scheduleGroupName,
 		ScheduleExpression: &expression,
 		FlexibleTimeWindow: &schedulertypes.FlexibleTimeWindow{
 			Mode: schedulertypes.FlexibleTimeWindowModeOff,
@@ -257,6 +265,10 @@ func ValidateConfig(cfg map[string]any, isProduction bool) error {
 		return ErrMissingSchedulerRole
 	} else if !arn.IsARN(pCfg.SchedulerRoleARN) {
 		return ErrInvalidSchedulerRole
+	}
+
+	if pCfg.ScheduleGroupName == "" {
+		return ErrMissingScheduleGroupName
 	}
 
 	return validateCredentials(cfg, &pCfg)
