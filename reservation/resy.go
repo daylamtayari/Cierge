@@ -87,6 +87,7 @@ func (c *ResyClient) Book(ctx context.Context, event Event, slot any) (Attempt, 
 		Result:    bookingResult,
 		SlotTime:  resySlot.Date.Start.Time,
 		StartTime: startTime,
+		Duration:  time.Now().UTC().Sub(startTime),
 	}
 
 	if err != nil {
@@ -95,7 +96,6 @@ func (c *ResyClient) Book(ctx context.Context, event Event, slot any) (Attempt, 
 		return attempt, err
 	}
 
-	attempt.Duration = time.Now().UTC().Sub(startTime)
 	return attempt, nil
 }
 
