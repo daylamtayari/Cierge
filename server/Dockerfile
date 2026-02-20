@@ -1,7 +1,7 @@
 # Build
 FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 
-ARG TARGETOS TARGETARCH
+ARG TARGETOS TARGETARCH VERSION=dev
 
 WORKDIR /build/server
 
@@ -11,7 +11,7 @@ COPY server/go.mod server/go.sum ./
 RUN go mod download
 
 COPY server/ ./
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /build/bin/server .
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-X main.Version=${VERSION}" -o /build/bin/server .
 
 # Runtime
 FROM alpine:3.23

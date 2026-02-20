@@ -36,11 +36,11 @@ jobs:
       - name: "Go Build"
         if: ${{ matrix.goos != 'windows' }}
         working-directory: ./server
-        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -trimpath -o ../cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}
+        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -trimpath -ldflags="-X main.Version=${{ steps.version.outputs.value }}" -o ../cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}
       - name: "Go Build Windows"
         if: ${{ matrix.goos == 'windows' }}
         working-directory: ./server
-        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -trimpath -o ../cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}.exe
+        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -trimpath -ldflags="-X main.Version=${{ steps.version.outputs.value }}" -o ../cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}.exe
       - name: "Upload Artifact"
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -77,6 +77,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: "Extract Version"
+        id: version
+        run: echo "value=${GITHUB_REF_NAME#server/}" >> $GITHUB_OUTPUT
       - name: "Set up QEMU"
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
       - name: "Set up Docker Buildx"
@@ -105,5 +108,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: VERSION=${{ steps.version.outputs.value }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

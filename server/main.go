@@ -32,7 +32,7 @@ func main() {
 	}
 
 	// Register cloud providers
-	cloudProviders := []string{"aws"}
+	cloudProviders := []string{"aws", "local"}
 	for _, providerName := range cloudProviders {
 		var err error
 		switch providerName {
@@ -66,7 +66,7 @@ func main() {
 		prettyOutput = false
 	}
 
-	logger = NewLogger(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", Version).Logger()
+	logger = NewLogger(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", getVersion()).Logger()
 	logger.Info().Msg("starting cierge server")
 
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
@@ -182,13 +182,5 @@ func main() {
 
 // Prints the version information
 func printVersion() {
-	ver := Version
-	if ver == "dev" {
-		if info, ok := debug.ReadBuildInfo(); ok {
-			if info.Main.Version != "" && info.Main.Version != "(devel)" {
-				ver = info.Main.Version
-			}
-		}
-	}
-	fmt.Printf("version %s", ver)
+	fmt.Printf("version %s", getVersion())
 }
