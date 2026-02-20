@@ -58,25 +58,19 @@ var (
 					}
 				}
 
-				options := make([]huh.Option[string], 0, len(userJobs))
+				options := make([]huh.Option[uuid.UUID], 0, len(userJobs))
 				for _, job := range userJobs {
 					date, _ := time.Parse("2006-01-02", job.ReservationDate)
 					label := fmt.Sprintf("%s for %s, party of %d", restaurantNames[job.RestaurantID], date.Format("02 Jan 2006"), job.PartySize)
-					options = append(options, huh.NewOption(label, job.ID.String()))
+					options = append(options, huh.NewOption(label, job.ID))
 				}
 
-				var selectedIds []string
-				err := runHuh(huh.NewMultiSelect[string]().
+				err := runHuh(huh.NewMultiSelect[uuid.UUID]().
 					Title("Select jobs to cancel:").
 					Options(options...).
-					Value(&selectedIds))
+					Value(&jobCancelIds))
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to prompt user for jobs to cancel")
-				}
-
-				for _, id := range selectedIds {
-					uid, _ := uuid.Parse(id)
-					jobCancelIds = append(jobCancelIds, uid)
 				}
 			}
 
