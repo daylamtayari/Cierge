@@ -6,6 +6,8 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -34,7 +36,7 @@ var (
 			for _, token := range tokens {
 				tt.AppendRow(table.Row{
 					token.ID,
-					token.Platform,
+					cases.Title(language.Und).String(token.Platform),
 					token.HasRefresh,
 					token.ExpiresAt.Local().Format("2006-01-02 15:04:05"),
 					token.RefreshExpiresAt.Local().Format("2006-01-02 15:04:05"),

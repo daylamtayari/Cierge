@@ -7,6 +7,8 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -28,33 +30,27 @@ var (
 			jt.SetColumnConfigs([]table.ColumnConfig{
 				{Number: 5, Align: text.AlignLeft},
 			})
-			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled At", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time", "Confirmation"})
+			jt.AppendHeader(table.Row{"ID", "Platform", "Scheduled At", "Reservation Date", "Party Size", "Preferred Times", "Status", "Reserved Time"})
 
 			for _, job := range jobs {
 				status := formatJobStatus(job.Status)
 
 				reservedTime := ""
 				if job.ReservedTime != nil {
-					reservedTime = job.ReservedTime.Format("15:04")
-				}
-
-				confirmation := ""
-				if job.Confirmation != nil {
-					confirmation = *job.Confirmation
+					reservedTime = job.ReservedTime.Format("02 Jan 2006 15:04")
 				}
 
 				reservationDate, _ := time.Parse("2006-01-02", job.ReservationDate)
 
 				jt.AppendRow(table.Row{
 					job.ID,
-					job.Platform,
+					cases.Title(language.Und).String(job.Platform),
 					job.ScheduledAt.Local().Format("02 Jan 2006 at 15:04 MST"),
 					reservationDate.Format("02 January 2006"),
 					job.PartySize,
 					job.PreferredTimes,
 					status,
 					reservedTime,
-					confirmation,
 				})
 			}
 

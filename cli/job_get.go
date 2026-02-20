@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/huh"
@@ -10,6 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var (
@@ -77,7 +78,7 @@ var (
 			})
 			jt.AppendRows([]table.Row{
 				{"ID", selectedJob.ID.String()},
-				{"Platform", strings.Title(selectedJob.Platform)},
+				{"Platform", cases.Title(language.Und).String(selectedJob.Platform)},
 				{"Restaurant", restaurantName},
 				{"Status", formatJobStatus(selectedJob.Status)},
 				{"Reservation Date", selectedJob.ReservationDate},
