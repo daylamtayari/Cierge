@@ -34,7 +34,7 @@ func handle(ctx context.Context, event reservation.Event) error {
 	output := reservation.Handle(ctx, event, &decrypter)
 
 	marshalledOutput, _ := json.Marshal(output)
-	fmt.Print(string(marshalledOutput))
+	fmt.Println(string(marshalledOutput))
 
 	return nil
 }
