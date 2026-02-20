@@ -252,62 +252,64 @@ var (
 				}
 			}
 			if dropConfig == nil {
-				var daysInAdvanceInput string
-				err := runHuh(huh.NewInput().
-					Title("Days in advance:").
-					Description("How many days before the reservation date should the drop be attempted?").
-					Value(&daysInAdvanceInput).
-					Validate(func(s string) error {
-						val, err := strconv.ParseInt(s, 10, 16)
-						if err != nil {
-							return errors.New("days in advance must be a valid number")
-						}
-						if val <= 0 {
-							return errors.New("days in advance must be greater than 0")
-						}
-						return nil
-					}))
-				if err != nil {
-					logger.Fatal().Err(err).Msg("Failed to prompt user for days in advance")
+				var daysInAdvanceInput, dropTimeInput string
+				for {
+					err := runHuh(huh.NewInput().
+						Title("Days in advance:").
+						Description("How many days before the reservation date should the drop be attempted?").
+						Value(&daysInAdvanceInput).
+						Validate(func(s string) error {
+							val, err := strconv.ParseInt(s, 10, 16)
+							if err != nil {
+								return errors.New("days in advance must be a valid number")
+							}
+							if val <= 0 {
+								return errors.New("days in advance must be greater than 0")
+							}
+							return nil
+						}))
+					if err != nil {
+						logger.Fatal().Err(err).Msg("Failed to prompt user for days in advance")
+					}
+
+					err = runHuh(huh.NewInput().
+						Title("Drop time (HH:mm):").
+						Placeholder("09:00").
+						Value(&dropTimeInput).
+						Validate(func(s string) error {
+							if _, err := time.Parse("15:04", s); err != nil {
+								return errors.New("invalid time format - use HH:mm")
+							}
+							return nil
+						}))
+					if err != nil {
+						logger.Fatal().Err(err).Msg("Failed to prompt user for drop time")
+					}
+
+					reservationDate, _ := time.Parse("2006-01-02", *jobReservationDate)
+					daysInAdvance, _ := strconv.ParseInt(daysInAdvanceInput, 10, 16)
+					dropTimeParsed, _ := time.Parse("15:04", dropTimeInput)
+					dropDate := reservationDate.Add(-time.Duration(daysInAdvance) * 24 * time.Hour)
+					loc, err := time.LoadLocation(restaurant.Timezone)
+					if err != nil {
+						loc = time.UTC
+					}
+					expectedDrop := time.Date(dropDate.Year(), dropDate.Month(), dropDate.Day(), dropTimeParsed.Hour(), dropTimeParsed.Minute(), 0, 0, loc)
+
+					var confirmed bool
+					err = runHuh(huh.NewConfirm().
+						Title("Confirm drop configuration").
+						Description(fmt.Sprintf("%d days in advance at %s — expected drop: %s", daysInAdvance, dropTimeInput, expectedDrop.Format("02 Jan at 15:04 MST"))).
+						Value(&confirmed))
+					if err != nil {
+						logger.Fatal().Err(err).Msg("Failed to confirm drop configuration")
+					}
+					if confirmed {
+						break
+					}
 				}
 
-				var dropTimeInput string
-				err = runHuh(huh.NewInput().
-					Title("Drop time (HH:mm):").
-					Placeholder("09:00").
-					Value(&dropTimeInput).
-					Validate(func(s string) error {
-						if _, err := time.Parse("15:04", s); err != nil {
-							return errors.New("invalid time format - use HH:mm")
-						}
-						return nil
-					}))
-				if err != nil {
-					logger.Fatal().Err(err).Msg("Failed to prompt user for drop time")
-				}
-
-				reservationDate, _ := time.Parse("2006-01-02", *jobReservationDate)
 				daysInAdvance, _ := strconv.ParseInt(daysInAdvanceInput, 10, 16)
-				dropTimeParsed, _ := time.Parse("15:04", dropTimeInput)
-				dropDate := reservationDate.Add(-time.Duration(daysInAdvance) * 24 * time.Hour)
-				loc, err := time.LoadLocation(restaurant.Timezone)
-				if err != nil {
-					loc = time.UTC
-				}
-				expectedDrop := time.Date(dropDate.Year(), dropDate.Month(), dropDate.Day(), dropTimeParsed.Hour(), dropTimeParsed.Minute(), 0, 0, loc)
-
-				var confirmed bool
-				err = runHuh(huh.NewConfirm().
-					Title("Confirm drop configuration").
-					Description(fmt.Sprintf("%d days in advance at %s — expected drop: %s", daysInAdvance, dropTimeInput, expectedDrop.Format("02 Jan at 15:04 MST"))).
-					Value(&confirmed))
-				if err != nil {
-					logger.Fatal().Err(err).Msg("Failed to confirm drop configuration")
-				}
-				if !confirmed {
-					logger.Fatal().Msg("Drop configuration creation cancelled")
-				}
-
 				newDropConfig, err := client.CreateDropConfig(restaurant.ID, int16(daysInAdvance), dropTimeInput)
 				if err != nil {
 					logger.Fatal().Err(err).Msg("Failed to create drop configuration")
@@ -751,7 +753,7 @@ func (m timeSlotModel) View() string {
 		b.WriteString("\n")
 	}
 	b.WriteString(helpStyle.Render(fmt.Sprintf(
-		"%d selected • ↑/k / ↓/j: navigate • space/x: toggle • 1-9: set priority • +/-: adjust priority • f / /: search • enter: confirm • esc: cancel",
+		"%d selected • ↑/k / ↓/j: navigate • space/x: toggle • 1-9: set priority • +/-: adjust priority • f / /: search • enter: confirm • esc: cancel",
 		len(m.prioritySlots),
 	)))
 
