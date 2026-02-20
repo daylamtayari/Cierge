@@ -83,11 +83,14 @@ func (e *ErrorCollector) Add(err error, severity zerolog.Level, expected bool, f
 	defer e.mu.Unlock()
 
 	errorInfo := ErrorInfo{
-		Error:    err.Error(),
 		Severity: severity,
 		Expected: expected,
 		Fields:   fields,
 		Message:  message,
+	}
+
+	if err != nil {
+		errorInfo.Error = err.Error()
 	}
 
 	if e.callerInfo {
