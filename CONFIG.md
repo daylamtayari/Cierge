@@ -30,6 +30,7 @@ All configuration values across the server and the CLI can be overridden with en
 | Field | Default | Description |
 | --------------- | --------------- | --------------- |
 | `host` | `localhost` | Hostname of the server |
+| `external_host` | `` | External hostname of the server |
 | `port` | `8080` | Port number to run the server |
 | `tls.enabled` | `false` | Whether TLS should be enabled |
 | `tls.cert_file` | `` | Certificate file for TLS |

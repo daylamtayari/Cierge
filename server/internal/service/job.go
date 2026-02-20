@@ -21,20 +21,20 @@ var (
 )
 
 type Job struct {
-	jobRepo       *repository.Job
-	ptService     *PlatformToken
-	tokenService  *Token
-	cloudProvider cloud.Provider
-	serverURL     string
+	jobRepo           *repository.Job
+	ptService         *PlatformToken
+	tokenService      *Token
+	cloudProvider     cloud.Provider
+	serverExternalURL string
 }
 
-func NewJob(jobRepo *repository.Job, ptService *PlatformToken, tokenService *Token, cloudProvider cloud.Provider, serverURL string) *Job {
+func NewJob(jobRepo *repository.Job, ptService *PlatformToken, tokenService *Token, cloudProvider cloud.Provider, serverExternalURL string) *Job {
 	return &Job{
-		jobRepo:       jobRepo,
-		ptService:     ptService,
-		tokenService:  tokenService,
-		cloudProvider: cloudProvider,
-		serverURL:     serverURL,
+		jobRepo:           jobRepo,
+		ptService:         ptService,
+		tokenService:      tokenService,
+		cloudProvider:     cloudProvider,
+		serverExternalURL: serverExternalURL,
 	}
 }
 
@@ -159,7 +159,7 @@ func (s *Job) Schedule(ctx context.Context, job *model.Job, restaurant *model.Re
 		PartySize:               job.PartySize,
 		PreferredTimes:          job.PreferredTimes,
 		DropTime:                job.ScheduledAt,
-		ServerEndpoint:          s.serverURL,
+		ServerEndpoint:          s.serverExternalURL,
 		Callback:                true,
 	}
 	err = s.cloudProvider.ScheduleJob(ctx, event)

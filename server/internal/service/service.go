@@ -37,7 +37,7 @@ func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenst
 		Token:         tokenService,
 		Health:        NewHealth(repos.DB(), repos.Timeout()),
 		Auth:          NewAuth(userService, tokenService, &cfg.Auth),
-		Job:           NewJob(repos.Job, platformTokenService, tokenService, cloudProvider, cfg.Server.URL()),
+		Job:           NewJob(repos.Job, platformTokenService, tokenService, cloudProvider, cfg.Server.ExternalURL()),
 		Reservation:   NewReservation(repos.Reservation),
 		Restaurant:    NewRestaurant(repos.Restaurant, resyClient),
 		PlatformToken: platformTokenService,

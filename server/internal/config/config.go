@@ -41,6 +41,7 @@ func (d Duration) Duration() time.Duration {
 // HTTP server configuration
 type Server struct {
 	Host           string   `json:"host" default:"localhost"`
+	ExternalHost   string   `json:"external_host"`
 	Port           int      `json:"port" default:"8080"`
 	TLS            TLS      `json:"tls"`
 	TrustedProxies []string `json:"trusted_proxies"`
@@ -63,6 +64,14 @@ func (s Server) URL() string {
 		scheme = "https"
 	}
 	return fmt.Sprintf("%s://%s:%d/", scheme, s.Host, s.Port)
+}
+
+func (s Server) ExternalURL() string {
+	scheme := "http"
+	if s.TLS.Enabled {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://%s:%d/", scheme, s.ExternalHost, s.Port)
 }
 
 // Database configuration
