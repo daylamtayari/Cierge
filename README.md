@@ -42,16 +42,18 @@ To create a new reservation job, run `cierge job create` and follow the prompts.
 
 ## Components
 
-- [api](https://github.com/daylamtayari/Cierge/tree/main/api) - API library for the Cierge API
-- [cli](https://github.com/daylamtayari/Cierge/tree/main/cli) - Command line interface for Cierge
-- [deploy](https://github.com/daylamtayari/Cierge/tree/main/deploy) - Infrastructure as code for server deployment
-- [errcol](https://github.com/daylamtayari/Cierge/tree/main/errcol) - Error collector designed for wide event logging
-- [lambda](https://github.com/daylamtayari/Cierge/tree/main/lambda) - AWS Lambda for the reservation job execution
-- [opentable](https://github.com/daylamtayari/Cierge/tree/main/opentable) - OpenTable API library
-- [querycol](https://github.com/daylamtayari/Cierge/tree/main/querycol) - Database query collector designed for wide event logging
-- [reservation](https://github.com/daylamtayari/Cierge/tree/main/reservation) - Reservation job execution logic
-- [resy](https://github.com/daylamtayari/Cierge/tree/main/resy) - Resy API library
-- [server](https://github.com/daylamtayari/Cierge/tree/main/server) - Cierge server
+| Component | Description | |
+|-----------|-------------|---|
+| [api](https://github.com/daylamtayari/Cierge/tree/main/api) | API library for the Cierge API | [![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/api.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/api) |
+| [cli](https://github.com/daylamtayari/Cierge/tree/main/cli) | Command line interface for Cierge | |
+| [deploy](https://github.com/daylamtayari/Cierge/tree/main/deploy) | Infrastructure as code for server deployment | |
+| [errcol](https://github.com/daylamtayari/Cierge/tree/main/errcol) | Error collector designed for wide event logging | [![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/errcol.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/errcol) |
+| [lambda](https://github.com/daylamtayari/Cierge/tree/main/lambda) | AWS Lambda for the reservation job execution | |
+| [opentable](https://github.com/daylamtayari/Cierge/tree/main/opentable) | OpenTable API library | [![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/opentable.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/opentable) |
+| [querycol](https://github.com/daylamtayari/Cierge/tree/main/querycol) | Database query collector designed for wide event logging | [![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/querycol.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/querycol) |
+| [reservation](https://github.com/daylamtayari/Cierge/tree/main/reservation) | Reservation job execution logic | [![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/reservation.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/reservation) |
+| [resy](https://github.com/daylamtayari/Cierge/tree/main/resy) | Resy API library | [![Go Reference](https://pkg.go.dev/badge/github.com/daylamtayari/cierge/resy.svg)](https://pkg.go.dev/github.com/daylamtayari/cierge/resy) |
+| [server](https://github.com/daylamtayari/Cierge/tree/main/server) | Cierge server | |
 
 ## Roadmap
 
