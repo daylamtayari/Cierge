@@ -1,0 +1,41 @@
+services:
+  server:
+    image: ghcr.io/daylamtayari/cierge/server:latest
+    ports:
+      - "443:443"
+    environment:
+      CIERGE_ENVIRONMENT: prod
+      CIERGE_DATABASE_PASSWORD: ${DB_PASSWORD}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ./server-prod.json:/etc/cierge/server.json:ro
+      - token_store:/data/token_store
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: cierge
+      POSTGRES_USER: cierge
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cierge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  token_store:
