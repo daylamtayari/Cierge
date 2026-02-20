@@ -9,7 +9,7 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     volumes:
-      - ./server-prod.json:/etc/cierge/server.json:ro
+      - ./server.json:/etc/cierge/server.json:ro
       - token_store:/data/token_store
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:

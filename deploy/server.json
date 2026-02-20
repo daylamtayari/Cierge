@@ -1,0 +1,56 @@
+{
+    "environment": "dev",
+    "log_level": "info",
+    "server": {
+        "host": "localhost",
+        "external_host": "example.com",
+        "port": 8080,
+        "tls": {
+            "enabled": false,
+            "cert_file": "",
+            "key_file": ""
+        },
+        "trusted_proxies": [],
+        "cors_origins": []
+    },
+    "database": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "cierge",
+        "password": "",
+        "database": "cierge",
+        "ssl_mode": "disable",
+        "auto_migrate": true,
+        "timeout": "30s"
+    },
+    "token_store_path": "./data/token_store",
+    "auth": {
+        "method": "local",
+        "jwt_secret": "",
+        "jwt_issuer": "cierge",
+        "access_token_expiry": "15m",
+        "refresh_token_expiry": "168h",
+        "rate_limit_requests": 3,
+        "rate_limit_window": "5m",
+        "oidc_providers": {}
+    },
+    "cloud": {
+        "provider": "aws",
+        "config": {
+            "region": "",
+            "kms_key_id": "",
+            "lambda_arn": "",
+            "scheduler_role_arn": "",
+            "schedule_group_name": "",
+            "cold_start_buffer": "",
+            "access_key_id": "",
+            "secret_access_key": "",
+            "session_token": ""
+        }
+    },
+    "notification": [],
+    "default_admin": {
+        "email": "",
+        "password": ""
+    }
+}

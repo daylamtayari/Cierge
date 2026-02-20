@@ -31,6 +31,18 @@ To create a new reservation job, run `cierge job create` and follow the prompts.
 
 ### I want to host my server
 
+1. Create the necessary AWS infrastructure (lambda, KMS key, roles) using the `deploy/aws.tf` Terraform  
+    - A local implementation is on the roadmap for the next release but at this time, AWS usage is required
+2. Generate TLS certificates for the host (required in production)
+2. Complete the server configuration file (`deploy/server.json`)
+    - Complete the AWS configuration using the values outputted from the Terraform
+    - Generate a JWT secret (recommend `openssl rand -base64 64`)
+    - Generate and set the database password
+3. Run the Docker compose file that corresponds to your desired environment
+
+Enjoy!
+
+
 ## Features
 - Automated reservation booking at the exact time reservations become available
 - Drop configurations so you don't have to manually set when the reservation needs to be executed
