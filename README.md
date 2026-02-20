@@ -1,7 +1,7 @@
 # Cierge - Your restaurant reservation concierge
 
 After too many times spent getting ready at a set time to then see all reservations get sniped by bots and disappear before I can click any, I decided to build something that would allow my friends and I to actually be able to get reservations and not have to organise a morning around getting online at a set time.  
-**This is solely intended for personal use.** To all those who scalp and resell, you truly ruin it for everyone else.
+**This is solely intended for personal use.** To all those who scalp and resell, you truly ruin it for everyone else and I hate you. 
 
 ## Introduction
 
