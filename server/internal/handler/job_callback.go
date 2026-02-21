@@ -62,9 +62,11 @@ func (h *JobCallback) HandleJobCallback(c *gin.Context) {
 		return
 	}
 
-	_, err = h.reservationService.CreateFromJob(c.Request.Context(), updatedJob)
-	if err != nil {
-		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"job": updatedJob}, "failed to create reservation from job")
+	if updatedJob.Status == model.JobStatusSuccess {
+		_, err = h.reservationService.CreateFromJob(c.Request.Context(), updatedJob)
+		if err != nil {
+			errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"job": updatedJob}, "failed to create reservation from job")
+		}
 	}
 
 	// TODO: Send notification
