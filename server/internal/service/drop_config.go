@@ -92,3 +92,15 @@ func (s *DropConfig) Create(ctx context.Context, restaurantId uuid.UUID, daysInA
 func (s *DropConfig) IncrementConfidence(ctx context.Context, dropConfigId uuid.UUID, restaurantId uuid.UUID) error {
 	return s.dcRepo.IncrementConfidence(ctx, dropConfigId, restaurantId)
 }
+
+// Returns true if the scheduled job time would be in the past
+func (s *DropConfig) IsScheduledAtPast(dropConfig *model.DropConfig, reservationDate time.Time, restaurantTimezone *time.Location) bool {
+	scheduledAtDate := reservationDate.Add(-time.Duration(dropConfig.DaysInAdvance) * 24 * time.Hour)
+	scheduledAtTime, _ := time.Parse("15:04", dropConfig.DropTime)
+	scheduledAtLoc := time.UTC
+	if restaurantTimezone != nil {
+		scheduledAtLoc = restaurantTimezone
+	}
+	scheduledAt := time.Date(scheduledAtDate.Year(), scheduledAtDate.Month(), scheduledAtDate.Day(), scheduledAtTime.Hour(), scheduledAtTime.Minute(), 0, 0, scheduledAtLoc)
+	return time.Now().After(scheduledAt)
+}

@@ -113,6 +113,11 @@ func (h *Job) Create(c *gin.Context) {
 		util.RespondBadRequest(c, "Invalid drop configuration ID")
 		return
 	}
+	if h.dropConfigService.IsScheduledAtPast(dropConfig, reservationDate, restaurant.Timezone.Location) {
+		errorCol.Add(nil, zerolog.InfoLevel, true, nil, "job execution date is in the past")
+		util.RespondBadRequest(c, "Job cannot be scheduled in the past")
+		return
+	}
 
 	// Creation of job
 	job, err := h.jobService.Create(c.Request.Context(), &jobCreationReq, restaurant, dropConfig)
