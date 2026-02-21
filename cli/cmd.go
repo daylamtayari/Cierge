@@ -43,11 +43,11 @@ var (
 			if cmd.Flags().Changed("host") {
 				cfg.HostURL = host
 			}
-			if cfg.HostURL == "" {
-				return fmt.Errorf("no server host specified")
-			}
 
 			if cmd.Name() != "status" && cmd.Name() != "login" && cmd.Name() != "init" {
+				if cfg.HostURL == "" {
+					return fmt.Errorf("no server host specified")
+				}
 				client := newClient()
 				_, err := client.GetMe()
 				if errors.Is(err, api.ErrUnauthenticated) {
