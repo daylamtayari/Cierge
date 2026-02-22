@@ -68,7 +68,7 @@ jobs:
             HEADER=""
           else
             COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"%s" | grep "^${PACKAGE}:" | sed -E "s/^${PACKAGE}: ?/- /")
-            HEADER="Full Changelog: ${PREV_TAG}...${GITHUB_REF_NAME}"
+            HEADER="**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/${PREV_TAG}...${GITHUB_REF_NAME}"
           fi
           {
             echo 'notes<<EOF'
