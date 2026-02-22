@@ -44,7 +44,7 @@ var (
 				cfg.HostURL = host
 			}
 
-			if cmd.Name() != "status" && cmd.Name() != "login" && cmd.Name() != "init" {
+			if cmd.Name() != "status" && cmd.Name() != "login" && cmd.Name() != "init" && cmd.Name() != "update" {
 				if cfg.HostURL == "" {
 					return fmt.Errorf("no server host specified")
 				}
@@ -70,4 +70,5 @@ func init() {
 	rootCmd.AddCommand(initTokenCmd())
 	rootCmd.AddCommand(initUserCmd())
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(updateCmd)
 }
