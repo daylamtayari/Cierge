@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -98,18 +97,3 @@ func getConfigDir() (string, error) {
 	return filepath.Join(userConfigDir, "cierge"), nil
 }
 
-// checkConfigPermissions validates that the config file has secure permissions (0600)
-func checkConfigPermissions(configPath string) error {
-	info, err := os.Stat(configPath)
-	if err != nil {
-		return err
-	}
-
-	// Require 0600 permissions
-	if info.Mode().Perm() != 0600 {
-		return fmt.Errorf("insecure config file permissions (%v). Run: chmod 0600 %s",
-			info.Mode().Perm(), configPath)
-	}
-
-	return nil
-}
