@@ -63,6 +63,15 @@ var (
 					logger.Fatal().Err(err).Msg("Failed to login")
 				}
 
+				authResyClient := resy.NewClient(nil, resyToken, "")
+				user, err := authResyClient.GetUser()
+				if err != nil {
+					logger.Error().Err(err).Msg("Failed to get current Resy user profile")
+				}
+				if len(user.PaymentMethods) == 0 {
+					logger.Warn().Msg("No payment methods are saved on Resy - Reservations that require deposits will fail\nTo prevet, go to your Resy account and save a payment method")
+				}
+
 				token = resyToken
 
 			case "opentable":
