@@ -65,7 +65,7 @@ func replaceExecutable(src, dst string) error {
 
 	fmt.Println("Admin privileges required. You will be prompted for your password.")
 	script := fmt.Sprintf(
-		`do shell script "install -m 755 %q %q" with administrator privileges`,
+		`do shell script "install -m 755 '%s' '%s'" with administrator privileges`,
 		src, dst,
 	)
 	if out, err := exec.Command("osascript", "-e", script).CombinedOutput(); err != nil {
