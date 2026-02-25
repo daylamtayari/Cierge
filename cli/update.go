@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -46,8 +47,11 @@ var updateCmd = &cobra.Command{
 			logger.Fatal().Err(err).Msg("Failed to download update")
 		}
 
-		if err := os.Chmod(newBinary, 0755); err != nil {
-			logger.Fatal().Err(err).Msg("Failed to set permissions on update")
+		// Unnecessary on Windows
+		if runtime.GOOS != "windows" {
+			if err := os.Chmod(newBinary, 0755); err != nil {
+				logger.Fatal().Err(err).Msg("Failed to set permissions on update")
+			}
 		}
 
 		if err := replaceExecutable(newBinary, execPath); err != nil {
