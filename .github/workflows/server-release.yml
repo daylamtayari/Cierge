@@ -26,7 +26,7 @@ jobs:
           - "amd64"
           - "arm64"
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version-file: server/go.mod
@@ -55,7 +55,7 @@ jobs:
     needs: build
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
       - name: "Generate Release Notes"
@@ -97,7 +97,7 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: "Extract Version"
         id: version
         run: echo "value=${GITHUB_REF_NAME#server/}" >> $GITHUB_OUTPUT
