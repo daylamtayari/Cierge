@@ -23,19 +23,19 @@ import (
 )
 
 var (
-	ErrDecodeConfig              = errors.New("failed to decode config")
-	ErrMissingRegion             = errors.New("region is required")
-	ErrMissingKMSKeyID           = errors.New("KMS key ID is required")
-	ErrMissingLambdaARN          = errors.New("lambda ARN is required")
-	ErrMissingSchedulerRole      = errors.New("scheduler role ARN is required")
-	ErrMissingScheduleGroupName  = errors.New("schedule group name is required")
-	ErrMissingColdStartBuffer    = errors.New("cold start buffer is required")
-	ErrInvalidColdStartBuffer    = errors.New("cold start buffer is not a valid duration")
-	ErrInvalidKMSKeyID           = errors.New("KMS key ID value is invalid")
-	ErrInvalidLambdaARN          = errors.New("lambda ARN value is invalid")
-	ErrInvalidSchedulerRole      = errors.New("schedule role ARN is invalid")
-	ErrMissingCredentials        = errors.New("no credentials found in environment or config")
-	ErrCredentialValidation      = errors.New("invalid credentials provided")
+	ErrDecodeConfig             = errors.New("failed to decode config")
+	ErrMissingRegion            = errors.New("region is required")
+	ErrMissingKMSKeyID          = errors.New("KMS key ID is required")
+	ErrMissingLambdaARN         = errors.New("lambda ARN is required")
+	ErrMissingSchedulerRole     = errors.New("scheduler role ARN is required")
+	ErrMissingScheduleGroupName = errors.New("schedule group name is required")
+	ErrMissingColdStartBuffer   = errors.New("cold start buffer is required")
+	ErrInvalidColdStartBuffer   = errors.New("cold start buffer is not a valid duration")
+	ErrInvalidKMSKeyID          = errors.New("KMS key ID value is invalid")
+	ErrInvalidLambdaARN         = errors.New("lambda ARN value is invalid")
+	ErrInvalidSchedulerRole     = errors.New("schedule role ARN is invalid")
+	ErrMissingCredentials       = errors.New("no credentials found in environment or config")
+	ErrCredentialValidation     = errors.New("invalid credentials provided")
 )
 
 const scheduleNamePrefix = "cierge-job-"
@@ -151,7 +151,7 @@ func (p *Provider) CancelJob(ctx context.Context, jobID uuid.UUID) error {
 func (p *Provider) UpdateJobCredentials(ctx context.Context, jobID uuid.UUID, encryptedToken string) error {
 	name := scheduleNamePrefix + jobID.String()
 
-	getOutput, err := p.scheduler.GetSchedule(ctx, &scheduler.GetScheduleInput{
+	existingSchedule, err := p.scheduler.GetSchedule(ctx, &scheduler.GetScheduleInput{
 		Name:      &name,
 		GroupName: &p.scheduleGroupName,
 	})
@@ -164,7 +164,7 @@ func (p *Provider) UpdateJobCredentials(ctx context.Context, jobID uuid.UUID, en
 	}
 
 	var event reservation.Event
-	if err := json.Unmarshal([]byte(*getOutput.Target.Input), &event); err != nil {
+	if err := json.Unmarshal([]byte(*existingSchedule.Target.Input), &event); err != nil {
 		return err
 	}
 
@@ -174,24 +174,21 @@ func (p *Provider) UpdateJobCredentials(ctx context.Context, jobID uuid.UUID, en
 	if err != nil {
 		return err
 	}
-
-	scheduledAt := event.DropTime.Add(-p.coldStartBuffer)
-	expression := "at(" + scheduledAt.UTC().Format("2006-01-02T15:04:05") + ")"
 	payloadStr := string(payload)
+	existingSchedule.Target.Input = &payloadStr
 
 	_, err = p.scheduler.UpdateSchedule(ctx, &scheduler.UpdateScheduleInput{
-		Name:               &name,
-		GroupName:          &p.scheduleGroupName,
-		ScheduleExpression: &expression,
-		FlexibleTimeWindow: &schedulertypes.FlexibleTimeWindow{
-			Mode: schedulertypes.FlexibleTimeWindowModeOff,
-		},
-		Target: &schedulertypes.Target{
-			Arn:     &p.lambdaARN,
-			RoleArn: &p.roleARN,
-			Input:   &payloadStr,
-		},
-		KmsKeyArn: &p.kmsKeyID,
+		Name:                       &name,
+		GroupName:                  &p.scheduleGroupName,
+		ScheduleExpression:         existingSchedule.ScheduleExpression,
+		ScheduleExpressionTimezone: existingSchedule.ScheduleExpressionTimezone,
+		FlexibleTimeWindow:         existingSchedule.FlexibleTimeWindow,
+		Target:                     existingSchedule.Target,
+		ActionAfterCompletion:      existingSchedule.ActionAfterCompletion,
+		KmsKeyArn:                  &p.kmsKeyID,
+		Description:                existingSchedule.Description,
+		StartDate:                  existingSchedule.StartDate,
+		EndDate:                    existingSchedule.EndDate,
 	})
 	if err != nil {
 		return err
