@@ -8,15 +8,16 @@ import (
 )
 
 type Config struct {
-	Environment    Environment            `json:"environment" default:"dev"`
-	LogLevel       zerolog.Level          `json:"log_level" default:"info"`
-	Server         Server                 `json:"server"`
-	Database       Database               `json:"database"`
-	Auth           Auth                   `json:"auth"`
-	TokenStorePath string                 `json:"token_store_path" default:"./data/token_store"`
-	Cloud          Cloud                  `json:"cloud"`
-	Notification   []NotificationProvider `json:"notification"`
-	DefaultAdmin   User                   `json:"default_admin"`
+	Environment          Environment            `json:"environment" default:"dev"`
+	LogLevel             zerolog.Level          `json:"log_level" default:"info"`
+	Server               Server                 `json:"server"`
+	Database             Database               `json:"database"`
+	Auth                 Auth                   `json:"auth"`
+	TokenStorePath       string                 `json:"token_store_path" default:"./data/token_store"`
+	Cloud                Cloud                  `json:"cloud"`
+	Notification         []NotificationProvider `json:"notification"`
+	DefaultAdmin         User                   `json:"default_admin"`
+	TokenRenewalInterval Duration               `json:"token_renewal_interval" default:"24h"`
 }
 
 type Environment string
