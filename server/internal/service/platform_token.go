@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
 	"github.com/daylamtayari/cierge/server/cloud"
 	"github.com/daylamtayari/cierge/server/internal/model"
@@ -95,7 +94,7 @@ func (s *PlatformToken) getDecryptedRefreshToken(ctx context.Context, token *mod
 
 // Creates a new token, replacing any existing one
 // Encrypts the token string and adds expiry and refresh values
-func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform string, token any) (*api.PlatformToken, error) {
+func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform string, token any) (*model.PlatformToken, error) {
 	tokenString, err := json.Marshal(token)
 	if err != nil {
 		return nil, err
@@ -149,7 +148,7 @@ func (s *PlatformToken) Create(ctx context.Context, userID uuid.UUID, platform s
 	if err != nil {
 		return nil, err
 	}
-	return newToken.ToAPI(), nil
+	return newToken, nil
 }
 
 // Delete's a specified token

@@ -107,6 +107,6 @@ func (h *PlatformToken) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, newToken)
+	c.JSON(200, newToken.ToAPI())
 	c.Set("message", "created new platform token for "+platform)
 }
