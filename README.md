@@ -79,7 +79,7 @@ Core functionality and good enough to start sharing.
 - [ ] Notifications
 - [ ] OpenTable support
 - [ ] Local 'cloud' implementation
-- [ ] Platform token lifecycle management
+- [X] Platform token lifecycle management
 - [ ] Complete user management functionality
 - [ ] Favourite restaurant functionality
 - [ ] Complete command line interface
