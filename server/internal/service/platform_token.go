@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/daylamtayari/cierge/api"
 	"github.com/daylamtayari/cierge/resy"
@@ -63,6 +64,33 @@ func (s *PlatformToken) GetByUserAndPlatform(ctx context.Context, userID uuid.UU
 		return nil, err
 	}
 	return platformToken, nil
+}
+
+// Gets platform tokens expiring within a given duration and that have refresh tokens
+func (s *PlatformToken) GetExpiringWithRefresh(ctx context.Context, duration time.Duration) ([]*model.PlatformToken, error) {
+	return s.ptRepo.GetExpiringWithinWithRefresh(ctx, duration)
+}
+
+// Returns the decrypted refresh token for a given platform token
+func (s *PlatformToken) getDecryptedRefreshToken(ctx context.Context, token *model.PlatformToken) (string, error) {
+	decryptedToken, err := s.cloudProvider.DecryptData(ctx, token.EncryptedToken)
+	if err != nil {
+		return "", err
+	}
+
+	switch token.Platform {
+	case "resy":
+		var resyTokens resy.Tokens
+		if err := json.Unmarshal([]byte(decryptedToken), &resyTokens); err != nil {
+			return "", err
+		}
+		return resyTokens.Refresh, nil
+	case "opentable":
+		//TODO: Implement opentable
+		return "", ErrUnsupportedPlatform
+	default:
+		return "", ErrUnsupportedPlatform
+	}
 }
 
 // Creates a new token, replacing any existing one
