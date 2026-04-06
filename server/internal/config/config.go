@@ -8,16 +8,16 @@ import (
 )
 
 type Config struct {
-	Environment          Environment            `json:"environment" default:"dev"`
-	LogLevel             zerolog.Level          `json:"log_level" default:"info"`
-	Server               Server                 `json:"server"`
-	Database             Database               `json:"database"`
-	Auth                 Auth                   `json:"auth"`
-	TokenStorePath       string                 `json:"token_store_path" default:"./data/token_store"`
-	Cloud                Cloud                  `json:"cloud"`
-	Notification         []NotificationProvider `json:"notification"`
-	DefaultAdmin         User                   `json:"default_admin"`
-	TokenRenewalInterval Duration               `json:"token_renewal_interval" default:"24h"`
+	Environment    Environment            `json:"environment" default:"dev"`
+	LogLevel       zerolog.Level          `json:"log_level" default:"info"`
+	Server         Server                 `json:"server"`
+	Database       Database               `json:"database"`
+	Auth           Auth                   `json:"auth"`
+	TokenStorePath string                 `json:"token_store_path" default:"./data/token_store"`
+	Cloud          Cloud                  `json:"cloud"`
+	Notification   []NotificationProvider `json:"notification"`
+	DefaultAdmin   User                   `json:"default_admin"`
+	PlatformToken  PlatformToken          `json:"platform_token"`
 }
 
 type Environment string
@@ -141,4 +141,10 @@ type NotificationProvider struct {
 	Name    string         `json:"name"`
 	Enabled bool           `json:"enabled"`
 	Config  map[string]any `json:"config"`
+}
+
+// Platform Token renewal configuration
+type PlatformToken struct {
+	RenewalInterval Duration `json:"renewal_interval" default:"24h"`
+	RenewBefore     Duration `json:"renew_before" default:"336h"`
 }
