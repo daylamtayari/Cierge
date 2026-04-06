@@ -42,6 +42,15 @@ func (r *Job) GetByUser(ctx context.Context, userId uuid.UUID) ([]*model.Job, er
 	return jobs, r.db.WithContext(ctx).Where("user_id = ?", userId).Find(&jobs).Error
 }
 
+// Gets all scheduled jobs for a given user and for a given platform
+func (r *Job) GetScheduledByUserAndPlatform(ctx context.Context, userId uuid.UUID, platform string) ([]*model.Job, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	var jobs []*model.Job
+	return jobs, r.db.WithContext(ctx).Where("status = ?", model.JobStatusScheduled).Where("user_id = ?", userId).Where("platform = ?", platform).Find(&jobs).Error
+}
+
 // Updates a job
 func (r *Job) Update(ctx context.Context, job *model.Job) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)

@@ -161,3 +161,27 @@ func (s *PlatformToken) Delete(ctx context.Context, tokenId uuid.UUID) error {
 	}
 	return nil
 }
+
+// Refresh a provided token
+// NOTE: This does not handle updating any existing jobs with the new credentials so calling this method
+// outside of the token renewer will lead to jobs containing expired credentials
+func (s *PlatformToken) refreshToken(ctx context.Context, token *model.PlatformToken) (*model.PlatformToken, error) {
+	refreshToken, err := s.getDecryptedRefreshToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	switch token.Platform {
+	case "resy":
+		resyClient := resy.NewClient(nil, resy.Tokens{}, "")
+		newTokens, err := resyClient.RefreshToken(refreshToken)
+		if err != nil {
+			return nil, err
+		}
+		return s.Create(ctx, token.UserID, token.Platform, newTokens)
+	case "opentable":
+		return nil, ErrUnsupportedPlatform
+	default:
+		return nil, ErrUnsupportedPlatform
+	}
+}

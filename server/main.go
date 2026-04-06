@@ -144,6 +144,10 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	// Create and start token renewer
+	tokenRenewer := service.NewTokenRenewer(services.PlatformToken, services.Job, cloudProvider, logger, cfg.PlatformToken)
+	tokenRenewer.Start(ctx)
+
 	serverErrors := make(chan error, 1)
 	go func() {
 		logger.Info().Str("address", cfg.Server.Address()).Msg("starting http server")

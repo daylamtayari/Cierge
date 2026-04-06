@@ -61,6 +61,16 @@ func (s *Job) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Job, er
 	return jobs, nil
 }
 
+// Retrieves all scheduled jobs for a given user and platform
+func (s *Job) GetScheduledByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) ([]*model.Job, error) {
+	jobs, err := s.jobRepo.GetScheduledByUserAndPlatform(ctx, userID, platform)
+	if err != nil {
+		return jobs, err
+	}
+	return jobs, nil
+
+}
+
 // Updates a job record from a callback request. Updates the various fields of the Job object
 // and if successful, stores the success output and creates a reservation.
 func (s *Job) UpdateFromCallback(ctx context.Context, job *model.Job, callback reservation.Output) (*model.Job, error) {
