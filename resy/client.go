@@ -20,12 +20,13 @@ const Host = "https://api.resy.com"
 const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 
 var (
-	ErrBadRequest      = errors.New("bad or malformed request")
-	ErrBadGateway      = errors.New("bad gateway - likely due to malformed input")
-	ErrNotFound        = errors.New("not found")
-	ErrPaymentRequired = errors.New("payment required")
-	ErrUnauthorized    = errors.New("unauthorized")
-	ErrUnhandledStatus = errors.New("unhandled status code returned")
+	ErrBadRequest         = errors.New("bad or malformed request")
+	ErrBadGateway         = errors.New("bad gateway - likely due to malformed input")
+	ErrNotFound           = errors.New("not found")
+	ErrPaymentRequired    = errors.New("payment required")
+	ErrPreconditionFailed = errors.New("precondition failed")
+	ErrUnauthorized       = errors.New("unauthorized")
+	ErrUnhandledStatus    = errors.New("unhandled status code returned")
 )
 
 type Client struct {
@@ -177,6 +178,10 @@ func (c *Client) DoWithCookies(req *http.Request, v any) ([]*http.Cookie, error)
 		// debugging and understanding the error.
 		if res.StatusCode == 400 {
 			return nil, fmt.Errorf("%w: %v", ErrBadRequest, string(body))
+		} else if res.StatusCode == 412 {
+			// Also handle 412s to get the response, ideally temporarily until a clear
+			// understanding of this response can be made
+			return nil, fmt.Errorf("%w: %v", ErrPreconditionFailed, string(body))
 		}
 
 		if _, ok := v.(*[]byte); ok {
