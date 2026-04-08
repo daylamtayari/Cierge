@@ -81,16 +81,17 @@ func bookingHandler[T any](
 		defer close(doneCh)
 		for attempt := range resultCh {
 			attempts = append(attempts, attempt)
-			if attempt.Error == "" {
+			if attempt.Error == "" && finalResult == nil {
 				// Cancel all other goroutines on success
 				cancel()
 				finalResult = attempt.Result
-				return
 			}
 		}
 
-		// All attempts failed
-		finalError = ErrFailedToBookSlots
+		if finalResult == nil {
+			// All attempts failed
+			finalError = ErrFailedToBookSlots
+		}
 	}()
 
 	// Launch goroutines with 1-second stagger to maintain soft preference
