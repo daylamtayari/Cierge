@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/daylamtayari/cierge/api"
 	"github.com/google/uuid"
 )
 
@@ -24,4 +25,21 @@ type Reservation struct {
 
 	CreatedAt time.Time `gorm:"not null;default:now()"`
 	UpdatedAt time.Time `gorm:"not null;default:now()"`
+}
+
+func (m *Reservation) ToAPI() *api.Reservation {
+	return &api.Reservation{
+		ID:           m.ID,
+		UserID:       m.UserID,
+		JobID:        m.JobID,
+		RestaurantID: m.RestaurantID,
+
+		Platform:      m.Platform,
+		Confirmation:  m.Confirmation,
+		ReservationAt: m.ReservationAt,
+		PartySize:     m.PartySize,
+
+		CreatedAt: m.CreatedAt.UTC(),
+		UpdatedAt: m.UpdatedAt.UTC(),
+	}
 }
