@@ -54,6 +54,23 @@ type JobCreationRequest struct {
 	DropConfigID    uuid.UUID `json:"drop_config_id"`
 }
 
+// Retrieve a given job
+func (c *Client) GetJob(jobId uuid.UUID) (Job, error) {
+	reqUrl := c.host + "/api/job/" + jobId.String()
+	req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+	if err != nil {
+		return Job{}, err
+	}
+
+	var job Job
+	err = c.Do(req, &job)
+	if err != nil {
+		return Job{}, err
+	}
+
+	return job, nil
+}
+
 // Retrieve jobs for the user
 // If upcomingOnly is set to true, only upcoming jobs are returned
 func (c *Client) GetJobs(upcomingOnly bool) ([]Job, error) {

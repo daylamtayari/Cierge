@@ -57,6 +57,36 @@ func (h *Job) List(c *gin.Context) {
 	c.Set("message", "retrieved own jobs")
 }
 
+// GET /api/job/:job
+func (h *Job) Get(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	jobUid, err := uuid.Parse(c.Param("job"))
+	if err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "invalid job ID")
+		util.RespondBadRequest(c, "Job ID must be a valid UUID")
+		return
+	}
+
+	job, err := h.jobService.GetByID(c.Request.Context(), jobUid)
+	if err != nil && errors.Is(err, service.ErrJobDNE) {
+		util.RespondNotFound(c, "Job not found")
+		return
+	} else if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to retrieve job")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	if job.UserID != appctx.UserID(c.Request.Context()) || c.GetBool("is_admin") {
+		util.RespondNotFound(c, "Job not found")
+		return
+	}
+
+	c.JSON(200, job.ToAPI())
+	c.Set("message", "retrieved job")
+}
+
 // POST /api/job - Create a new job
 func (h *Job) Create(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())

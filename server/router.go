@@ -82,6 +82,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		{
 			jobs.POST("", handlers.Job.Create)
 			jobs.GET("/list", handlers.Job.List)
+			jobs.GET("/:job", handlers.Job.Get)
 			jobs.POST("/:job/cancel", handlers.Job.Cancel)
 		}
 
