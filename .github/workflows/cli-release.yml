@@ -55,7 +55,7 @@ jobs:
             "${BINARY}.pkg"
           rm "${BINARY}"
       - name: "Upload Artifact"
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: cierge-*
@@ -100,7 +100,7 @@ jobs:
           sha256sum cierge-* > SHA256SUMS
           md5sum cierge-* > MD5SUMS
       - name: "Create Release"
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
           body: ${{ steps.changelog.outputs.notes }}
           files: ./release/*

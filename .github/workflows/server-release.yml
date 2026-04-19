@@ -42,7 +42,7 @@ jobs:
         working-directory: ./server
         run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -v -trimpath -ldflags="-X main.Version=${{ steps.version.outputs.value }}" -o ../cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}.exe
       - name: "Upload Artifact"
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: cierge-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: cierge-*
@@ -87,7 +87,7 @@ jobs:
           sha256sum cierge-* > SHA256SUMS
           md5sum cierge-* > MD5SUMS
       - name: "Create Release"
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
           body: ${{ steps.changelog.outputs.notes }}
           files: ./release/*
@@ -106,7 +106,7 @@ jobs:
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
       - name: "Log in to GHCR"
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -121,7 +121,7 @@ jobs:
             type=raw,value=latest
             type=sha
       - name: "Build and Push"
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f
         with:
           context: .
           file: server/Dockerfile
