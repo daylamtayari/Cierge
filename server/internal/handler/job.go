@@ -78,13 +78,14 @@ func (h *Job) Get(c *gin.Context) {
 		return
 	}
 
-	if job.UserID != appctx.UserID(c.Request.Context()) || c.GetBool("is_admin") {
+	if job.UserID == appctx.UserID(c.Request.Context()) || c.GetBool("is_admin") {
+		c.JSON(200, job.ToAPI())
+		c.Set("message", "retrieved job")
+	} else {
 		util.RespondNotFound(c, "Job not found")
 		return
 	}
 
-	c.JSON(200, job.ToAPI())
-	c.Set("message", "retrieved job")
 }
 
 // POST /api/job - Create a new job

@@ -39,9 +39,7 @@ func (s *Reservation) GetByID(ctx context.Context, reservationID uuid.UUID) (*mo
 // Retrieve all reservations for a given user
 func (s *Reservation) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
 	reservations, err := s.reservationRepo.GetByUser(ctx, userID)
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrReservationDNE
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return reservations, nil
@@ -50,9 +48,7 @@ func (s *Reservation) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model
 // Retrieve all upcoming reservations for a given user
 func (s *Reservation) GetByUserUpcoming(ctx context.Context, userID uuid.UUID) ([]*model.Reservation, error) {
 	reservations, err := s.reservationRepo.GetByUserUpcoming(ctx, userID)
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrReservationDNE
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return reservations, nil

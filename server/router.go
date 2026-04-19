@@ -86,6 +86,13 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 			jobs.POST("/:job/cancel", handlers.Job.Cancel)
 		}
 
+		// Reservation routes
+		reservation := api.Group("/reservation")
+		{
+			reservation.GET("/list", handlers.Reservation.List)
+			reservation.GET("/:reservation", handlers.Reservation.Get)
+		}
+
 		// Restaurant route
 		restaurants := api.Group("/restaurant")
 		{
