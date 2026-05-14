@@ -11,7 +11,7 @@ require (
 	github.com/daylamtayari/cierge/resy v0.8.6
 	github.com/fatih/color v1.18.0
 	github.com/google/uuid v1.6.0
-	github.com/jedib0t/go-pretty/v6 v6.7.8
+	github.com/jedib0t/go-pretty/v6 v6.7.10
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
