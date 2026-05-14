@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/charmbracelet/bubbles v1.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
-	github.com/charmbracelet/huh v0.8.0
+	github.com/charmbracelet/huh v1.0.0
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/daylamtayari/cierge/api v0.8.0
 	github.com/daylamtayari/cierge/resy v0.8.6
