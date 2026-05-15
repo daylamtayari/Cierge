@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/aws/aws-lambda-go v1.52.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.17
-	github.com/aws/aws-sdk-go-v2/service/kms v1.50.0
+	github.com/aws/aws-sdk-go-v2/service/kms v1.51.1
 	github.com/daylamtayari/cierge/reservation v0.8.6
 )
 
