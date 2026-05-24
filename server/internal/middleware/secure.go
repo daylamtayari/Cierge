@@ -10,7 +10,7 @@ func Secure(isDevelopment bool) gin.HandlerFunc {
 		c.Header("X-Frame-Options", "DENY")
 		c.Header("X-Content-Type-Options", "nosniff")
 		c.Header("Referrer-Policy", "same-origin")
-		c.Header("Content-Security-Policy", "default-src 'self'; object-src 'none'")
+		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'")
 
 		// Only implement HSTS if not in development mode
 		if !isDevelopment {

@@ -16,6 +16,20 @@ dev: ## Run server in dev mode with hot reload
 run: ## Run server
 	go run ./server
 
+# Frontend
+
+.PHONY: web-install
+web-install: ## Install frontend dependencies
+	cd server/web && pnpm install
+
+.PHONY: web-dev
+web-dev: ## Run frontend dev server (proxies /api and /auth to :8080)
+	cd server/web && pnpm dev
+
+.PHONY: web-build
+web-build: ## Build frontend into server/web/dist/ for Go embed
+	cd server/web && pnpm build
+
 # Utilities and cleanup
 
 .PHONY: tidy

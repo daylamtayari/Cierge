@@ -1,5 +1,8 @@
 bin/
 data/
+server/web/node_modules/
+server/web/dist/
+!server/web/dist/index.html
 dist/
 .terraform/
 *.tfstate
@@ -7,3 +10,5 @@ dist/
 *.tfvars
 !example.tfvars
 *.log
+examples/
+tmp/

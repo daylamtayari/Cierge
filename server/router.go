@@ -8,6 +8,7 @@ import (
 	"github.com/daylamtayari/cierge/server/internal/handler"
 	"github.com/daylamtayari/cierge/server/internal/middleware"
 	"github.com/daylamtayari/cierge/server/internal/service"
+	"github.com/daylamtayari/cierge/server/web"
 )
 
 func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Services) *gin.Engine {
@@ -113,6 +114,13 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		{
 			admin.PUT("/user", handlers.User.Create)
 		}
+	}
+
+	// Serve the built React frontend (SPA) for any route not matched above.
+	// In development the frontend runs on its own Vite dev server (port 5173),
+	// so we skip this and avoid shadowing unmatched routes with a stale embed.
+	if !cfg.IsDevelopment() {
+		router.NoRoute(web.ServeSPA())
 	}
 
 	return router
