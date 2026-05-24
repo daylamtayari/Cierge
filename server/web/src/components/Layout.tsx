@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
+import { apiFetch } from '../lib/apiFetch'
 import type { User } from '../types/user'
 
 interface LayoutProps {
@@ -13,17 +14,13 @@ function initials(email: string): string {
 
 export default function Layout({ children }: LayoutProps) {
   const [user, setUser] = useState<User | null>(null)
-  const navigate = useNavigate()
 
   useEffect(() => {
-    fetch('/api/user/me', { credentials: 'include' })
-      .then(res => {
-        if (res.status === 401) { navigate('/login'); return null }
-        return res.json()
-      })
+    apiFetch('/api/user/me')
+      .then(res => res.ok ? res.json() : null)
       .then(data => data && setUser(data))
-      .catch(() => navigate('/login'))
-  }, [navigate])
+      .catch(() => {})
+  }, [])
 
   return (
     <div className="shell">

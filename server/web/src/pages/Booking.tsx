@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
+import { apiFetch } from '../lib/apiFetch'
 import type { Job, JobStatus } from '../types/job'
 import type { Restaurant } from '../types/restaurant'
 
@@ -72,16 +73,15 @@ export default function Booking() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/job/${id}`, { credentials: 'include' })
+    apiFetch(`/api/job/${id}`)
       .then(res => {
-        if (res.status === 401) { navigate('/login'); return null }
         if (res.status === 404) { navigate('/'); return null }
-        return res.json()
+        return res.ok ? res.json() : null
       })
       .then(async (data: Job | null) => {
         if (!data) return
         setJob(data)
-        const r = await fetch(`/api/restaurant/${data.restaurant_id}`, { credentials: 'include' })
+        const r = await apiFetch(`/api/restaurant/${data.restaurant_id}`)
         if (r.ok) setRestaurant(await r.json())
       })
       .catch(() => {})

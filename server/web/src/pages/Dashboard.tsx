@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
+import { apiFetch } from '../lib/apiFetch'
 import type { Job, JobStatus } from '../types/job'
 import type { Restaurant } from '../types/restaurant'
 
@@ -42,11 +43,8 @@ export default function Dashboard() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch('/api/job/list', { credentials: 'include' })
-      .then(res => {
-        if (res.status === 401) { navigate('/login'); return null }
-        return res.json()
-      })
+    apiFetch('/api/job/list')
+      .then(res => res.ok ? res.json() : null)
       .then(async (data: Job[] | null) => {
         if (!data) return
         setJobs([...data].sort((a, b) =>
@@ -56,7 +54,7 @@ export default function Dashboard() {
         const uniqueIds = [...new Set(data.map(j => j.restaurant_id))]
         const results = await Promise.all(
           uniqueIds.map(id =>
-            fetch(`/api/restaurant/${id}`, { credentials: 'include' })
+            apiFetch(`/api/restaurant/${id}`)
               .then(r => r.ok ? r.json() as Promise<Restaurant> : null)
               .catch(() => null)
           )
@@ -67,7 +65,7 @@ export default function Dashboard() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [navigate])
+  }, [])
 
   return (
     <Layout>
