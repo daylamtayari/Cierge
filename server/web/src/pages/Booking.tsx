@@ -35,6 +35,35 @@ function formatDateTime(dateStr: string): string {
   return `${time} on ${date}`
 }
 
+function formatReservedTime(dateStr: string): string {
+  const d = new Date(dateStr)
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+  return `${time} on ${date}`
+}
+
+function formatLogs(logs: string): string {
+  try {
+    return JSON.stringify(JSON.parse(logs), null, 2)
+  } catch {
+    return logs
+  }
+}
+
+function parseConfirmation(platform: string, confirmation: string): { label: string; value: string } {
+  if (platform === 'resy') {
+    try {
+      const parsed = JSON.parse(confirmation)
+      if (parsed.reservation_id != null) {
+        return { label: 'Reservation ID', value: String(parsed.reservation_id) }
+      }
+    } catch {
+      // fall through to default
+    }
+  }
+  return { label: 'Confirmation', value: confirmation }
+}
+
 export default function Booking() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -108,28 +137,35 @@ export default function Booking() {
             {job.reserved_time && (
               <>
                 <dt>Reserved time</dt>
-                <dd>{formatDateTime(job.reserved_time)}</dd>
+                <dd>{formatReservedTime(job.reserved_time)}</dd>
               </>
             )}
 
-            {job.confirmation && (
-              <>
-                <dt>Confirmation</dt>
-                <dd>{job.confirmation}</dd>
-              </>
-            )}
+            {job.confirmation && (() => {
+              const { label, value } = parseConfirmation(job.platform, job.confirmation)
+              return (
+                <>
+                  <dt>{label}</dt>
+                  <dd>{value}</dd>
+                </>
+              )
+            })()}
           </dl>
         </div>
 
-        {job.status === 'success' && job.confirmation && (
-          <div className="banner banner-confirmed" style={{ marginBottom: 'var(--sp-6)' }}>
-            <div className="banner-label">Reservation confirmed</div>
-            <div className="banner-value">{job.confirmation}</div>
-            {job.reserved_time && (
-              <div className="banner-detail">{formatDateTime(job.reserved_time)}</div>
-            )}
-          </div>
-        )}
+        {job.status === 'success' && job.confirmation && (() => {
+          const { label, value } = parseConfirmation(job.platform, job.confirmation)
+          return (
+            <div className="banner banner-confirmed" style={{ marginBottom: 'var(--sp-6)' }}>
+              <div className="banner-label">Reservation confirmed</div>
+              <div className="banner-sublabel">{label}</div>
+              <div className="banner-value">{value}</div>
+              {job.reserved_time && (
+                <div className="banner-detail">{formatReservedTime(job.reserved_time)}</div>
+              )}
+            </div>
+          )
+        })()}
 
         {job.status === 'failed' && (
           <div className="banner banner-failed" style={{ marginBottom: 'var(--sp-6)' }}>
@@ -147,7 +183,7 @@ export default function Booking() {
             <div className="section-head">
               <h2 className="heading-section">Logs</h2>
             </div>
-            <pre className="log-viewer">{job.logs}</pre>
+            <pre className="log-viewer">{formatLogs(job.logs)}</pre>
           </div>
         )}
       </div>
