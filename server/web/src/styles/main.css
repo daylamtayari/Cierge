@@ -459,14 +459,19 @@ body {
 .option-meta  { font-size: var(--text-xs); color: var(--text-tertiary); }
 
 /* ===== Platform row (settings) ===== */
+.platform-block { border-top: 1px solid var(--border-subtle); }
+.platform-block:last-child { border-bottom: 1px solid var(--border-subtle); }
 .platform-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: var(--sp-4) 0;
 }
-.platform-row + .platform-row { border-top: 1px solid var(--border-subtle); }
 .platform-name   { font-weight: 500; font-size: var(--text-sm); }
 .platform-status { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: 2px; }
 .platform-actions { display: flex; gap: var(--sp-2); }
+.platform-form {
+  padding: var(--sp-4) 0 var(--sp-6);
+  border-top: 1px solid var(--border-subtle);
+}
 
 /* ===== Back link ===== */
 .back-link {
