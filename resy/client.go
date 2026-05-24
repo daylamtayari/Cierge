@@ -153,7 +153,7 @@ func (c *Client) DoWithCookies(req *http.Request, v any) ([]*http.Cookie, error)
 	defer res.Body.Close() //nolint: errcheck
 
 	var body []byte
-	if res.ContentLength != 0 && (res.StatusCode == 200 || res.StatusCode == 201 || res.StatusCode == 400) {
+	if res.ContentLength != 0 {
 		// Handle gzip-compressed responses
 		reader := res.Body
 		if res.Header.Get("Content-Encoding") == "gzip" {
@@ -170,29 +170,19 @@ func (c *Client) DoWithCookies(req *http.Request, v any) ([]*http.Cookie, error)
 			return nil, err
 		}
 
-		// Handle 400s differently as opposed to other error status
-		// codes as usually 400s return information in the body about
-		// what was wrong in the request and this way it allows the error
-		// message to contain a wrapped ErrBadRequest that can be unwrapped
-		// and identified, as well as the body response that can be used for
-		// debugging and understanding the error.
-		if res.StatusCode == 400 {
-			return nil, fmt.Errorf("%w: %v", ErrBadRequest, string(body))
-		} else if res.StatusCode == 412 {
-			// Also handle 412s to get the response, ideally temporarily until a clear
-			// understanding of this response can be made
-			return nil, fmt.Errorf("%w: %v", ErrPreconditionFailed, string(body))
-		}
-
-		if _, ok := v.(*[]byte); ok {
-			// If a byte array is provided, the body value
-			// is returned directly and not unmarshalled
-			*v.(*[]byte) = body
-		} else if v != nil {
-			err = json.Unmarshal(body, &v)
-		}
-		if err != nil {
-			return nil, err
+		// Only attempt to unmarshall in the provided type
+		// if the status code is successful
+		if res.StatusCode < 300 {
+			if _, ok := v.(*[]byte); ok {
+				// If a byte array is provided, the body value
+				// is returned directly and not unmarshalled
+				*v.(*[]byte) = body
+			} else if v != nil {
+				err = json.Unmarshal(body, &v)
+			}
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -201,19 +191,23 @@ func (c *Client) DoWithCookies(req *http.Request, v any) ([]*http.Cookie, error)
 		return res.Cookies(), nil
 	case 201:
 		return res.Cookies(), nil
+	case 400:
+		return nil, fmt.Errorf("%w: %v", ErrBadRequest, string(body))
 	case 402:
-		return nil, ErrPaymentRequired
+		return nil, fmt.Errorf("%w: %v", ErrPaymentRequired, string(body))
 	case 404:
-		return nil, ErrNotFound
+		return nil, fmt.Errorf("%w: %v", ErrNotFound, string(body))
+	case 412:
+		return nil, fmt.Errorf("%w: %v", ErrPreconditionFailed, string(body))
 	case 419:
 		// Resy returns the 419 status code for 'Unauthorized' error messages
 		// why not a 401 or 403? don't ask me...
-		return nil, ErrUnauthorized
+		return nil, fmt.Errorf("%w: %v", ErrUnauthorized, string(body))
 	case 502:
 		// Identified that Resy will return 502s on various errors related to
 		// malformed or unexpected input values
-		return nil, ErrBadGateway
+		return nil, fmt.Errorf("%w: %v", ErrBadGateway, string(body))
 	default:
-		return nil, fmt.Errorf("%w: %d", ErrUnhandledStatus, res.StatusCode)
+		return nil, fmt.Errorf("%w: %d: %v", ErrUnhandledStatus, res.StatusCode, string(body))
 	}
 }
