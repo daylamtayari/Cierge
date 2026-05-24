@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { apiFetch } from '../lib/apiFetch'
 import type { Job, JobStatus } from '../types/job'
@@ -68,6 +68,9 @@ function parseConfirmation(platform: string, confirmation: string): { label: str
 export default function Booking() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const backTo: string = (location.state as { from?: string })?.from ?? '/'
+  const backLabel: string = (location.state as { label?: string })?.label ?? 'Bookings'
   const [job, setJob] = useState<Job | null>(null)
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [loading, setLoading] = useState(true)
@@ -103,7 +106,7 @@ export default function Booking() {
   return (
     <Layout>
       <div className="container">
-        <Link to="/" className="back-link">← Bookings</Link>
+        <Link to={backTo} className="back-link">← {backLabel}</Link>
 
         <div className="detail-header">
           <div>

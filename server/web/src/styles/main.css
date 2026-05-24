@@ -559,3 +559,8 @@ body {
   color: var(--ink);
   text-transform: capitalize;
 }
+.job-table-user {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}

@@ -30,6 +30,11 @@ export default function Layout({ children }: LayoutProps) {
           <NavLink to="/" className={({ isActive }) => 'topbar-link' + (isActive ? ' active' : '')}>
             Bookings
           </NavLink>
+          {user?.is_admin && (
+            <NavLink to="/admin/bookings" className={({ isActive }) => 'topbar-link' + (isActive ? ' active' : '')}>
+              All Bookings
+            </NavLink>
+          )}
           <NavLink to="/settings" className={({ isActive }) => 'topbar-link' + (isActive ? ' active' : '')}>
             Settings
           </NavLink>
