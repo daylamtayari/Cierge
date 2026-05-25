@@ -9,7 +9,8 @@ import (
 func TestSlots_Get(t *testing.T) {
 	client, config := newUnauthenticatedClient(t)
 
-	slots, venue, err := client.GetSlots(config.VenueId, config.TestDate, 2)
+	testDateStr := config.TestDate.Format(ResyDateFormat)
+	slots, venue, err := client.GetSlots(config.VenueId, testDateStr, 2)
 	requireNoError(t, err, "GetSlots failed")
 
 	// Venue should always be returned even if no slots
@@ -55,11 +56,11 @@ func TestSlots_Get(t *testing.T) {
 		}
 
 		t.Logf("Found %d slots for venue %s on %s, first slot: %s (Quantity: %d)",
-			len(slots), venue.Name, config.TestDate.Format("2006-01-02"),
+			len(slots), venue.Name, testDateStr,
 			slot.Date.Start.Format(ResyDatetimeFormat), slot.Quantity)
 	} else {
 		t.Logf("No slots available for venue %s on %s (party size: 2)",
-			venue.Name, config.TestDate.Format("2006-01-02"))
+			venue.Name, testDateStr)
 	}
 }
 
@@ -67,7 +68,7 @@ func TestSlots_Get_NoAvailability(t *testing.T) {
 	client, config := newUnauthenticatedClient(t)
 
 	// Use a date far in the future (90+ days) where slots are unlikely to be available
-	farFutureDate := time.Now().AddDate(0, 0, 90)
+	farFutureDate := time.Now().AddDate(0, 0, 90).Format(ResyDateFormat)
 
 	slots, venue, err := client.GetSlots(config.VenueId, farFutureDate, 2)
 
@@ -87,7 +88,7 @@ func TestSlots_Get_NoAvailability(t *testing.T) {
 func TestSlots_Get_InvalidVenue(t *testing.T) {
 	client, config := newUnauthenticatedClient(t)
 
-	slots, venue, err := client.GetSlots(TestVenueInvalid, config.TestDate, 2)
+	slots, venue, err := client.GetSlots(TestVenueInvalid, config.TestDate.Format(ResyDateFormat), 2)
 
 	if err == nil {
 		t.Error("expected error for invalid venue ID")
@@ -111,7 +112,8 @@ func TestSlots_GetDetails(t *testing.T) {
 	client, config := newAuthenticatedClient(t)
 
 	// First, get available slots
-	slots, venue, err := client.GetSlots(config.VenueId, config.TestDate, 2)
+	testDateStr := config.TestDate.Format(ResyDateFormat)
+	slots, venue, err := client.GetSlots(config.VenueId, testDateStr, 2)
 	requireNoError(t, err, "GetSlots failed")
 
 	if len(slots) == 0 {
@@ -122,7 +124,7 @@ func TestSlots_GetDetails(t *testing.T) {
 	t.Logf("WARNING: Creating booking token for venue %s", venue.Name)
 
 	slotConfig := slots[0].Config.Token
-	slotDetails, err := client.GetSlotDetails(slotConfig, config.TestDate, 2)
+	slotDetails, err := client.GetSlotDetails(slotConfig, testDateStr, 2)
 	requireNoError(t, err, "GetSlotDetails failed")
 	assertNotNil(t, slotDetails, "slotDetails should not be nil")
 
@@ -156,7 +158,7 @@ func TestSlots_GetDetails_InvalidConfig(t *testing.T) {
 	client, config := newAuthenticatedClient(t)
 
 	// Use an invalid config token
-	slotDetails, err := client.GetSlotDetails("invalid-token-12345", config.TestDate, 2)
+	slotDetails, err := client.GetSlotDetails("invalid-token-12345", config.TestDate.Format(ResyDateFormat), 2)
 
 	// Should get an error (likely 400 or 404)
 	if err == nil {

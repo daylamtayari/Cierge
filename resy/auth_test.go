@@ -36,7 +36,7 @@ func TestLogin_Success(t *testing.T) {
 	}
 
 	// Validate token is a valid JWT
-	expiry, err := getTokenExpiry(tokens.Token)
+	expiry, err := GetTokenExpiry(tokens.Token)
 	requireNoError(t, err, "Failed to parse auth token expiry")
 
 	// Token should expire in the future
@@ -208,7 +208,7 @@ func TestGetTokenExpiry(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			token := tc.setupToken()
-			expiry, err := getTokenExpiry(token)
+			expiry, err := GetTokenExpiry(token)
 
 			if tc.expectError {
 				if err == nil {
@@ -218,7 +218,7 @@ func TestGetTokenExpiry(t *testing.T) {
 					t.Errorf("Expected error %v, got: %v", tc.expectedErr, err)
 				}
 			} else {
-				requireNoError(t, err, "getTokenExpiry failed")
+				requireNoError(t, err, "GetTokenExpiry failed")
 				if expiry.IsZero() {
 					t.Error("Expected non-zero expiry time")
 				}

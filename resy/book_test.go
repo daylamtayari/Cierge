@@ -26,14 +26,15 @@ func TestBooking_Book_WithoutPayment(t *testing.T) {
 	client, config := newAuthenticatedClient(t)
 
 	// First, get available slots to get a booking token
-	slots, venue, err := client.GetSlots(config.VenueId, config.TestDate, 2)
+	testDateStr := config.TestDate.Format(ResyDateFormat)
+	slots, venue, err := client.GetSlots(config.VenueId, testDateStr, 2)
 	if err != nil || len(slots) == 0 {
 		t.Skip("No slots available for booking test")
 	}
 
 	// Get slot details to create a booking token
 	slotConfig := slots[0].Config.Token
-	slotDetails, err := client.GetSlotDetails(slotConfig, config.TestDate, 2)
+	slotDetails, err := client.GetSlotDetails(slotConfig, testDateStr, 2)
 	if err != nil {
 		t.Skipf("Could not get slot details: %v", err)
 	}
@@ -61,7 +62,7 @@ func TestBooking_Book_WithoutPayment(t *testing.T) {
 
 	// Booking succeeded - MUST CANCEL IMMEDIATELY
 	if confirmation != nil {
-		t.Logf("WARNING: Booking succeeded! Reservation ID: %s, Token: %s",
+		t.Logf("WARNING: Booking succeeded! Reservation ID: %d, Token: %s",
 			confirmation.ReservationId, confirmation.ReservationToken)
 		t.Log("Attempting to cancel immediately...")
 
