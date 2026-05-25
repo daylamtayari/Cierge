@@ -30,6 +30,16 @@ jobs:
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
           go-version-file: server/go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: "Install pnpm"
+        run: npm install -g pnpm
+      - name: "Build Frontend"
+        working-directory: ./server/web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
       - name: "Extract Version"
         id: version
         run: echo "value=${GITHUB_REF_NAME#server/}" >> $GITHUB_OUTPUT
