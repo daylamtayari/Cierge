@@ -83,6 +83,15 @@ func (r *Job) UpdateStatus(ctx context.Context, status model.JobStatus, id uuid.
 		}).Error
 }
 
+// Gets all jobs across all users
+func (r *Job) GetAll(ctx context.Context) ([]*model.Job, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	defer cancel()
+
+	var jobs []*model.Job
+	return jobs, r.db.WithContext(ctx).Find(&jobs).Error
+}
+
 // Create a job
 func (r *Job) Create(ctx context.Context, job *model.Job) error {
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)

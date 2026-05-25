@@ -88,6 +88,26 @@ func (h *Job) Get(c *gin.Context) {
 
 }
 
+// GET /api/admin/job/list - Lists all jobs across all users
+func (h *Job) ListAll(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	jobs, err := h.jobService.GetAll(c.Request.Context())
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, nil, "failed to fetch all jobs")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	apiJobs := make([]*api.Job, 0, len(jobs))
+	for _, job := range jobs {
+		apiJobs = append(apiJobs, job.ToAPI())
+	}
+
+	c.JSON(200, apiJobs)
+	c.Set("message", "retrieved all jobs")
+}
+
 // POST /api/job - Create a new job
 func (h *Job) Create(c *gin.Context) {
 	errorCol := appctx.ErrorCollector(c.Request.Context())

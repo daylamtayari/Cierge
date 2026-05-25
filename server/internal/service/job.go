@@ -61,6 +61,11 @@ func (s *Job) GetByUser(ctx context.Context, userID uuid.UUID) ([]*model.Job, er
 	return jobs, nil
 }
 
+// Retrieves all jobs across all users
+func (s *Job) GetAll(ctx context.Context) ([]*model.Job, error) {
+	return s.jobRepo.GetAll(ctx)
+}
+
 // Retrieves all scheduled jobs for a given user and platform
 func (s *Job) GetScheduledByUserAndPlatform(ctx context.Context, userID uuid.UUID, platform string) ([]*model.Job, error) {
 	jobs, err := s.jobRepo.GetScheduledByUserAndPlatform(ctx, userID, platform)

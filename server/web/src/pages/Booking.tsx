@@ -74,6 +74,24 @@ export default function Booking() {
   const [job, setJob] = useState<Job | null>(null)
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [loading, setLoading] = useState(true)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState('')
+
+  async function handleCancel() {
+    setCancelling(true)
+    setCancelError('')
+    try {
+      const res = await apiFetch(`/api/job/${id}/cancel`, { method: 'POST' })
+      if (res.ok) {
+        setJob(j => j ? { ...j, status: 'cancelled' } : j)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setCancelError(data.message || 'Unable to cancel this booking.')
+      }
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   useEffect(() => {
     apiFetch(`/api/job/${id}`)
@@ -155,6 +173,19 @@ export default function Booking() {
             })()}
           </dl>
         </div>
+
+        {(job.status === 'created' || job.status === 'scheduled') && (
+          <div className="section">
+            {cancelError && <p className="feedback-err" style={{ marginBottom: 'var(--sp-3)' }}>{cancelError}</p>}
+            <button
+              className="btn btn-danger-outline"
+              onClick={handleCancel}
+              disabled={cancelling}
+            >
+              {cancelling ? 'Cancelling…' : 'Cancel this booking'}
+            </button>
+          </div>
+        )}
 
         {job.status === 'success' && job.confirmation && (() => {
           const { label, value } = parseConfirmation(job.platform, job.confirmation)
