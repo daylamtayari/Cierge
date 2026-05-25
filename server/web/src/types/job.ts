@@ -17,6 +17,7 @@ export interface Job {
   reserved_time?: string
   confirmation?: string
   error_message?: string
+  logs?: string
   created_at: string
   updated_at: string
 }
