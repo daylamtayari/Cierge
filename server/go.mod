@@ -13,7 +13,7 @@ require (
 	github.com/daylamtayari/cierge/errcol v0.9.4
 	github.com/daylamtayari/cierge/querycol v0.9.0
 	github.com/daylamtayari/cierge/reservation v0.8.6
-	github.com/daylamtayari/cierge/resy v0.8.7
+	github.com/daylamtayari/cierge/resy v0.8.10
 	github.com/dgraph-io/badger/v4 v4.9.1
 	github.com/gin-contrib/cors v1.7.7
 	github.com/gin-gonic/gin v1.12.0

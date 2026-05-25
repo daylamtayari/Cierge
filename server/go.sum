@@ -51,8 +51,8 @@ github.com/daylamtayari/cierge/querycol v0.9.0 h1:Uiw7Wra9DrbUfavorKTBS0rnqAWv1V
 github.com/daylamtayari/cierge/querycol v0.9.0/go.mod h1:8m9qagdZii1u2oo27ndfu+2Wwb9e6YfYRIV5oxRlpI4=
 github.com/daylamtayari/cierge/reservation v0.8.6 h1:fRejTAlrwB8UfNmAs+cm2Iw60dzQxKTQSNAuZ/DlTHs=
 github.com/daylamtayari/cierge/reservation v0.8.6/go.mod h1:0QBsHlzblYkn1t9keIYuz922buAFK4O7vkun7OyacJY=
-github.com/daylamtayari/cierge/resy v0.8.7 h1:2+e9xY/1a/ev5akRuYbCPgSvT3a/HoYxYjQv0q115Mg=
-github.com/daylamtayari/cierge/resy v0.8.7/go.mod h1:WP0pL1BJpfF50yPKcKN6V4Qeoyeqs9xiVbv4bbWOIwU=
+github.com/daylamtayari/cierge/resy v0.8.10 h1:yADBkvXRPwjlSRUbOmwWdhyiktP5F81f3e+qP9ths4U=
+github.com/daylamtayari/cierge/resy v0.8.10/go.mod h1:WP0pL1BJpfF50yPKcKN6V4Qeoyeqs9xiVbv4bbWOIwU=
 github.com/dgraph-io/badger/v4 v4.9.1 h1:DocZXZkg5JJHJPtUErA0ibyHxOVUDVoXLSCV6t8NC8w=
 github.com/dgraph-io/badger/v4 v4.9.1/go.mod h1:5/MEx97uzdPUHR4KtkNt8asfI2T4JiEiQlV7kWUo8c0=
 github.com/dgraph-io/ristretto/v2 v2.4.0 h1:I/w09yLjhdcVD2QV192UJcq8dPBaAJb9pOuMyNy0XlU=
