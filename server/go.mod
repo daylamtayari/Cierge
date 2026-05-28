@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/kms v1.51.1
 	github.com/aws/aws-sdk-go-v2/service/scheduler v1.17.24
 	github.com/aws/aws-sdk-go-v2/service/sts v1.42.1
-	github.com/daylamtayari/cierge/api v0.8.0
+	github.com/daylamtayari/cierge/api v0.8.2
 	github.com/daylamtayari/cierge/errcol v0.9.4
 	github.com/daylamtayari/cierge/querycol v0.9.0
 	github.com/daylamtayari/cierge/reservation v0.8.6
