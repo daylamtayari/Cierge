@@ -4,6 +4,7 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,8 +22,11 @@ func ServeSPA() gin.HandlerFunc {
 	fileServer := http.FileServer(http.FS(sub))
 
 	return func(c *gin.Context) {
-		_, err := sub.Open(c.Request.URL.Path)
-		if err != nil {
+		p := strings.TrimPrefix(c.Request.URL.Path, "/")
+		if p == "" {
+			p = "."
+		}
+		if _, err := sub.Open(p); err != nil {
 			c.Request.URL.Path = "/"
 		}
 		fileServer.ServeHTTP(c.Writer, c.Request)
