@@ -1,5 +1,5 @@
 # Build frontend
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:26-alpine AS frontend
 WORKDIR /build
 RUN npm install -g pnpm
 COPY server/web/package.json server/web/pnpm-lock.yaml ./
