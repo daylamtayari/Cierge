@@ -507,6 +507,35 @@ body {
 }
 .login-brand p { color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--sp-1); }
 
+/* ===== Not found ===== */
+.notfound {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--sp-16) var(--sp-6) var(--sp-12);
+  text-align: center;
+}
+.notfound-eyebrow {
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: 0.12em;
+}
+.notfound-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-top: var(--sp-3);
+}
+.notfound-body {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  margin: var(--sp-4) auto var(--sp-8);
+  max-width: 36ch;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 640px) {
   .container { padding: var(--sp-6) var(--sp-4); }
