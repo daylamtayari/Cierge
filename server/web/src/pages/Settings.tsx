@@ -7,8 +7,8 @@ import type { User } from '../types/user'
 function PlatformStatus({ token }: { token: PlatformToken | null }) {
   if (!token) return <span className="platform-status">Not connected</span>
   const expired = token.expires_at && new Date(token.expires_at) < new Date()
-  if (expired) return <span className="platform-status" style={{ color: 'var(--failed)' }}>Expired</span>
-  return <span className="platform-status" style={{ color: 'var(--confirmed)' }}>Connected</span>
+  if (expired) return <span className="platform-status platform-status-expired">Expired</span>
+  return <span className="platform-status platform-status-connected">Connected</span>
 }
 
 export default function Settings() {
@@ -129,7 +129,7 @@ export default function Settings() {
   return (
     <Layout>
       <div className="container">
-        <h1 className="heading-page" style={{ marginBottom: 'var(--sp-8)' }}>Settings</h1>
+        <h1 className="heading-page mb-8">Settings</h1>
 
         {/* Platform Connections */}
         <section className="section">
@@ -183,7 +183,7 @@ export default function Settings() {
                   />
                 </div>
                 <div className="field">
-                  <label className="field-label" htmlFor="resy-apikey">API key <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(optional)</span></label>
+                  <label className="field-label" htmlFor="resy-apikey">API key <span className="field-label-optional">(optional)</span></label>
                   <input
                     className="field-input"
                     id="resy-apikey"
@@ -222,23 +222,23 @@ export default function Settings() {
           </div>
 
           {newApiKey ? (
-            <div style={{ marginBottom: 'var(--sp-4)' }}>
-              <p className="text-secondary" style={{ marginBottom: 'var(--sp-3)' }}>
+            <div className="mb-4">
+              <p className="text-secondary mb-3">
                 Copy your API key now — it won't be shown again.
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
-                <code className="code-inline" style={{ flex: 1 }}>{newApiKey}</code>
+              <div className="row-center">
+                <code className="code-inline flex-1">{newApiKey}</code>
                 <button className="btn btn-sm btn-secondary" onClick={copyApiKey}>
                   {apiKeyCopied ? 'Copied' : 'Copy'}
                 </button>
               </div>
             </div>
           ) : user?.has_api_key ? (
-            <p className="text-secondary" style={{ marginBottom: 'var(--sp-4)' }}>
+            <p className="text-secondary mb-4">
               An API key is active. Regenerating will invalidate the current key.
             </p>
           ) : (
-            <p className="text-secondary" style={{ marginBottom: 'var(--sp-4)' }}>
+            <p className="text-secondary mb-4">
               No API key yet. Generate one to use the Cierge API directly.
             </p>
           )}
@@ -259,7 +259,7 @@ export default function Settings() {
           <div className="section-head">
             <h2 className="heading-section">Password</h2>
           </div>
-          <form onSubmit={handleChangePassword} style={{ maxWidth: '360px' }}>
+          <form onSubmit={handleChangePassword} className="form-narrow">
             <div className="field">
               <label className="field-label" htmlFor="old-password">Current password</label>
               <input

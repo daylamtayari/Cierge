@@ -57,7 +57,7 @@ export default function Login() {
               required
             />
           </div>
-          <div className="field" style={{ marginBottom: 0 }}>
+          <div className="field mb-0">
             <label className="field-label" htmlFor="password">Password</label>
             <input
               className="field-input"
@@ -68,10 +68,10 @@ export default function Login() {
               required
             />
           </div>
-          <p className="feedback-err" style={{ marginTop: 'var(--sp-3)', visibility: error ? 'visible' : 'hidden' }}>
+          <p className={'feedback-err mt-3' + (error ? '' : ' is-hidden')}>
             {error || '\u00A0'}
           </p>
-          <div style={{ paddingTop: 'var(--sp-3)' }}>
+          <div className="pt-3">
             <button
               className="btn btn-primary btn-full"
               type="submit"

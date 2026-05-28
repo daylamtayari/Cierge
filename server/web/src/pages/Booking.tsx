@@ -130,7 +130,7 @@ export default function Booking() {
           <div>
             <h1>{restaurant?.name ?? 'Booking'}</h1>
             {restaurant?.city && (
-              <p className="text-secondary" style={{ marginTop: 'var(--sp-1)' }}>
+              <p className="text-secondary mt-1">
                 {[restaurant.city, restaurant.state].filter(Boolean).join(', ')}
               </p>
             )}
@@ -150,7 +150,7 @@ export default function Booking() {
             <dd>{job.preferred_times.join(', ')}</dd>
 
             <dt>Platform</dt>
-            <dd style={{ textTransform: 'capitalize' }}>{job.platform}</dd>
+            <dd className="text-capitalize">{job.platform}</dd>
 
             <dt>Runs at</dt>
             <dd>{formatDateTime(job.scheduled_at)}</dd>
@@ -176,7 +176,7 @@ export default function Booking() {
 
         {(job.status === 'created' || job.status === 'scheduled') && (
           <div className="section">
-            {cancelError && <p className="feedback-err" style={{ marginBottom: 'var(--sp-3)' }}>{cancelError}</p>}
+            {cancelError && <p className="feedback-err mb-3">{cancelError}</p>}
             <button
               className="btn btn-danger-outline"
               onClick={handleCancel}
@@ -190,7 +190,7 @@ export default function Booking() {
         {job.status === 'success' && job.confirmation && (() => {
           const { label, value } = parseConfirmation(job.platform, job.confirmation)
           return (
-            <div className="banner banner-confirmed" style={{ marginBottom: 'var(--sp-6)' }}>
+            <div className="banner banner-confirmed mb-6">
               <div className="banner-label">Reservation confirmed</div>
               <div className="banner-sublabel">{label}</div>
               <div className="banner-value">{value}</div>
@@ -202,10 +202,10 @@ export default function Booking() {
         })()}
 
         {job.status === 'failed' && (
-          <div className="banner banner-failed" style={{ marginBottom: 'var(--sp-6)' }}>
+          <div className="banner banner-failed mb-6">
             <div className="banner-label">Booking failed</div>
             {job.error_message && (
-              <div className="banner-value" style={{ marginTop: 'var(--sp-1)' }}>
+              <div className="banner-value mt-1">
                 {job.error_message}
               </div>
             )}

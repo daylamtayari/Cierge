@@ -43,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
           {user && <div className="topbar-initials">{initials(user.email)}</div>}
         </div>
       </header>
-      <main style={{ flex: 1 }}>
+      <main className="flex-1">
         {children}
       </main>
     </div>
