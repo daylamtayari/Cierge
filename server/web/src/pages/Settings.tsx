@@ -17,9 +17,8 @@ export default function Settings() {
 
   // Resy connect form
   const [connecting, setConnecting] = useState<string | null>(null)
-  const [resyAuthToken, setResyAuthToken] = useState('')
-  const [resyRefresh, setResyRefresh] = useState('')
-  const [resyApiKey, setResyApiKey] = useState('')
+  const [resyEmail, setResyEmail] = useState('')
+  const [resyPassword, setResyPassword] = useState('')
   const [connectError, setConnectError] = useState('')
   const [connectLoading, setConnectLoading] = useState(false)
 
@@ -47,9 +46,8 @@ export default function Settings() {
   function openConnect(platform: string) {
     setConnecting(platform)
     setConnectError('')
-    setResyAuthToken('')
-    setResyRefresh('')
-    setResyApiKey('')
+    setResyEmail('')
+    setResyPassword('')
   }
 
   async function handleConnectResy(e: FormEvent) {
@@ -57,16 +55,14 @@ export default function Settings() {
     setConnectError('')
     setConnectLoading(true)
     try {
-      const body: Record<string, string> = { Token: resyAuthToken, Refresh: resyRefresh }
-      if (resyApiKey) body.ApiKey = resyApiKey
-      const res = await apiFetch('/api/user/token?platform=resy', {
+      const res = await apiFetch('/proxy/resy/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ email: resyEmail, password: resyPassword }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setConnectError(data.message || 'Failed to connect. Check your token values.')
+        setConnectError(data.message || 'Failed to connect. Check your email and password.')
         return
       }
       const saved: PlatformToken = await res.json()
@@ -158,42 +154,33 @@ export default function Settings() {
 
             {connecting === 'resy' && (
               <form className="platform-form" onSubmit={handleConnectResy}>
+                <div className="notice-warn" role="note">
+                  <span className="notice-warn-icon" aria-hidden="true">⚠</span>
+                  <span>By connecting your credentials, you assume trust in the server owner.</span>
+                </div>
                 <div className="field">
-                  <label className="field-label" htmlFor="resy-token">Auth token</label>
+                  <label className="field-label" htmlFor="resy-email">Email</label>
                   <input
                     className="field-input"
-                    id="resy-token"
-                    type="password"
+                    id="resy-email"
+                    type="email"
                     autoComplete="off"
-                    value={resyAuthToken}
-                    onChange={e => setResyAuthToken(e.target.value)}
+                    value={resyEmail}
+                    onChange={e => setResyEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="field">
-                  <label className="field-label" htmlFor="resy-refresh">Refresh token</label>
+                  <label className="field-label" htmlFor="resy-password">Password</label>
                   <input
                     className="field-input"
-                    id="resy-refresh"
+                    id="resy-password"
                     type="password"
                     autoComplete="off"
-                    value={resyRefresh}
-                    onChange={e => setResyRefresh(e.target.value)}
+                    value={resyPassword}
+                    onChange={e => setResyPassword(e.target.value)}
                     required
                   />
-                </div>
-                <div className="field">
-                  <label className="field-label" htmlFor="resy-apikey">API key <span className="field-label-optional">(optional)</span></label>
-                  <input
-                    className="field-input"
-                    id="resy-apikey"
-                    type="text"
-                    autoComplete="off"
-                    placeholder="Leave blank to use default"
-                    value={resyApiKey}
-                    onChange={e => setResyApiKey(e.target.value)}
-                  />
-                  <p className="field-hint">Only set this if you have a custom Resy API key.</p>
                 </div>
                 {connectError && <p className="feedback-err">{connectError}</p>}
                 <button className="btn btn-primary btn-sm" type="submit" disabled={connectLoading}>

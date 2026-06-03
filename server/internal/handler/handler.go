@@ -14,6 +14,7 @@ type Handlers struct {
 	Restaurant    *Restaurant
 	PlatformToken *PlatformToken
 	DropConfig    *DropConfig
+	Proxy         *Proxy
 }
 
 func New(services *service.Services, cfg *config.Config) *Handlers {
@@ -26,5 +27,6 @@ func New(services *service.Services, cfg *config.Config) *Handlers {
 		Restaurant:    NewRestaurant(services.Restaurant),
 		PlatformToken: NewPlatformToken(services.PlatformToken),
 		DropConfig:    NewDropConfig(services.DropConfig),
+		Proxy:         NewProxy(services.ProxyResy, services.PlatformToken),
 	}
 }

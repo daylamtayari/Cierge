@@ -24,6 +24,9 @@
   --failed-bg:    oklch(95% 0.03 25);
   --pending:      oklch(52% 0.10 250);
   --pending-bg:   oklch(95% 0.03 250);
+  --warning:      oklch(50% 0.10 75);
+  --warning-bg:   oklch(96% 0.04 85);
+  --warning-border: oklch(82% 0.08 85);
   --muted-bg:     oklch(94% 0.004 18);
 
   --font-display: 'DM Serif Text', Georgia, 'Times New Roman', serif;
@@ -76,6 +79,9 @@
     --failed-bg:    oklch(22% 0.04 25);
     --pending:      oklch(68% 0.10 250);
     --pending-bg:   oklch(22% 0.04 250);
+    --warning:      oklch(80% 0.10 85);
+    --warning-bg:   oklch(26% 0.04 85);
+    --warning-border: oklch(40% 0.06 85);
     --muted-bg:     oklch(22% 0.005 18);
   }
 }
@@ -472,6 +478,22 @@ body {
   padding: var(--sp-4) 0 var(--sp-6);
   border-top: 1px solid var(--border-subtle);
 }
+
+/* ===== Warning notice ===== */
+.notice-warn {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: flex-start;
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius);
+  color: var(--warning);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+.notice-warn-icon { flex-shrink: 0; }
 
 /* ===== Back link ===== */
 .back-link {
