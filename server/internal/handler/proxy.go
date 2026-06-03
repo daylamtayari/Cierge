@@ -63,3 +63,26 @@ func (h *Proxy) ResyAuth(c *gin.Context) {
 	c.JSON(200, newToken.ToAPI())
 	c.Set("message", "created new platform token for resy")
 }
+
+func (h *Proxy) ResyRestaurant(c *gin.Context) {
+	errorCol := appctx.ErrorCollector(c.Request.Context())
+
+	var resyResReq struct {
+		Query string `json:"query"`
+	}
+	if err := c.ShouldBindBodyWithJSON(&resyResReq); err != nil {
+		errorCol.Add(err, zerolog.InfoLevel, true, nil, "restaurant query has improper format")
+		util.RespondBadRequest(c, "Invalid query format")
+		return
+	}
+
+	venues, err := h.proxyResyService.Restaurant(c.Request.Context(), resyResReq.Query)
+	if err != nil {
+		errorCol.Add(err, zerolog.ErrorLevel, false, map[string]any{"query": resyResReq.Query}, "failed to proxy restaurant search")
+		util.RespondInternalServerError(c)
+		return
+	}
+
+	c.JSON(200, venues)
+	c.Set("message", "proxied search for resy restaurants")
+}

@@ -69,6 +69,7 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 	proxyRoutes.Use(authMiddleware.RequireAuth())
 	{
 		proxyRoutes.POST("/resy/auth", handlers.Proxy.ResyAuth)
+		proxyRoutes.POST("/resy/restaurant", handlers.Proxy.ResyRestaurant)
 	}
 
 	api := router.Group("/api")

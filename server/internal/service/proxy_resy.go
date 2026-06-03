@@ -20,3 +20,8 @@ func (s *ProxyResy) Auth(ctx context.Context, email string, password string) (re
 	authResyClient := resy.NewClient(nil, resy.Tokens{}, "")
 	return authResyClient.Login(email, password)
 }
+
+func (s *ProxyResy) Restaurant(ctx context.Context, query string) ([]resy.Venue, error) {
+	// Use the default page limit of 10
+	return s.resyClient.SearchVenue(query, nil)
+}
