@@ -60,6 +60,18 @@ func RespondConflict(c *gin.Context, message string) {
 	c.AbortWithStatusJSON(http.StatusConflict, conflictResponse)
 }
 
+// Returns a failed dependency error message with a custom message
+func RespondFailedDep(c *gin.Context, message string) {
+	failedDepResponse := map[string]any{
+		"error":      "Failed Dependency",
+		"request_id": appctx.RequestID(c.Request.Context()),
+	}
+	if message != "" {
+		failedDepResponse["message"] = message
+	}
+	c.AbortWithStatusJSON(http.StatusFailedDependency, failedDepResponse)
+}
+
 // Return a Too Many Requests error response
 func RespondTooMany(c *gin.Context) {
 	c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{

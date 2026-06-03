@@ -65,6 +65,12 @@ func NewRouter(cfg *config.Config, logger zerolog.Logger, services *service.Serv
 		internalRoutes.POST("/job/status", callbackAuthMiddleware.RequireCallbackAuth(), handlers.JobCallback.HandleJobCallback)
 	}
 
+	proxyRoutes := router.Group("/proxy")
+	proxyRoutes.Use(authMiddleware.RequireAuth())
+	{
+		proxyRoutes.POST("/resy/auth", handlers.Proxy.ResyAuth)
+	}
+
 	api := router.Group("/api")
 	api.Use(authMiddleware.RequireAuth())
 	{

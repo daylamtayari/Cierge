@@ -24,6 +24,7 @@ type Services struct {
 	Restaurant    *Restaurant
 	PlatformToken *PlatformToken
 	DropConfig    *DropConfig
+	ProxyResy     *ProxyResy
 }
 
 func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenstore.Store, cloudProvider cloud.Provider) *Services {
@@ -42,5 +43,6 @@ func New(repos *repository.Repositories, cfg *config.Config, tokenStore *tokenst
 		Restaurant:    NewRestaurant(repos.Restaurant, resyClient),
 		PlatformToken: platformTokenService,
 		DropConfig:    NewDropConfig(repos.DropConfig, repos.Restaurant),
+		ProxyResy:     NewProxyResy(resyClient),
 	}
 }
