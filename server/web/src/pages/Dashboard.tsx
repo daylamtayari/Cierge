@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { apiFetch } from '../lib/apiFetch'
 import type { Job, JobStatus } from '../types/job'
@@ -72,9 +72,9 @@ export default function Dashboard() {
       <div className="container container--wide">
         <div className="page-header">
           <h1 className="heading-page">Bookings</h1>
-          <button className="btn btn-primary" disabled>
+          <Link className="btn btn-primary" to="/booking/new">
             New Booking
-          </button>
+          </Link>
         </div>
 
         {loading ? (

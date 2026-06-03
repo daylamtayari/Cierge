@@ -83,10 +83,10 @@ Core functionality and good enough to start sharing.
 - [ ] Complete user management functionality
 - [ ] Favourite restaurant functionality
 - [ ] Complete command line interface
+- [X] Website
 
 ### Release
 
-- [ ] Website (ugh)
 - [ ] Complete documentation
 - [ ] OIDC authentication
 - [ ] Social authentication
