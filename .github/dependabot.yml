@@ -20,7 +20,7 @@ updates:
       prefix: "gh-actions"
     assignees:
       - "daylamtayari"
-  - package-ecosystem: "pnpm"
+  - package-ecosystem: "npm"
     directory: "server/web/"
     schedule:
       interval: weekly
