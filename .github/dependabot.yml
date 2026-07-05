@@ -20,3 +20,13 @@ updates:
       prefix: "gh-actions"
     assignees:
       - "daylamtayari"
+  - package-ecosystem: "pnpm"
+    directory: "server/web/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "pnpm"
+    assignees:
+      - "daylamtayari"
