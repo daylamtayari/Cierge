@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.26
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.25
 	github.com/aws/aws-sdk-go-v2/service/kms v1.52.1
-	github.com/aws/aws-sdk-go-v2/service/scheduler v1.18.2
+	github.com/aws/aws-sdk-go-v2/service/scheduler v1.18.8
 	github.com/aws/aws-sdk-go-v2/service/sts v1.43.4
 	github.com/daylamtayari/cierge/api v0.8.2
 	github.com/daylamtayari/cierge/errcol v0.9.4

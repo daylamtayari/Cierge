@@ -18,8 +18,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.29 h1:DRebniUG
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.29/go.mod h1:LfRkPCD8YHDM2E5eTkos2UpwYeZnBcVarTa8L59bJHA=
 github.com/aws/aws-sdk-go-v2/service/kms v1.52.1 h1:qBc+5ZvMjb+Y+Ho+0wwyBYBITH1Wm5M1RJpt8DELPVU=
 github.com/aws/aws-sdk-go-v2/service/kms v1.52.1/go.mod h1:bWSG4E0FxeeDdfXseEnPfkFv4MqTY/6fDFGUHu/Wkb0=
-github.com/aws/aws-sdk-go-v2/service/scheduler v1.18.2 h1:zn2B8ZhQcwS1TKrifWBYTiWzV7dkTSjaur6YBMb93dE=
-github.com/aws/aws-sdk-go-v2/service/scheduler v1.18.2/go.mod h1:I5tlWtpCdI1nLpjG7RzTw/7nIw+u8Ny6bWHGjWWH3gA=
+github.com/aws/aws-sdk-go-v2/service/scheduler v1.18.8 h1:sFu/Es4KoV6kwaUTblMiQX3Ug4NiHHt1tLtzQyTQKBQ=
+github.com/aws/aws-sdk-go-v2/service/scheduler v1.18.8/go.mod h1:Z6XrFAHEJAyZCbSY6naL6cylzYJunhoazrtk7qHpfdA=
 github.com/aws/aws-sdk-go-v2/service/signin v1.2.1 h1:BeJmkm5YOZs6lGRGcNoIuLSoTTtGLLCEqlSiRKYodfM=
 github.com/aws/aws-sdk-go-v2/service/signin v1.2.1/go.mod h1:LxYujSTLPRlp2vTtcUO/+1ilrew8ytt6SvQyOgejzFQ=
 github.com/aws/aws-sdk-go-v2/service/sso v1.31.4 h1:i465b/3c7xJd++pobNIDOggouekCuiWOnB0goQJy+94=
