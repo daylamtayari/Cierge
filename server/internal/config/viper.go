@@ -23,6 +23,12 @@ func V() *viper.Viper {
 	return v
 }
 
+// ConfigFileUsed returns the path of the config file that was loaded, or an
+// empty string if no config file was found
+func ConfigFileUsed() string {
+	return V().ConfigFileUsed()
+}
+
 func Load() (*Config, error) {
 	v := V()
 

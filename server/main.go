@@ -69,6 +69,12 @@ func main() {
 	logger = NewLogger(cfg.LogLevel, prettyOutput).With().Str("environment", string(cfg.Environment)).Str("version", getVersion()).Logger()
 	logger.Info().Msg("starting cierge server")
 
+	if configFile := config.ConfigFileUsed(); configFile == "" {
+		logger.Warn().Msg("no configuration file found, using defaults and environment variables only")
+	} else {
+		logger.Debug().Str("path", configFile).Msg("loaded configuration file")
+	}
+
 	db, err := database.New(cfg.Database, cfg.IsDevelopment())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to connect to the database")
