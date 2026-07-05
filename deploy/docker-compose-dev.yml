@@ -9,6 +9,8 @@ services:
       CIERGE_ENVIRONMENT: dev
       CIERGE_DATABASE_HOST: postgres
       CIERGE_DATABASE_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./server.json:/etc/cierge/server.json:ro
     depends_on:
       postgres:
         condition: service_healthy
