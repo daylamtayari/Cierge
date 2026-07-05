@@ -6,6 +6,7 @@ import type { Venue } from '../types/venue'
 import type { Restaurant } from '../types/restaurant'
 import type { DropConfig } from '../types/drop_config'
 import type { Job } from '../types/job'
+import type { PlatformToken } from '../types/platform_token'
 
 type Step = 1 | 2 | 3
 
@@ -119,6 +120,7 @@ export default function NewBooking() {
 
     // Step 1 — platform + restaurant
     const platform = 'resy'
+    const [tokens, setTokens] = useState<PlatformToken[]>([])
     const [query, setQuery] = useState('')
     const [venues, setVenues] = useState<Venue[]>([])
     const [searching, setSearching] = useState(false)
@@ -141,6 +143,20 @@ export default function NewBooking() {
     // Step 3 — submit
     const [submitting, setSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState('')
+
+    // --- Platform connection -------------------------------------------------
+    // The selected platform can only be booked if the user has a live token for
+    // it. Mirrors the Settings page: an expired token counts as not connected.
+    useEffect(() => {
+        apiFetch('/api/user/token')
+            .then(r => (r.ok ? r.json() : null))
+            .then(d => Array.isArray(d) && setTokens(d))
+            .catch(() => { /* leave tokens empty; banner will prompt to connect */ })
+    }, [])
+
+    const platformToken = tokens.find(t => t.platform === platform) ?? null
+    const platformConnected =
+        !!platformToken && !(platformToken.expires_at && new Date(platformToken.expires_at) < new Date())
 
     // --- Live search ---------------------------------------------------------
     // The interval reads the latest query via refs so it never closes over stale
@@ -365,6 +381,17 @@ export default function NewBooking() {
                 {/* ===== Step 1: platform + restaurant ===== */}
                 {step === 1 && (
                     <>
+                        {!platformConnected && (
+                            <div className="notice-warn mb-6" role="alert">
+                                <span className="notice-warn-icon" aria-hidden="true">⚠</span>
+                                <span>
+                                    Your {platform === 'resy' ? 'Resy' : platform} account isn't connected
+                                    {platformToken ? ' — its connection has expired' : ''}. Connect it in{' '}
+                                    <Link to="/settings">Settings</Link> before scheduling a booking.
+                                </span>
+                            </div>
+                        )}
+
                         <section className="section">
                             <div className="section-head">
                                 <h2 className="heading-section">Platform</h2>
@@ -449,7 +476,7 @@ export default function NewBooking() {
                         <button
                             className="btn btn-primary"
                             onClick={goToDetails}
-                            disabled={!restaurant}
+                            disabled={!restaurant || !platformConnected}
                         >
                             Continue
                         </button>
